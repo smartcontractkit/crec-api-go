@@ -4,534 +4,180 @@
   "type": "object",
   "properties": {
     "DistributorRegistered": {
-      "type": "object",
-      "description": "Emitted when a new distributor has been registered.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a new distributor has been registered."
     },
     "DistributorRequestCanceled": {
-      "type": "object",
-      "description": "Emitted when a distributor request has been canceled.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a distributor request has been canceled."
     },
     "DistributorRequestProcessed": {
-      "type": "object",
-      "description": "Emitted when a distributor request has been processed.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a distributor request has been processed."
     },
     "DistributorRequestProcessing": {
-      "type": "object",
-      "description": "Emitted when a distributor request is being processed.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a distributor request is being processed."
     },
     "FundAdminRegistered": {
-      "type": "object",
-      "description": "Emitted when a fund admin has been registered.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a fund admin has been registered."
     },
     "FundTokenAllowlistUpdated": {
-      "type": "object",
-      "description": "Emitted when a fund token allowlist has been updated.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a fund token allowlist has been updated."
     },
     "FundTokenRegistered": {
-      "type": "object",
-      "description": "Emitted when a fund token has been registered.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a fund token has been registered."
+    },
+    "Initialized": {
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when the contract has been initialized."
     },
     "InvalidDTAWallet": {
-      "type": "object",
-      "description": "Emitted when an invalid DTA wallet is detected.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when an invalid DTA wallet is detected."
     },
     "MessageFailed": {
-      "type": "object",
-      "description": "Emitted when a CCIP message has failed.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a CCIP message has failed."
     },
     "NativeFundsRecovered": {
-      "type": "object",
-      "description": "Emitted when native funds have been recovered.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when native funds have been recovered."
     },
     "RedemptionRequested": {
-      "type": "object",
-      "description": "Emitted when a redemption has been requested.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a redemption has been requested."
     },
     "SubscriptionRequested": {
-      "type": "object",
-      "description": "Emitted when a subscription has been requested.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a subscription has been requested."
     },
     "DTAAdded": {
-      "type": "object",
-      "description": "Emitted when a DTA has been added to the wallet.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a DTA has been added to the wallet."
     },
     "DTARemoved": {
-      "type": "object",
-      "description": "Emitted when a DTA has been removed from the wallet.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a DTA has been removed from the wallet."
     },
     "DTASettlementClosed": {
-      "type": "object",
-      "description": "Emitted when a DTA settlement has been closed.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a DTA settlement has been closed."
     },
     "DTASettlementOpened": {
-      "type": "object",
-      "description": "Emitted when a DTA settlement has been opened.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a DTA settlement has been opened."
     },
     "CCIPMessageRecvFailed": {
-      "type": "object",
-      "description": "Emitted when a CCIP message receive has failed.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a CCIP message receive has failed."
     },
     "EmptyRequestType": {
-      "type": "object",
-      "description": "Emitted when an empty request type is encountered.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when an empty request type is encountered."
     },
     "InsufficientPaymentTokenBalance": {
-      "type": "object",
-      "description": "Emitted when there is insufficient payment token balance.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when there is insufficient payment token balance."
     },
     "SettlementFailed": {
-      "type": "object",
-      "description": "Emitted when a settlement has failed.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when a settlement has failed."
     },
     "TokenWithdrawn": {
-      "type": "object",
-      "description": "Emitted when tokens have been withdrawn.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when tokens have been withdrawn."
     },
     "UnauthorizedSenderDTA": {
-      "type": "object",
-      "description": "Emitted when an unauthorized sender attempts to access DTA.",
-      "properties": {
-        "createdAt": {
-          "type": "string",
-          "format": "date-time",
-          "description": "The timestamp when the event was created"
-        },
-        "event": {
-          "$ref": "#/$defs/dtaEvent"
-        },
-        "transaction": {
-          "$ref": "#/$defs/transaction"
-        },
-        "metadata": {
-          "$ref": "#/$defs/metadata"
-        }
-      }
+      "$ref": "#/$defs/verifiableEvent",
+      "description": "Emitted when an unauthorized sender attempts to access DTA."
     }
   },
   "$defs": {
-    "dtaEvent": {
+    "verifiableEvent": {
       "type": "object",
-      "description": "Base DTA event structure",
       "properties": {
-        "address": {
+        "createdAt": {
           "type": "string",
-          "description": "Contract address that emitted the event"
+          "format": "date-time",
+          "description": "The timestamp when the event was created"
         },
-        "topics": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "Event topics"
+        "event": {
+          "$ref": "#/$defs/eventInfo"
         },
-        "data": {
-          "type": "string",
-          "description": "Event data"
+        "metadata": {
+          "$ref": "#/$defs/metadata"
         },
-        "blockNumber": {
-          "type": "string",
-          "description": "Block number"
-        },
-        "transactionHash": {
-          "type": "string",
-          "description": "Transaction hash"
-        },
-        "transactionIndex": {
-          "type": "string",
-          "description": "Transaction index"
-        },
-        "blockHash": {
-          "type": "string",
-          "description": "Block hash"
-        },
-        "logIndex": {
-          "type": "string",
-          "description": "Log index"
-        },
-        "removed": {
-          "type": "boolean",
-          "description": "Whether the log was removed"
+        "transaction": {
+          "$ref": "#/$defs/transaction"
         }
       },
       "required": [
+        "createdAt",
+        "event",
+        "metadata",
+        "transaction"
+      ]
+    },
+    "eventInfo": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The service/type of the event"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the event"
+        },
+        "address": {
+          "type": "string",
+          "description": "The address of the contract that emitted the event"
+        },
+        "requestId": {
+          "type": "string",
+          "description": "The request identifier associated with the event"
+        },
+        "topicHash": {
+          "type": "string",
+          "description": "The topic hash of the event"
+        }
+      },
+      "required": [
+        "type",
+        "name",
         "address",
-        "topics",
-        "data",
-        "blockNumber",
-        "transactionHash",
-        "transactionIndex",
-        "blockHash",
-        "logIndex",
-        "removed"
+        "requestId",
+        "topicHash"
       ]
     },
     "transaction": {
       "type": "object",
-      "description": "Transaction information",
       "properties": {
+        "timestamp": {
+          "type": "integer",
+          "description": "The unix timestamp of the transaction"
+        },
+        "chainId": {
+          "type": "string",
+          "description": "The chain ID for the transaction"
+        },
         "hash": {
           "type": "string",
-          "description": "Transaction hash"
-        },
-        "blockNumber": {
-          "type": "string",
-          "description": "Block number"
-        },
-        "blockHash": {
-          "type": "string",
-          "description": "Block hash"
-        },
-        "transactionIndex": {
-          "type": "string",
-          "description": "Transaction index"
+          "description": "The hash of the transaction"
         }
       },
       "required": [
-        "hash",
-        "blockNumber",
-        "blockHash",
-        "transactionIndex"
+        "timestamp",
+        "chainId",
+        "hash"
       ]
     },
     "metadata": {
       "type": "object",
-      "description": "Additional metadata",
       "properties": {
         "chainId": {
           "type": "string",
@@ -540,11 +186,46 @@
         "network": {
           "type": "string",
           "description": "Network name"
+        },
+        "workflowEvent": {
+          "$ref": "#/$defs/workflowEvent"
         }
       },
       "required": [
         "chainId"
       ]
+    },
+    "workflowEvent": {
+      "type": "object",
+      "properties": {
+        "attributes": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/attribute" },
+          "description": "A map of attribute key to attribute details"
+        },
+        "business_event_id": { "type": "string" },
+        "component": { "type": "string" },
+        "event_timestamp": { "type": "string", "format": "date-time" },
+        "event_type_label": { "type": "string" },
+        "failed": { "type": "boolean" },
+        "final_event": { "type": "boolean" },
+        "id": { "type": "string" },
+        "participant": { "type": "string" },
+        "participant_role": { "type": "string" },
+        "process_labels": { "type": "array", "items": { "type": "string" } },
+        "raw_data": { "type": "string" },
+        "title": { "type": "string" }
+      }
+    },
+    "attribute": {
+      "type": "object",
+      "properties": {
+        "key": { "type": "string" },
+        "on_chain": { "type": "boolean" },
+        "value": { "type": "string" },
+        "visibility": { "type": "string" }
+      },
+      "required": ["key", "on_chain", "value", "visibility"]
     }
   }
 }

@@ -6,483 +6,174 @@ import "encoding/json"
 import "fmt"
 import "time"
 
-type Dta struct {
-	// Emitted when a CCIP message receive has failed.
-	CCIPMessageRecvFailed *DtaCCIPMessageRecvFailed `json:"CCIPMessageRecvFailed,omitempty" yaml:"CCIPMessageRecvFailed,omitempty" mapstructure:"CCIPMessageRecvFailed,omitempty"`
+type Attribute struct {
+	// Key corresponds to the JSON schema field "key".
+	Key string `json:"key" yaml:"key" mapstructure:"key"`
 
-	// Emitted when a DTA has been added to the wallet.
-	DTAAdded *DtaDTAAdded `json:"DTAAdded,omitempty" yaml:"DTAAdded,omitempty" mapstructure:"DTAAdded,omitempty"`
+	// OnChain corresponds to the JSON schema field "on_chain".
+	OnChain bool `json:"on_chain" yaml:"on_chain" mapstructure:"on_chain"`
 
-	// Emitted when a DTA has been removed from the wallet.
-	DTARemoved *DtaDTARemoved `json:"DTARemoved,omitempty" yaml:"DTARemoved,omitempty" mapstructure:"DTARemoved,omitempty"`
+	// Value corresponds to the JSON schema field "value".
+	Value string `json:"value" yaml:"value" mapstructure:"value"`
 
-	// Emitted when a DTA settlement has been closed.
-	DTASettlementClosed *DtaDTASettlementClosed `json:"DTASettlementClosed,omitempty" yaml:"DTASettlementClosed,omitempty" mapstructure:"DTASettlementClosed,omitempty"`
-
-	// Emitted when a DTA settlement has been opened.
-	DTASettlementOpened *DtaDTASettlementOpened `json:"DTASettlementOpened,omitempty" yaml:"DTASettlementOpened,omitempty" mapstructure:"DTASettlementOpened,omitempty"`
-
-	// Emitted when a new distributor has been registered.
-	DistributorRegistered *DtaDistributorRegistered `json:"DistributorRegistered,omitempty" yaml:"DistributorRegistered,omitempty" mapstructure:"DistributorRegistered,omitempty"`
-
-	// Emitted when a distributor request has been canceled.
-	DistributorRequestCanceled *DtaDistributorRequestCanceled `json:"DistributorRequestCanceled,omitempty" yaml:"DistributorRequestCanceled,omitempty" mapstructure:"DistributorRequestCanceled,omitempty"`
-
-	// Emitted when a distributor request has been processed.
-	DistributorRequestProcessed *DtaDistributorRequestProcessed `json:"DistributorRequestProcessed,omitempty" yaml:"DistributorRequestProcessed,omitempty" mapstructure:"DistributorRequestProcessed,omitempty"`
-
-	// Emitted when a distributor request is being processed.
-	DistributorRequestProcessing *DtaDistributorRequestProcessing `json:"DistributorRequestProcessing,omitempty" yaml:"DistributorRequestProcessing,omitempty" mapstructure:"DistributorRequestProcessing,omitempty"`
-
-	// Emitted when an empty request type is encountered.
-	EmptyRequestType *DtaEmptyRequestType `json:"EmptyRequestType,omitempty" yaml:"EmptyRequestType,omitempty" mapstructure:"EmptyRequestType,omitempty"`
-
-	// Emitted when a fund admin has been registered.
-	FundAdminRegistered *DtaFundAdminRegistered `json:"FundAdminRegistered,omitempty" yaml:"FundAdminRegistered,omitempty" mapstructure:"FundAdminRegistered,omitempty"`
-
-	// Emitted when a fund token allowlist has been updated.
-	FundTokenAllowlistUpdated *DtaFundTokenAllowlistUpdated `json:"FundTokenAllowlistUpdated,omitempty" yaml:"FundTokenAllowlistUpdated,omitempty" mapstructure:"FundTokenAllowlistUpdated,omitempty"`
-
-	// Emitted when a fund token has been registered.
-	FundTokenRegistered *DtaFundTokenRegistered `json:"FundTokenRegistered,omitempty" yaml:"FundTokenRegistered,omitempty" mapstructure:"FundTokenRegistered,omitempty"`
-
-	// Emitted when there is insufficient payment token balance.
-	InsufficientPaymentTokenBalance *DtaInsufficientPaymentTokenBalance `json:"InsufficientPaymentTokenBalance,omitempty" yaml:"InsufficientPaymentTokenBalance,omitempty" mapstructure:"InsufficientPaymentTokenBalance,omitempty"`
-
-	// Emitted when an invalid DTA wallet is detected.
-	InvalidDTAWallet *DtaInvalidDTAWallet `json:"InvalidDTAWallet,omitempty" yaml:"InvalidDTAWallet,omitempty" mapstructure:"InvalidDTAWallet,omitempty"`
-
-	// Emitted when a CCIP message has failed.
-	MessageFailed *DtaMessageFailed `json:"MessageFailed,omitempty" yaml:"MessageFailed,omitempty" mapstructure:"MessageFailed,omitempty"`
-
-	// Emitted when native funds have been recovered.
-	NativeFundsRecovered *DtaNativeFundsRecovered `json:"NativeFundsRecovered,omitempty" yaml:"NativeFundsRecovered,omitempty" mapstructure:"NativeFundsRecovered,omitempty"`
-
-	// Emitted when a redemption has been requested.
-	RedemptionRequested *DtaRedemptionRequested `json:"RedemptionRequested,omitempty" yaml:"RedemptionRequested,omitempty" mapstructure:"RedemptionRequested,omitempty"`
-
-	// Emitted when a settlement has failed.
-	SettlementFailed *DtaSettlementFailed `json:"SettlementFailed,omitempty" yaml:"SettlementFailed,omitempty" mapstructure:"SettlementFailed,omitempty"`
-
-	// Emitted when a subscription has been requested.
-	SubscriptionRequested *DtaSubscriptionRequested `json:"SubscriptionRequested,omitempty" yaml:"SubscriptionRequested,omitempty" mapstructure:"SubscriptionRequested,omitempty"`
-
-	// Emitted when tokens have been withdrawn.
-	TokenWithdrawn *DtaTokenWithdrawn `json:"TokenWithdrawn,omitempty" yaml:"TokenWithdrawn,omitempty" mapstructure:"TokenWithdrawn,omitempty"`
-
-	// Emitted when an unauthorized sender attempts to access DTA.
-	UnauthorizedSenderDTA *DtaUnauthorizedSenderDTA `json:"UnauthorizedSenderDTA,omitempty" yaml:"UnauthorizedSenderDTA,omitempty" mapstructure:"UnauthorizedSenderDTA,omitempty"`
-}
-
-// Emitted when a CCIP message receive has failed.
-type DtaCCIPMessageRecvFailed struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a DTA has been added to the wallet.
-type DtaDTAAdded struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a DTA has been removed from the wallet.
-type DtaDTARemoved struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a DTA settlement has been closed.
-type DtaDTASettlementClosed struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a DTA settlement has been opened.
-type DtaDTASettlementOpened struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a new distributor has been registered.
-type DtaDistributorRegistered struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a distributor request has been canceled.
-type DtaDistributorRequestCanceled struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a distributor request has been processed.
-type DtaDistributorRequestProcessed struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a distributor request is being processed.
-type DtaDistributorRequestProcessing struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when an empty request type is encountered.
-type DtaEmptyRequestType struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Base DTA event structure
-type DtaEvent struct {
-	// Contract address that emitted the event
-	Address string `json:"address" yaml:"address" mapstructure:"address"`
-
-	// Block hash
-	BlockHash string `json:"blockHash" yaml:"blockHash" mapstructure:"blockHash"`
-
-	// Block number
-	BlockNumber string `json:"blockNumber" yaml:"blockNumber" mapstructure:"blockNumber"`
-
-	// Event data
-	Data string `json:"data" yaml:"data" mapstructure:"data"`
-
-	// Log index
-	LogIndex string `json:"logIndex" yaml:"logIndex" mapstructure:"logIndex"`
-
-	// Whether the log was removed
-	Removed bool `json:"removed" yaml:"removed" mapstructure:"removed"`
-
-	// Event topics
-	Topics []string `json:"topics" yaml:"topics" mapstructure:"topics"`
-
-	// Transaction hash
-	TransactionHash string `json:"transactionHash" yaml:"transactionHash" mapstructure:"transactionHash"`
-
-	// Transaction index
-	TransactionIndex string `json:"transactionIndex" yaml:"transactionIndex" mapstructure:"transactionIndex"`
+	// Visibility corresponds to the JSON schema field "visibility".
+	Visibility string `json:"visibility" yaml:"visibility" mapstructure:"visibility"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
-func (j *DtaEvent) UnmarshalJSON(value []byte) error {
+func (j *Attribute) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["key"]; raw != nil && !ok {
+		return fmt.Errorf("field key in Attribute: required")
+	}
+	if _, ok := raw["on_chain"]; raw != nil && !ok {
+		return fmt.Errorf("field on_chain in Attribute: required")
+	}
+	if _, ok := raw["value"]; raw != nil && !ok {
+		return fmt.Errorf("field value in Attribute: required")
+	}
+	if _, ok := raw["visibility"]; raw != nil && !ok {
+		return fmt.Errorf("field visibility in Attribute: required")
+	}
+	type Plain Attribute
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = Attribute(plain)
+	return nil
+}
+
+type Dta struct {
+	// Emitted when a CCIP message receive has failed.
+	CCIPMessageRecvFailed *VerifiableEvent `json:"CCIPMessageRecvFailed,omitempty" yaml:"CCIPMessageRecvFailed,omitempty" mapstructure:"CCIPMessageRecvFailed,omitempty"`
+
+	// Emitted when a DTA has been added to the wallet.
+	DTAAdded *VerifiableEvent `json:"DTAAdded,omitempty" yaml:"DTAAdded,omitempty" mapstructure:"DTAAdded,omitempty"`
+
+	// Emitted when a DTA has been removed from the wallet.
+	DTARemoved *VerifiableEvent `json:"DTARemoved,omitempty" yaml:"DTARemoved,omitempty" mapstructure:"DTARemoved,omitempty"`
+
+	// Emitted when a DTA settlement has been closed.
+	DTASettlementClosed *VerifiableEvent `json:"DTASettlementClosed,omitempty" yaml:"DTASettlementClosed,omitempty" mapstructure:"DTASettlementClosed,omitempty"`
+
+	// Emitted when a DTA settlement has been opened.
+	DTASettlementOpened *VerifiableEvent `json:"DTASettlementOpened,omitempty" yaml:"DTASettlementOpened,omitempty" mapstructure:"DTASettlementOpened,omitempty"`
+
+	// Emitted when a new distributor has been registered.
+	DistributorRegistered *VerifiableEvent `json:"DistributorRegistered,omitempty" yaml:"DistributorRegistered,omitempty" mapstructure:"DistributorRegistered,omitempty"`
+
+	// Emitted when a distributor request has been canceled.
+	DistributorRequestCanceled *VerifiableEvent `json:"DistributorRequestCanceled,omitempty" yaml:"DistributorRequestCanceled,omitempty" mapstructure:"DistributorRequestCanceled,omitempty"`
+
+	// Emitted when a distributor request has been processed.
+	DistributorRequestProcessed *VerifiableEvent `json:"DistributorRequestProcessed,omitempty" yaml:"DistributorRequestProcessed,omitempty" mapstructure:"DistributorRequestProcessed,omitempty"`
+
+	// Emitted when a distributor request is being processed.
+	DistributorRequestProcessing *VerifiableEvent `json:"DistributorRequestProcessing,omitempty" yaml:"DistributorRequestProcessing,omitempty" mapstructure:"DistributorRequestProcessing,omitempty"`
+
+	// Emitted when an empty request type is encountered.
+	EmptyRequestType *VerifiableEvent `json:"EmptyRequestType,omitempty" yaml:"EmptyRequestType,omitempty" mapstructure:"EmptyRequestType,omitempty"`
+
+	// Emitted when a fund admin has been registered.
+	FundAdminRegistered *VerifiableEvent `json:"FundAdminRegistered,omitempty" yaml:"FundAdminRegistered,omitempty" mapstructure:"FundAdminRegistered,omitempty"`
+
+	// Emitted when a fund token allowlist has been updated.
+	FundTokenAllowlistUpdated *VerifiableEvent `json:"FundTokenAllowlistUpdated,omitempty" yaml:"FundTokenAllowlistUpdated,omitempty" mapstructure:"FundTokenAllowlistUpdated,omitempty"`
+
+	// Emitted when a fund token has been registered.
+	FundTokenRegistered *VerifiableEvent `json:"FundTokenRegistered,omitempty" yaml:"FundTokenRegistered,omitempty" mapstructure:"FundTokenRegistered,omitempty"`
+
+	// Emitted when the contract has been initialized.
+	Initialized *VerifiableEvent `json:"Initialized,omitempty" yaml:"Initialized,omitempty" mapstructure:"Initialized,omitempty"`
+
+	// Emitted when there is insufficient payment token balance.
+	InsufficientPaymentTokenBalance *VerifiableEvent `json:"InsufficientPaymentTokenBalance,omitempty" yaml:"InsufficientPaymentTokenBalance,omitempty" mapstructure:"InsufficientPaymentTokenBalance,omitempty"`
+
+	// Emitted when an invalid DTA wallet is detected.
+	InvalidDTAWallet *VerifiableEvent `json:"InvalidDTAWallet,omitempty" yaml:"InvalidDTAWallet,omitempty" mapstructure:"InvalidDTAWallet,omitempty"`
+
+	// Emitted when a CCIP message has failed.
+	MessageFailed *VerifiableEvent `json:"MessageFailed,omitempty" yaml:"MessageFailed,omitempty" mapstructure:"MessageFailed,omitempty"`
+
+	// Emitted when native funds have been recovered.
+	NativeFundsRecovered *VerifiableEvent `json:"NativeFundsRecovered,omitempty" yaml:"NativeFundsRecovered,omitempty" mapstructure:"NativeFundsRecovered,omitempty"`
+
+	// Emitted when a redemption has been requested.
+	RedemptionRequested *VerifiableEvent `json:"RedemptionRequested,omitempty" yaml:"RedemptionRequested,omitempty" mapstructure:"RedemptionRequested,omitempty"`
+
+	// Emitted when a settlement has failed.
+	SettlementFailed *VerifiableEvent `json:"SettlementFailed,omitempty" yaml:"SettlementFailed,omitempty" mapstructure:"SettlementFailed,omitempty"`
+
+	// Emitted when a subscription has been requested.
+	SubscriptionRequested *VerifiableEvent `json:"SubscriptionRequested,omitempty" yaml:"SubscriptionRequested,omitempty" mapstructure:"SubscriptionRequested,omitempty"`
+
+	// Emitted when tokens have been withdrawn.
+	TokenWithdrawn *VerifiableEvent `json:"TokenWithdrawn,omitempty" yaml:"TokenWithdrawn,omitempty" mapstructure:"TokenWithdrawn,omitempty"`
+
+	// Emitted when an unauthorized sender attempts to access DTA.
+	UnauthorizedSenderDTA *VerifiableEvent `json:"UnauthorizedSenderDTA,omitempty" yaml:"UnauthorizedSenderDTA,omitempty" mapstructure:"UnauthorizedSenderDTA,omitempty"`
+}
+
+type EventInfo struct {
+	// The address of the contract that emitted the event
+	Address string `json:"address" yaml:"address" mapstructure:"address"`
+
+	// The name of the event
+	Name string `json:"name" yaml:"name" mapstructure:"name"`
+
+	// The request identifier associated with the event
+	RequestId string `json:"requestId" yaml:"requestId" mapstructure:"requestId"`
+
+	// The topic hash of the event
+	TopicHash string `json:"topicHash" yaml:"topicHash" mapstructure:"topicHash"`
+
+	// The service/type of the event
+	Type string `json:"type" yaml:"type" mapstructure:"type"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *EventInfo) UnmarshalJSON(value []byte) error {
 	var raw map[string]interface{}
 	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
 	if _, ok := raw["address"]; raw != nil && !ok {
-		return fmt.Errorf("field address in DtaEvent: required")
+		return fmt.Errorf("field address in EventInfo: required")
 	}
-	if _, ok := raw["blockHash"]; raw != nil && !ok {
-		return fmt.Errorf("field blockHash in DtaEvent: required")
+	if _, ok := raw["name"]; raw != nil && !ok {
+		return fmt.Errorf("field name in EventInfo: required")
 	}
-	if _, ok := raw["blockNumber"]; raw != nil && !ok {
-		return fmt.Errorf("field blockNumber in DtaEvent: required")
+	if _, ok := raw["requestId"]; raw != nil && !ok {
+		return fmt.Errorf("field requestId in EventInfo: required")
 	}
-	if _, ok := raw["data"]; raw != nil && !ok {
-		return fmt.Errorf("field data in DtaEvent: required")
+	if _, ok := raw["topicHash"]; raw != nil && !ok {
+		return fmt.Errorf("field topicHash in EventInfo: required")
 	}
-	if _, ok := raw["logIndex"]; raw != nil && !ok {
-		return fmt.Errorf("field logIndex in DtaEvent: required")
+	if _, ok := raw["type"]; raw != nil && !ok {
+		return fmt.Errorf("field type in EventInfo: required")
 	}
-	if _, ok := raw["removed"]; raw != nil && !ok {
-		return fmt.Errorf("field removed in DtaEvent: required")
-	}
-	if _, ok := raw["topics"]; raw != nil && !ok {
-		return fmt.Errorf("field topics in DtaEvent: required")
-	}
-	if _, ok := raw["transactionHash"]; raw != nil && !ok {
-		return fmt.Errorf("field transactionHash in DtaEvent: required")
-	}
-	if _, ok := raw["transactionIndex"]; raw != nil && !ok {
-		return fmt.Errorf("field transactionIndex in DtaEvent: required")
-	}
-	type Plain DtaEvent
+	type Plain EventInfo
 	var plain Plain
 	if err := json.Unmarshal(value, &plain); err != nil {
 		return err
 	}
-	*j = DtaEvent(plain)
+	*j = EventInfo(plain)
 	return nil
 }
 
-// Emitted when a fund admin has been registered.
-type DtaFundAdminRegistered struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a fund token allowlist has been updated.
-type DtaFundTokenAllowlistUpdated struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a fund token has been registered.
-type DtaFundTokenRegistered struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when there is insufficient payment token balance.
-type DtaInsufficientPaymentTokenBalance struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when an invalid DTA wallet is detected.
-type DtaInvalidDTAWallet struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a CCIP message has failed.
-type DtaMessageFailed struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when native funds have been recovered.
-type DtaNativeFundsRecovered struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a redemption has been requested.
-type DtaRedemptionRequested struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a settlement has failed.
-type DtaSettlementFailed struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when a subscription has been requested.
-type DtaSubscriptionRequested struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when tokens have been withdrawn.
-type DtaTokenWithdrawn struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Emitted when an unauthorized sender attempts to access DTA.
-type DtaUnauthorizedSenderDTA struct {
-	// The timestamp when the event was created
-	CreatedAt *time.Time `json:"createdAt,omitempty" yaml:"createdAt,omitempty" mapstructure:"createdAt,omitempty"`
-
-	// Event corresponds to the JSON schema field "event".
-	Event *DtaEvent `json:"event,omitempty" yaml:"event,omitempty" mapstructure:"event,omitempty"`
-
-	// Metadata corresponds to the JSON schema field "metadata".
-	Metadata *Metadata `json:"metadata,omitempty" yaml:"metadata,omitempty" mapstructure:"metadata,omitempty"`
-
-	// Transaction corresponds to the JSON schema field "transaction".
-	Transaction *Transaction `json:"transaction,omitempty" yaml:"transaction,omitempty" mapstructure:"transaction,omitempty"`
-}
-
-// Additional metadata
 type Metadata struct {
 	// Chain ID
 	ChainId string `json:"chainId" yaml:"chainId" mapstructure:"chainId"`
 
 	// Network name
 	Network *string `json:"network,omitempty" yaml:"network,omitempty" mapstructure:"network,omitempty"`
+
+	// WorkflowEvent corresponds to the JSON schema field "workflowEvent".
+	WorkflowEvent *WorkflowEvent `json:"workflowEvent,omitempty" yaml:"workflowEvent,omitempty" mapstructure:"workflowEvent,omitempty"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -503,19 +194,15 @@ func (j *Metadata) UnmarshalJSON(value []byte) error {
 	return nil
 }
 
-// Transaction information
 type Transaction struct {
-	// Block hash
-	BlockHash string `json:"blockHash" yaml:"blockHash" mapstructure:"blockHash"`
+	// The chain ID for the transaction
+	ChainId string `json:"chainId" yaml:"chainId" mapstructure:"chainId"`
 
-	// Block number
-	BlockNumber string `json:"blockNumber" yaml:"blockNumber" mapstructure:"blockNumber"`
-
-	// Transaction hash
+	// The hash of the transaction
 	Hash string `json:"hash" yaml:"hash" mapstructure:"hash"`
 
-	// Transaction index
-	TransactionIndex string `json:"transactionIndex" yaml:"transactionIndex" mapstructure:"transactionIndex"`
+	// The unix timestamp of the transaction
+	Timestamp int `json:"timestamp" yaml:"timestamp" mapstructure:"timestamp"`
 }
 
 // UnmarshalJSON implements json.Unmarshaler.
@@ -524,17 +211,14 @@ func (j *Transaction) UnmarshalJSON(value []byte) error {
 	if err := json.Unmarshal(value, &raw); err != nil {
 		return err
 	}
-	if _, ok := raw["blockHash"]; raw != nil && !ok {
-		return fmt.Errorf("field blockHash in Transaction: required")
-	}
-	if _, ok := raw["blockNumber"]; raw != nil && !ok {
-		return fmt.Errorf("field blockNumber in Transaction: required")
+	if _, ok := raw["chainId"]; raw != nil && !ok {
+		return fmt.Errorf("field chainId in Transaction: required")
 	}
 	if _, ok := raw["hash"]; raw != nil && !ok {
 		return fmt.Errorf("field hash in Transaction: required")
 	}
-	if _, ok := raw["transactionIndex"]; raw != nil && !ok {
-		return fmt.Errorf("field transactionIndex in Transaction: required")
+	if _, ok := raw["timestamp"]; raw != nil && !ok {
+		return fmt.Errorf("field timestamp in Transaction: required")
 	}
 	type Plain Transaction
 	var plain Plain
@@ -543,4 +227,86 @@ func (j *Transaction) UnmarshalJSON(value []byte) error {
 	}
 	*j = Transaction(plain)
 	return nil
+}
+
+type VerifiableEvent struct {
+	// The timestamp when the event was created
+	CreatedAt time.Time `json:"createdAt" yaml:"createdAt" mapstructure:"createdAt"`
+
+	// Event corresponds to the JSON schema field "event".
+	Event EventInfo `json:"event" yaml:"event" mapstructure:"event"`
+
+	// Metadata corresponds to the JSON schema field "metadata".
+	Metadata Metadata `json:"metadata" yaml:"metadata" mapstructure:"metadata"`
+
+	// Transaction corresponds to the JSON schema field "transaction".
+	Transaction Transaction `json:"transaction" yaml:"transaction" mapstructure:"transaction"`
+}
+
+// UnmarshalJSON implements json.Unmarshaler.
+func (j *VerifiableEvent) UnmarshalJSON(value []byte) error {
+	var raw map[string]interface{}
+	if err := json.Unmarshal(value, &raw); err != nil {
+		return err
+	}
+	if _, ok := raw["createdAt"]; raw != nil && !ok {
+		return fmt.Errorf("field createdAt in VerifiableEvent: required")
+	}
+	if _, ok := raw["event"]; raw != nil && !ok {
+		return fmt.Errorf("field event in VerifiableEvent: required")
+	}
+	if _, ok := raw["metadata"]; raw != nil && !ok {
+		return fmt.Errorf("field metadata in VerifiableEvent: required")
+	}
+	if _, ok := raw["transaction"]; raw != nil && !ok {
+		return fmt.Errorf("field transaction in VerifiableEvent: required")
+	}
+	type Plain VerifiableEvent
+	var plain Plain
+	if err := json.Unmarshal(value, &plain); err != nil {
+		return err
+	}
+	*j = VerifiableEvent(plain)
+	return nil
+}
+
+type WorkflowEvent struct {
+	// A map of attribute key to attribute details
+	Attributes map[string]Attribute `json:"attributes,omitempty" yaml:"attributes,omitempty" mapstructure:"attributes,omitempty"`
+
+	// BusinessEventId corresponds to the JSON schema field "business_event_id".
+	BusinessEventId *string `json:"business_event_id,omitempty" yaml:"business_event_id,omitempty" mapstructure:"business_event_id,omitempty"`
+
+	// Component corresponds to the JSON schema field "component".
+	Component *string `json:"component,omitempty" yaml:"component,omitempty" mapstructure:"component,omitempty"`
+
+	// EventTimestamp corresponds to the JSON schema field "event_timestamp".
+	EventTimestamp *time.Time `json:"event_timestamp,omitempty" yaml:"event_timestamp,omitempty" mapstructure:"event_timestamp,omitempty"`
+
+	// EventTypeLabel corresponds to the JSON schema field "event_type_label".
+	EventTypeLabel *string `json:"event_type_label,omitempty" yaml:"event_type_label,omitempty" mapstructure:"event_type_label,omitempty"`
+
+	// Failed corresponds to the JSON schema field "failed".
+	Failed *bool `json:"failed,omitempty" yaml:"failed,omitempty" mapstructure:"failed,omitempty"`
+
+	// FinalEvent corresponds to the JSON schema field "final_event".
+	FinalEvent *bool `json:"final_event,omitempty" yaml:"final_event,omitempty" mapstructure:"final_event,omitempty"`
+
+	// Id corresponds to the JSON schema field "id".
+	Id *string `json:"id,omitempty" yaml:"id,omitempty" mapstructure:"id,omitempty"`
+
+	// Participant corresponds to the JSON schema field "participant".
+	Participant *string `json:"participant,omitempty" yaml:"participant,omitempty" mapstructure:"participant,omitempty"`
+
+	// ParticipantRole corresponds to the JSON schema field "participant_role".
+	ParticipantRole *string `json:"participant_role,omitempty" yaml:"participant_role,omitempty" mapstructure:"participant_role,omitempty"`
+
+	// ProcessLabels corresponds to the JSON schema field "process_labels".
+	ProcessLabels []string `json:"process_labels,omitempty" yaml:"process_labels,omitempty" mapstructure:"process_labels,omitempty"`
+
+	// RawData corresponds to the JSON schema field "raw_data".
+	RawData *string `json:"raw_data,omitempty" yaml:"raw_data,omitempty" mapstructure:"raw_data,omitempty"`
+
+	// Title corresponds to the JSON schema field "title".
+	Title *string `json:"title,omitempty" yaml:"title,omitempty" mapstructure:"title,omitempty"`
 }
