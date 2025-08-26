@@ -1,0 +1,5 @@
+package: ginserver
+output: ginserver/ginserver.gen.go
+generate:
+  models: true
+  gin-server: true
