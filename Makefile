@@ -12,5 +12,5 @@ generate:
 	abigen --abi services/ccip/abi/IRouterClient.abi.json --pkg routerclient --out services/ccip/gen/routerclient/routerclient.gen.go
 	abigen --abi services/dta/abi/DTAOpenMarketplaceU.abi.json --pkg dtaopenmarketplace --out services/dta/gen/dtaopenmarketplace/dtaopenmarketplace.gen.go
 	abigen --abi services/dta/abi/DTAWalletU.abi.json --pkg dtawallet --out services/dta/gen/dtawallet/dtawallet.gen.go
-	abigen --abi services/accounts/abi/SignatureVerifyingAccount.abi.json --pkg ecdsaaccount --out services/accounts/gen/ecdsaaccount/ecdsasignatureverifyingaccount.gen.go
-	abigen --abi services/accounts/abi/RSASignatureVerifyingAccount.abi.json --pkg rsaaccount --out services/accounts/gen/rsaaccount/rsasignatureverifyingaccount.gen.go
+	abigen --abi services/accounts/abi/AccountFactory.abi.json --pkg accounts --out services/accounts/gen/accounts/accounts.gen.go
+
