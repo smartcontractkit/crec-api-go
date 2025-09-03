@@ -332,26 +332,8 @@ type GetEventsParams struct {
 
 // GetListenersParams defines parameters for GetListeners.
 type GetListenersParams struct {
-	// CreatedLt Filter events created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
-
-	// CreatedLte Filter events created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter events created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter events created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// Limit The number of events to return
+	// Limit The number of listeners to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// StartingAfter Return events starting after this event UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
-
-	// EndingBefore Return events occurring before this event UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
 }
 
 // GetOperationsParams defines parameters for GetOperations.
@@ -1185,105 +1167,9 @@ func NewGetListenersRequest(server string, params *GetListenersParams) (*http.Re
 	if params != nil {
 		queryValues := queryURL.Query()
 
-		if params.CreatedLt != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lt", runtime.ParamLocationQuery, *params.CreatedLt); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedLte != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lte", runtime.ParamLocationQuery, *params.CreatedLte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGt != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gt", runtime.ParamLocationQuery, *params.CreatedGt); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGte != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gte", runtime.ParamLocationQuery, *params.CreatedGte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.StartingAfter != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "starting_after", runtime.ParamLocationQuery, *params.StartingAfter); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.EndingBefore != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ending_before", runtime.ParamLocationQuery, *params.EndingBefore); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

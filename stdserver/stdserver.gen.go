@@ -329,26 +329,8 @@ type GetEventsParams struct {
 
 // GetListenersParams defines parameters for GetListeners.
 type GetListenersParams struct {
-	// CreatedLt Filter events created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
-
-	// CreatedLte Filter events created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter events created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter events created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// Limit The number of events to return
+	// Limit The number of listeners to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// StartingAfter Return events starting after this event UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
-
-	// EndingBefore Return events occurring before this event UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
 }
 
 // GetOperationsParams defines parameters for GetOperations.
@@ -714,59 +696,11 @@ func (siw *ServerInterfaceWrapper) GetListeners(w http.ResponseWriter, r *http.R
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetListenersParams
 
-	// ------------- Optional query parameter "created.lt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lt", r.URL.Query(), &params.CreatedLt)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "created.lt", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "created.lte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lte", r.URL.Query(), &params.CreatedLte)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "created.lte", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "created.gt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gt", r.URL.Query(), &params.CreatedGt)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "created.gt", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "created.gte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gte", r.URL.Query(), &params.CreatedGte)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "created.gte", Err: err})
-		return
-	}
-
 	// ------------- Optional query parameter "limit" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "starting_after" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "starting_after", r.URL.Query(), &params.StartingAfter)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "starting_after", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "ending_before" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "ending_before", r.URL.Query(), &params.EndingBefore)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ending_before", Err: err})
 		return
 	}
 
