@@ -136,6 +136,9 @@ type Event struct {
 	// CreatedAt Timestamp of when the event was created
 	CreatedAt int64 `json:"created_at"`
 
+	// EventHash Deterministic event hash - keccak256(service.name.base64payload)
+	EventHash string `json:"event_hash"`
+
 	// EventId Unique identifier for the event
 	EventId openapi_types.UUID `json:"event_id"`
 

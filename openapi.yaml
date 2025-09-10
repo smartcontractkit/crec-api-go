@@ -619,6 +619,9 @@ components:
           items:
             type: string
             description: Signature of the event
+        event_hash:
+          type: string
+          description: Deterministic event hash - keccak256(service.name.base64payload)
       required:
         - event_id
         - created_at
@@ -631,6 +634,7 @@ components:
         - ocr_context
         - verifiable_event
         - signatures
+        - event_hash
     EventList:
       type: object
       properties:
