@@ -12,3 +12,5 @@ generate:
 	abigen --abi services/ccip/abi/IRouterClient.abi.json --pkg routerclient --out services/ccip/gen/routerclient/routerclient.gen.go
 	abigen --abi services/dta/abi/DTAOpenMarketplaceU.abi.json --pkg dtaopenmarketplace --out services/dta/gen/dtaopenmarketplace/dtaopenmarketplace.gen.go
 	abigen --abi services/dta/abi/DTAWalletU.abi.json --pkg dtawallet --out services/dta/gen/dtawallet/dtawallet.gen.go
+	abigen --abi services/dta/abi/DTARequestManagementU.abi.json --pkg dtarequestmanagement --out services/dta/gen/dtarequestmanagement/dtarequestmanagement.gen.go
+	abigen --abi services/dta/abi/DTARequestSettlement.abi.json --pkg dtarequestsettlement --out services/dta/gen/dtarequestsettlement/dtarequestsettlement.gen.go
