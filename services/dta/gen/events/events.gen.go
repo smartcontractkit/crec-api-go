@@ -93,14 +93,20 @@ type Dta struct {
 	// Emitted when there is insufficient payment token balance.
 	InsufficientPaymentTokenBalance *VerifiableEvent `json:"InsufficientPaymentTokenBalance,omitempty" yaml:"InsufficientPaymentTokenBalance,omitempty" mapstructure:"InsufficientPaymentTokenBalance,omitempty"`
 
-	// Emitted when an invalid DTA wallet is detected.
-	InvalidDTAWallet *VerifiableEvent `json:"InvalidDTAWallet,omitempty" yaml:"InvalidDTAWallet,omitempty" mapstructure:"InvalidDTAWallet,omitempty"`
+	// Emitted when an invalid DTARequestSettlement contract is detected.
+	InvalidDTARequestSettlement *VerifiableEvent `json:"InvalidDTARequestSettlement,omitempty" yaml:"InvalidDTARequestSettlement,omitempty" mapstructure:"InvalidDTARequestSettlement,omitempty"`
+
+	// Emitted when an invalid subscription cross chain payment is detected.
+	InvalidSubscriptionCrossChainPayment *VerifiableEvent `json:"InvalidSubscriptionCrossChainPayment,omitempty" yaml:"InvalidSubscriptionCrossChainPayment,omitempty" mapstructure:"InvalidSubscriptionCrossChainPayment,omitempty"`
 
 	// Emitted when a CCIP message has failed.
 	MessageFailed *VerifiableEvent `json:"MessageFailed,omitempty" yaml:"MessageFailed,omitempty" mapstructure:"MessageFailed,omitempty"`
 
 	// Emitted when native funds have been recovered.
 	NativeFundsRecovered *VerifiableEvent `json:"NativeFundsRecovered,omitempty" yaml:"NativeFundsRecovered,omitempty" mapstructure:"NativeFundsRecovered,omitempty"`
+
+	// Emitted when the ownership has been transferred.
+	OwnershipTransferred *VerifiableEvent `json:"OwnershipTransferred,omitempty" yaml:"OwnershipTransferred,omitempty" mapstructure:"OwnershipTransferred,omitempty"`
 
 	// Emitted when a redemption has been requested.
 	RedemptionRequested *VerifiableEvent `json:"RedemptionRequested,omitempty" yaml:"RedemptionRequested,omitempty" mapstructure:"RedemptionRequested,omitempty"`
