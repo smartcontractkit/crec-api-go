@@ -420,6 +420,9 @@ components:
     CreateAccount:
       type: object
       properties:
+        name:
+          type: string
+          description: Name of the account
         address:
           type: string
           description: EVM account address (42-character hex string starting with 0x)
@@ -437,6 +440,9 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the account
+        name:
+          type: string
+          description: Name of the account
         address:
           type: string
           description: EVM account address

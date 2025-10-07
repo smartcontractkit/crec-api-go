@@ -34,6 +34,9 @@ type Account struct {
 
 	// ChainId The id that identifies the chain where the account exists
 	ChainId string `json:"chain_id"`
+
+	// Name Name of the account
+	Name *string `json:"name,omitempty"`
 }
 
 // AccountList defines model for AccountList.
@@ -63,6 +66,9 @@ type CreateAccount struct {
 
 	// ChainId The id that identifies the chain where the account exists
 	ChainId string `json:"chain_id"`
+
+	// Name Name of the account
+	Name *string `json:"name,omitempty"`
 }
 
 // CreateEvent defines model for CreateEvent.
