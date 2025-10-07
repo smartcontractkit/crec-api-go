@@ -36,6 +36,9 @@ type Account struct {
 
 	// ChainId The id that identifies the chain where the account exists
 	ChainId string `json:"chain_id"`
+
+	// Name of the account
+	Name *string `json:"name,omitempty"`
 }
 
 // AccountList defines model for AccountList.
@@ -65,6 +68,9 @@ type CreateAccount struct {
 
 	// ChainId The id that identifies the chain where the account exists
 	ChainId string `json:"chain_id"`
+
+	// Name Name of the account
+	Name *string `json:"name,omitempty"`
 }
 
 // CreateEvent defines model for CreateEvent.
@@ -217,6 +223,9 @@ type Operation struct {
 
 	// AccountId Identifier of the account performing the operation
 	AccountId openapi_types.UUID `json:"account_id"`
+
+	// AccountName Name of the account performing the operation
+	AccountName *string `json:"account_name,omitempty"`
 
 	// AccountOperationId Unique account operation identifier
 	AccountOperationId string `json:"account_operation_id"`
