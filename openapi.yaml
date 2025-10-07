@@ -690,9 +690,6 @@ components:
           type: string
           format: uuid
           description: Identifier of the account performing the operation
-        account_name:
-          type: string
-          description: Name of the account performing the operation
         created_at:
           type: integer
           format: int64
