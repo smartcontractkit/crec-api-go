@@ -374,6 +374,9 @@ type GetOperationsParams struct {
 	// CreatedGte Filter operations created at or after this timestamp
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
 
+	// AccountName Filter operations by account name (partial match)
+	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
+
 	// Limit The number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -935,6 +938,14 @@ func (siw *ServerInterfaceWrapper) GetOperations(w http.ResponseWriter, r *http.
 	err = runtime.BindQueryParameter("form", true, false, "created.gte", r.URL.Query(), &params.CreatedGte)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "created.gte", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "account_name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "account_name", r.URL.Query(), &params.AccountName)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "account_name", Err: err})
 		return
 	}
 
