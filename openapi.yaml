@@ -342,6 +342,11 @@ paths:
             type: integer
             format: int64
         - in: query
+          name: account_name
+          description: Filter operations by account name (partial match)
+          schema:
+            type: string
+        - in: query
           name: limit
           description: The number of operations to return
           schema:
