@@ -1,6 +1,6 @@
-# CVN-API :: Golang Bindings
+# CREc-API :: Golang Bindings
 
-To regenerate the Golang bindings for the CVN-API, run:
+To regenerate the Golang bindings for the CREc-API, run:
 
 ```bash
 make generate
@@ -11,6 +11,7 @@ make generate
 1. Copy ABI file into `services/{service}/abi`
 
 2. Add `abigen` command to `Makefile`
+
 ```
 abigen --abi services/{service}/abi/{contract}.abi.json --pkg {unique_package_name} --out services/{service}/gen/{unique_package_name}/{unique_package_name}.gen.go
 ## be sure to create the new directory under the service's `gen` directory
