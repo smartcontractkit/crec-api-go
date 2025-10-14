@@ -285,6 +285,12 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
+// UpdateAccount defines model for UpdateAccount.
+type UpdateAccount struct {
+	// Name New name for the account
+	Name string `json:"name"`
+}
+
 // UpdateOperationStatus defines model for UpdateOperationStatus.
 type UpdateOperationStatus struct {
 	// AccountAddress Onchain account address performing the operation
@@ -420,6 +426,9 @@ type GetOperationsParams struct {
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
 type PostAccountsJSONRequestBody = CreateAccount
 
+// PutAccountsAccountIdJSONRequestBody defines body for PutAccountsAccountId for application/json ContentType.
+type PutAccountsAccountIdJSONRequestBody = UpdateAccount
+
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = CreateEvent
 
@@ -516,6 +525,11 @@ type ClientInterface interface {
 	// GetAccountsAccountId request
 	GetAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PutAccountsAccountIdWithBody request with any body
+	PutAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetEvents request
 	GetEvents(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -599,6 +613,30 @@ func (c *Client) PostAccounts(ctx context.Context, body PostAccountsJSONRequestB
 
 func (c *Client) GetAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAccountsAccountIdRequest(c.Server, accountId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAccountsAccountIdRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutAccountsAccountIdRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -968,6 +1006,53 @@ func NewGetAccountsAccountIdRequest(server string, accountId openapi_types.UUID)
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewPutAccountsAccountIdRequest calls the generic PutAccountsAccountId builder with application/json body
+func NewPutAccountsAccountIdRequest(server string, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutAccountsAccountIdRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewPutAccountsAccountIdRequestWithBody generates requests for PutAccountsAccountId with any type of body
+func NewPutAccountsAccountIdRequestWithBody(server string, accountId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "account_id", runtime.ParamLocationPath, accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -1928,6 +2013,11 @@ type ClientWithResponsesInterface interface {
 	// GetAccountsAccountIdWithResponse request
 	GetAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetAccountsAccountIdResponse, error)
 
+	// PutAccountsAccountIdWithBodyWithResponse request with any body
+	PutAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error)
+
+	PutAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error)
+
 	// GetEventsWithResponse request
 	GetEventsWithResponse(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*GetEventsResponse, error)
 
@@ -2038,6 +2128,31 @@ func (r GetAccountsAccountIdResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetAccountsAccountIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutAccountsAccountIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Account
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PutAccountsAccountIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutAccountsAccountIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2341,6 +2456,23 @@ func (c *ClientWithResponses) GetAccountsAccountIdWithResponse(ctx context.Conte
 	return ParseGetAccountsAccountIdResponse(rsp)
 }
 
+// PutAccountsAccountIdWithBodyWithResponse request with arbitrary body returning *PutAccountsAccountIdResponse
+func (c *ClientWithResponses) PutAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error) {
+	rsp, err := c.PutAccountsAccountIdWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAccountsAccountIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error) {
+	rsp, err := c.PutAccountsAccountId(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutAccountsAccountIdResponse(rsp)
+}
+
 // GetEventsWithResponse request returning *GetEventsResponse
 func (c *ClientWithResponses) GetEventsWithResponse(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*GetEventsResponse, error) {
 	rsp, err := c.GetEvents(ctx, params, reqEditors...)
@@ -2574,6 +2706,53 @@ func ParseGetAccountsAccountIdResponse(rsp *http.Response) (*GetAccountsAccountI
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutAccountsAccountIdResponse parses an HTTP response from a PutAccountsAccountIdWithResponse call
+func ParsePutAccountsAccountIdResponse(rsp *http.Response) (*PutAccountsAccountIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutAccountsAccountIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Account
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError

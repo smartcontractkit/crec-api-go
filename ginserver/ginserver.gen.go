@@ -280,6 +280,12 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
+// UpdateAccount defines model for UpdateAccount.
+type UpdateAccount struct {
+	// Name New name for the account
+	Name string `json:"name"`
+}
+
 // UpdateOperationStatus defines model for UpdateOperationStatus.
 type UpdateOperationStatus struct {
 	// AccountAddress Onchain account address performing the operation
@@ -415,6 +421,9 @@ type GetOperationsParams struct {
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
 type PostAccountsJSONRequestBody = CreateAccount
 
+// PutAccountsAccountIdJSONRequestBody defines body for PutAccountsAccountId for application/json ContentType.
+type PutAccountsAccountIdJSONRequestBody = UpdateAccount
+
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = CreateEvent
 
@@ -438,6 +447,9 @@ type ServerInterface interface {
 	// Retrieves a specific account by ID.
 	// (GET /accounts/{account_id})
 	GetAccountsAccountId(c *gin.Context, accountId openapi_types.UUID)
+	// Updates an account name.
+	// (PUT /accounts/{account_id})
+	PutAccountsAccountId(c *gin.Context, accountId openapi_types.UUID)
 	// Retrieves events.
 	// (GET /events)
 	GetEvents(c *gin.Context, params GetEventsParams)
@@ -576,6 +588,32 @@ func (siw *ServerInterfaceWrapper) GetAccountsAccountId(c *gin.Context) {
 	}
 
 	siw.Handler.GetAccountsAccountId(c, accountId)
+}
+
+// PutAccountsAccountId operation middleware
+func (siw *ServerInterfaceWrapper) PutAccountsAccountId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "account_id" -------------
+	var accountId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "account_id", c.Param("account_id"), &accountId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter account_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutAccountsAccountId(c, accountId)
 }
 
 // GetEvents operation middleware
@@ -1087,6 +1125,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/accounts", wrapper.GetAccounts)
 	router.POST(options.BaseURL+"/accounts", wrapper.PostAccounts)
 	router.GET(options.BaseURL+"/accounts/:account_id", wrapper.GetAccountsAccountId)
+	router.PUT(options.BaseURL+"/accounts/:account_id", wrapper.PutAccountsAccountId)
 	router.GET(options.BaseURL+"/events", wrapper.GetEvents)
 	router.POST(options.BaseURL+"/events", wrapper.PostEvents)
 	router.GET(options.BaseURL+"/events/:event_id", wrapper.GetEventsEventId)

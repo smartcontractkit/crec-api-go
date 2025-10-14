@@ -333,6 +333,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+    put:
+      summary: Updates an account name.
+      parameters:
+        - in: path
+          name: account_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccount"
+      responses:
+        "200":
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
   /operations:
     post:
       summary: Sends an onchain transaction.
@@ -483,6 +523,14 @@ components:
       required:
         - address
         - chain_id
+    UpdateAccount:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New name for the account
+      required:
+        - name
     Account:
       type: object
       properties:
