@@ -282,6 +282,12 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
+// UpdateAccount defines model for UpdateAccount.
+type UpdateAccount struct {
+	// Name New name for the account
+	Name string `json:"name"`
+}
+
 // UpdateOperationStatus defines model for UpdateOperationStatus.
 type UpdateOperationStatus struct {
 	// AccountAddress Onchain account address performing the operation
@@ -302,6 +308,12 @@ type UpdateOperationStatus struct {
 
 // GetAccountsParams defines parameters for GetAccounts.
 type GetAccountsParams struct {
+	// Name Filter accounts by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// ChainId Filter accounts by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
 	// Limit Maximum number of accounts to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -313,6 +325,9 @@ type GetAccountsParams struct {
 type GetEventsParams struct {
 	// ListenerId Return only events emitted by this listener UUID
 	ListenerId *openapi_types.UUID `form:"listener_id,omitempty" json:"listener_id,omitempty"`
+
+	// ChainId Filter events by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
@@ -338,6 +353,18 @@ type GetEventsParams struct {
 
 // GetListenersParams defines parameters for GetListeners.
 type GetListenersParams struct {
+	// ChainId Filter listeners by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Status Filter listeners by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// Name Filter listeners by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// Service Filter listeners by service
+	Service *string `form:"service,omitempty" json:"service,omitempty"`
+
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
 
@@ -377,6 +404,12 @@ type GetOperationsParams struct {
 	// AccountName Filter operations by account name (partial match)
 	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
 
+	// Status Filter operations by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainId Filter operations by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
 	// Limit The number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -389,6 +422,9 @@ type GetOperationsParams struct {
 
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
 type PostAccountsJSONRequestBody = CreateAccount
+
+// PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
+type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = CreateEvent
@@ -413,6 +449,9 @@ type ServerInterface interface {
 	// Retrieves a specific account by ID.
 	// (GET /accounts/{account_id})
 	GetAccountsAccountId(w http.ResponseWriter, r *http.Request, accountId openapi_types.UUID)
+	// Updates an account name.
+	// (PATCH /accounts/{account_id})
+	PatchAccountsAccountId(w http.ResponseWriter, r *http.Request, accountId openapi_types.UUID)
 	// Retrieves events.
 	// (GET /events)
 	GetEvents(w http.ResponseWriter, r *http.Request, params GetEventsParams)
@@ -473,6 +512,22 @@ func (siw *ServerInterfaceWrapper) GetAccounts(w http.ResponseWriter, r *http.Re
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetAccountsParams
+
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", r.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_id", Err: err})
+		return
+	}
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -552,6 +607,37 @@ func (siw *ServerInterfaceWrapper) GetAccountsAccountId(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
+// PatchAccountsAccountId operation middleware
+func (siw *ServerInterfaceWrapper) PatchAccountsAccountId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "account_id" -------------
+	var accountId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "account_id", r.PathValue("account_id"), &accountId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "account_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchAccountsAccountId(w, r, accountId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetEvents operation middleware
 func (siw *ServerInterfaceWrapper) GetEvents(w http.ResponseWriter, r *http.Request) {
 
@@ -571,6 +657,14 @@ func (siw *ServerInterfaceWrapper) GetEvents(w http.ResponseWriter, r *http.Requ
 	err = runtime.BindQueryParameter("form", true, false, "listener_id", r.URL.Query(), &params.ListenerId)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "listener_id", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", r.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_id", Err: err})
 		return
 	}
 
@@ -725,6 +819,38 @@ func (siw *ServerInterfaceWrapper) GetListeners(w http.ResponseWriter, r *http.R
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetListenersParams
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", r.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_id", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "service" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "service", r.URL.Query(), &params.Service)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "service", Err: err})
+		return
+	}
 
 	// ------------- Optional query parameter "created.lt" -------------
 
@@ -949,6 +1075,22 @@ func (siw *ServerInterfaceWrapper) GetOperations(w http.ResponseWriter, r *http.
 		return
 	}
 
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", r.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_id", Err: err})
+		return
+	}
+
 	// ------------- Optional query parameter "limit" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
@@ -1158,6 +1300,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/accounts", wrapper.GetAccounts)
 	m.HandleFunc("POST "+options.BaseURL+"/accounts", wrapper.PostAccounts)
 	m.HandleFunc("GET "+options.BaseURL+"/accounts/{account_id}", wrapper.GetAccountsAccountId)
+	m.HandleFunc("PATCH "+options.BaseURL+"/accounts/{account_id}", wrapper.PatchAccountsAccountId)
 	m.HandleFunc("GET "+options.BaseURL+"/events", wrapper.GetEvents)
 	m.HandleFunc("POST "+options.BaseURL+"/events", wrapper.PostEvents)
 	m.HandleFunc("GET "+options.BaseURL+"/events/{event_id}", wrapper.GetEventsEventId)
