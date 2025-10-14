@@ -305,6 +305,12 @@ type UpdateOperationStatus struct {
 
 // GetAccountsParams defines parameters for GetAccounts.
 type GetAccountsParams struct {
+	// Name Filter accounts by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// ChainId Filter accounts by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
 	// Limit Maximum number of accounts to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -316,6 +322,9 @@ type GetAccountsParams struct {
 type GetEventsParams struct {
 	// ListenerId Return only events emitted by this listener UUID
 	ListenerId *openapi_types.UUID `form:"listener_id,omitempty" json:"listener_id,omitempty"`
+
+	// ChainId Filter events by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
@@ -341,6 +350,18 @@ type GetEventsParams struct {
 
 // GetListenersParams defines parameters for GetListeners.
 type GetListenersParams struct {
+	// ChainId Filter listeners by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Status Filter listeners by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// Name Filter listeners by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// Service Filter listeners by service
+	Service *string `form:"service,omitempty" json:"service,omitempty"`
+
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
 
@@ -379,6 +400,12 @@ type GetOperationsParams struct {
 
 	// AccountName Filter operations by account name (partial match)
 	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
+
+	// Status Filter operations by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainId Filter operations by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
 	// Limit The number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -796,6 +823,38 @@ func NewGetAccountsRequest(server string, params *GetAccountsParams) (*http.Requ
 	if params != nil {
 		queryValues := queryURL.Query()
 
+		if params.Name != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
@@ -938,6 +997,22 @@ func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request,
 		if params.ListenerId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "listener_id", runtime.ParamLocationQuery, *params.ListenerId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1196,6 +1271,70 @@ func NewGetListenersRequest(server string, params *GetListenersParams) (*http.Re
 
 	if params != nil {
 		queryValues := queryURL.Query()
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Name != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Service != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "service", runtime.ParamLocationQuery, *params.Service); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
 
 		if params.CreatedLt != nil {
 
@@ -1557,6 +1696,38 @@ func NewGetOperationsRequest(server string, params *GetOperationsParams) (*http.
 		if params.AccountName != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "account_name", runtime.ParamLocationQuery, *params.AccountName); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

@@ -300,6 +300,12 @@ type UpdateOperationStatus struct {
 
 // GetAccountsParams defines parameters for GetAccounts.
 type GetAccountsParams struct {
+	// Name Filter accounts by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// ChainId Filter accounts by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
 	// Limit Maximum number of accounts to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -311,6 +317,9 @@ type GetAccountsParams struct {
 type GetEventsParams struct {
 	// ListenerId Return only events emitted by this listener UUID
 	ListenerId *openapi_types.UUID `form:"listener_id,omitempty" json:"listener_id,omitempty"`
+
+	// ChainId Filter events by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
@@ -336,6 +345,18 @@ type GetEventsParams struct {
 
 // GetListenersParams defines parameters for GetListeners.
 type GetListenersParams struct {
+	// ChainId Filter listeners by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Status Filter listeners by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// Name Filter listeners by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// Service Filter listeners by service
+	Service *string `form:"service,omitempty" json:"service,omitempty"`
+
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
 
@@ -374,6 +395,12 @@ type GetOperationsParams struct {
 
 	// AccountName Filter operations by account name (partial match)
 	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
+
+	// Status Filter operations by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainId Filter operations by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
 	// Limit The number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -468,6 +495,22 @@ func (siw *ServerInterfaceWrapper) GetAccounts(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetAccountsParams
 
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "limit" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
@@ -550,6 +593,14 @@ func (siw *ServerInterfaceWrapper) GetEvents(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "listener_id", c.Request.URL.Query(), &params.ListenerId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter listener_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -684,6 +735,38 @@ func (siw *ServerInterfaceWrapper) GetListeners(c *gin.Context) {
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetListenersParams
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "service" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "service", c.Request.URL.Query(), &params.Service)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
+		return
+	}
 
 	// ------------- Optional query parameter "created.lt" -------------
 
@@ -880,6 +963,22 @@ func (siw *ServerInterfaceWrapper) GetOperations(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "account_name", c.Request.URL.Query(), &params.AccountName)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter account_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
 		return
 	}
 

@@ -34,6 +34,26 @@ paths:
       summary: Retrieves event listeners.
       parameters:
         - in: query
+          name: chain_id
+          description: Filter listeners by chain ID
+          schema:
+            type: string
+        - in: query
+          name: status
+          description: Filter listeners by status
+          schema:
+            type: string
+        - in: query
+          name: name
+          description: Filter listeners by name
+          schema:
+            type: string
+        - in: query
+          name: service
+          description: Filter listeners by service
+          schema:
+            type: string
+        - in: query
           name: created.lt
           description: Filter events created before this timestamp
           schema:
@@ -140,6 +160,11 @@ paths:
             type: string
             format: uuid
         - in: query
+          name: chain_id
+          description: Filter events by chain ID
+          schema:
+            type: string
+        - in: query
           name: created.lt
           description: Filter events created before this timestamp
           schema:
@@ -241,6 +266,16 @@ paths:
     get:
       summary: Retrieves accounts for the organization.
       parameters:
+        - in: query
+          name: name
+          description: Filter accounts by name
+          schema:
+            type: string
+        - in: query
+          name: chain_id
+          description: Filter accounts by chain ID
+          schema:
+            type: string
         - in: query
           name: limit
           description: Maximum number of accounts to return
@@ -344,6 +379,16 @@ paths:
         - in: query
           name: account_name
           description: Filter operations by account name (partial match)
+          schema:
+            type: string
+        - in: query
+          name: status
+          description: Filter operations by status
+          schema:
+            type: string
+        - in: query
+          name: chain_id
+          description: Filter operations by chain ID
           schema:
             type: string
         - in: query
