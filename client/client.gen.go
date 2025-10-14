@@ -377,6 +377,9 @@ type GetOperationsParams struct {
 	// CreatedGte Filter operations created at or after this timestamp
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
 
+	// AccountName Filter operations by account name (partial match)
+	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
+
 	// Limit The number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -1538,6 +1541,22 @@ func NewGetOperationsRequest(server string, params *GetOperationsParams) (*http.
 		if params.CreatedGte != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gte", runtime.ParamLocationQuery, *params.CreatedGte); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.AccountName != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "account_name", runtime.ParamLocationQuery, *params.AccountName); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
