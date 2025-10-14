@@ -333,7 +333,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-    put:
+    patch:
       summary: Updates an account name.
       parameters:
         - in: path

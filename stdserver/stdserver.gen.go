@@ -423,8 +423,8 @@ type GetOperationsParams struct {
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
 type PostAccountsJSONRequestBody = CreateAccount
 
-// PutAccountsAccountIdJSONRequestBody defines body for PutAccountsAccountId for application/json ContentType.
-type PutAccountsAccountIdJSONRequestBody = UpdateAccount
+// PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
+type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = CreateEvent
@@ -450,8 +450,8 @@ type ServerInterface interface {
 	// (GET /accounts/{account_id})
 	GetAccountsAccountId(w http.ResponseWriter, r *http.Request, accountId openapi_types.UUID)
 	// Updates an account name.
-	// (PUT /accounts/{account_id})
-	PutAccountsAccountId(w http.ResponseWriter, r *http.Request, accountId openapi_types.UUID)
+	// (PATCH /accounts/{account_id})
+	PatchAccountsAccountId(w http.ResponseWriter, r *http.Request, accountId openapi_types.UUID)
 	// Retrieves events.
 	// (GET /events)
 	GetEvents(w http.ResponseWriter, r *http.Request, params GetEventsParams)
@@ -607,8 +607,8 @@ func (siw *ServerInterfaceWrapper) GetAccountsAccountId(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
-// PutAccountsAccountId operation middleware
-func (siw *ServerInterfaceWrapper) PutAccountsAccountId(w http.ResponseWriter, r *http.Request) {
+// PatchAccountsAccountId operation middleware
+func (siw *ServerInterfaceWrapper) PatchAccountsAccountId(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -628,7 +628,7 @@ func (siw *ServerInterfaceWrapper) PutAccountsAccountId(w http.ResponseWriter, r
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutAccountsAccountId(w, r, accountId)
+		siw.Handler.PatchAccountsAccountId(w, r, accountId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1300,7 +1300,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/accounts", wrapper.GetAccounts)
 	m.HandleFunc("POST "+options.BaseURL+"/accounts", wrapper.PostAccounts)
 	m.HandleFunc("GET "+options.BaseURL+"/accounts/{account_id}", wrapper.GetAccountsAccountId)
-	m.HandleFunc("PUT "+options.BaseURL+"/accounts/{account_id}", wrapper.PutAccountsAccountId)
+	m.HandleFunc("PATCH "+options.BaseURL+"/accounts/{account_id}", wrapper.PatchAccountsAccountId)
 	m.HandleFunc("GET "+options.BaseURL+"/events", wrapper.GetEvents)
 	m.HandleFunc("POST "+options.BaseURL+"/events", wrapper.PostEvents)
 	m.HandleFunc("GET "+options.BaseURL+"/events/{event_id}", wrapper.GetEventsEventId)

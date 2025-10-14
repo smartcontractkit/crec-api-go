@@ -426,8 +426,8 @@ type GetOperationsParams struct {
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
 type PostAccountsJSONRequestBody = CreateAccount
 
-// PutAccountsAccountIdJSONRequestBody defines body for PutAccountsAccountId for application/json ContentType.
-type PutAccountsAccountIdJSONRequestBody = UpdateAccount
+// PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
+type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = CreateEvent
@@ -525,10 +525,10 @@ type ClientInterface interface {
 	// GetAccountsAccountId request
 	GetAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PutAccountsAccountIdWithBody request with any body
-	PutAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// PatchAccountsAccountIdWithBody request with any body
+	PatchAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PutAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	PatchAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetEvents request
 	GetEvents(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -623,8 +623,8 @@ func (c *Client) GetAccountsAccountId(ctx context.Context, accountId openapi_typ
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutAccountsAccountIdRequestWithBody(c.Server, accountId, contentType, body)
+func (c *Client) PatchAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchAccountsAccountIdRequestWithBody(c.Server, accountId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -635,8 +635,8 @@ func (c *Client) PutAccountsAccountIdWithBody(ctx context.Context, accountId ope
 	return c.Client.Do(req)
 }
 
-func (c *Client) PutAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPutAccountsAccountIdRequest(c.Server, accountId, body)
+func (c *Client) PatchAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchAccountsAccountIdRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1010,19 +1010,19 @@ func NewGetAccountsAccountIdRequest(server string, accountId openapi_types.UUID)
 	return req, nil
 }
 
-// NewPutAccountsAccountIdRequest calls the generic PutAccountsAccountId builder with application/json body
-func NewPutAccountsAccountIdRequest(server string, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody) (*http.Request, error) {
+// NewPatchAccountsAccountIdRequest calls the generic PatchAccountsAccountId builder with application/json body
+func NewPatchAccountsAccountIdRequest(server string, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPutAccountsAccountIdRequestWithBody(server, accountId, "application/json", bodyReader)
+	return NewPatchAccountsAccountIdRequestWithBody(server, accountId, "application/json", bodyReader)
 }
 
-// NewPutAccountsAccountIdRequestWithBody generates requests for PutAccountsAccountId with any type of body
-func NewPutAccountsAccountIdRequestWithBody(server string, accountId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+// NewPatchAccountsAccountIdRequestWithBody generates requests for PatchAccountsAccountId with any type of body
+func NewPatchAccountsAccountIdRequestWithBody(server string, accountId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -1047,7 +1047,7 @@ func NewPutAccountsAccountIdRequestWithBody(server string, accountId openapi_typ
 		return nil, err
 	}
 
-	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -2013,10 +2013,10 @@ type ClientWithResponsesInterface interface {
 	// GetAccountsAccountIdWithResponse request
 	GetAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetAccountsAccountIdResponse, error)
 
-	// PutAccountsAccountIdWithBodyWithResponse request with any body
-	PutAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error)
+	// PatchAccountsAccountIdWithBodyWithResponse request with any body
+	PatchAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error)
 
-	PutAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error)
+	PatchAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error)
 
 	// GetEventsWithResponse request
 	GetEventsWithResponse(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*GetEventsResponse, error)
@@ -2134,7 +2134,7 @@ func (r GetAccountsAccountIdResponse) StatusCode() int {
 	return 0
 }
 
-type PutAccountsAccountIdResponse struct {
+type PatchAccountsAccountIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Account
@@ -2144,7 +2144,7 @@ type PutAccountsAccountIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PutAccountsAccountIdResponse) Status() string {
+func (r PatchAccountsAccountIdResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2152,7 +2152,7 @@ func (r PutAccountsAccountIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PutAccountsAccountIdResponse) StatusCode() int {
+func (r PatchAccountsAccountIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2456,21 +2456,21 @@ func (c *ClientWithResponses) GetAccountsAccountIdWithResponse(ctx context.Conte
 	return ParseGetAccountsAccountIdResponse(rsp)
 }
 
-// PutAccountsAccountIdWithBodyWithResponse request with arbitrary body returning *PutAccountsAccountIdResponse
-func (c *ClientWithResponses) PutAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error) {
-	rsp, err := c.PutAccountsAccountIdWithBody(ctx, accountId, contentType, body, reqEditors...)
+// PatchAccountsAccountIdWithBodyWithResponse request with arbitrary body returning *PatchAccountsAccountIdResponse
+func (c *ClientWithResponses) PatchAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error) {
+	rsp, err := c.PatchAccountsAccountIdWithBody(ctx, accountId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutAccountsAccountIdResponse(rsp)
+	return ParsePatchAccountsAccountIdResponse(rsp)
 }
 
-func (c *ClientWithResponses) PutAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PutAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutAccountsAccountIdResponse, error) {
-	rsp, err := c.PutAccountsAccountId(ctx, accountId, body, reqEditors...)
+func (c *ClientWithResponses) PatchAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error) {
+	rsp, err := c.PatchAccountsAccountId(ctx, accountId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePutAccountsAccountIdResponse(rsp)
+	return ParsePatchAccountsAccountIdResponse(rsp)
 }
 
 // GetEventsWithResponse request returning *GetEventsResponse
@@ -2726,15 +2726,15 @@ func ParseGetAccountsAccountIdResponse(rsp *http.Response) (*GetAccountsAccountI
 	return response, nil
 }
 
-// ParsePutAccountsAccountIdResponse parses an HTTP response from a PutAccountsAccountIdWithResponse call
-func ParsePutAccountsAccountIdResponse(rsp *http.Response) (*PutAccountsAccountIdResponse, error) {
+// ParsePatchAccountsAccountIdResponse parses an HTTP response from a PatchAccountsAccountIdWithResponse call
+func ParsePatchAccountsAccountIdResponse(rsp *http.Response) (*PatchAccountsAccountIdResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PutAccountsAccountIdResponse{
+	response := &PatchAccountsAccountIdResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
