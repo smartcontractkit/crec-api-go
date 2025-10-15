@@ -1,6 +1,6 @@
-# CREc-API :: Golang Bindings
+# CREC-API :: Golang Bindings
 
-To regenerate the Golang bindings for the CREc-API, run:
+To regenerate the Golang bindings for the CREC-API, run:
 
 ```bash
 make generate
