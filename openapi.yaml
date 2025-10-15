@@ -210,22 +210,22 @@ paths:
         "404":
           description: Event not found
 
-  /wallets:
+  /accounts:
     post:
-      summary: Creates a new wallet.
+      summary: Creates a new account.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateWallet"
+              $ref: "#/components/schemas/CreateAccount"
       responses:
         "201":
-          description: Wallet created successfully
+          description: Account created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Wallet"
+                $ref: "#/components/schemas/Account"
         "400":
           description: Invalid request data
           content:
@@ -239,11 +239,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     get:
-      summary: Retrieves wallets for the organization.
+      summary: Retrieves accounts for the organization.
       parameters:
         - in: query
           name: limit
-          description: Maximum number of wallets to return
+          description: Maximum number of accounts to return
           schema:
             type: integer
             minimum: 1
@@ -251,7 +251,7 @@ paths:
             default: 50
         - in: query
           name: offset
-          description: Number of wallets to skip for pagination
+          description: Number of accounts to skip for pagination
           schema:
             type: integer
             minimum: 0
@@ -262,32 +262,32 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/WalletList"
+                $ref: "#/components/schemas/AccountList"
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-  /wallets/{wallet_id}:
+  /accounts/{account_id}:
     get:
-      summary: Retrieves a specific wallet by ID.
+      summary: Retrieves a specific account by ID.
       parameters:
         - in: path
-          name: wallet_id
+          name: account_id
           required: true
           schema:
             type: string
             format: uuid
       responses:
         "200":
-          description: Wallet found
+          description: Account found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Wallet"
+                $ref: "#/components/schemas/Account"
         "404":
-          description: Wallet not found
+          description: Account not found
           content:
             application/json:
               schema:
@@ -342,8 +342,8 @@ paths:
             type: integer
             format: int64
         - in: query
-          name: wallet_name
-          description: Filter operations by wallet name (partial match)
+          name: account_name
+          description: Filter operations by account name (partial match)
           schema:
             type: string
         - in: query
@@ -422,52 +422,52 @@ components:
           example: "ok"
       required:
         - status
-    CreateWallet:
+    CreateAccount:
       type: object
       properties:
         name:
           type: string
-          description: Name of the wallet
+          description: Name of the account
         address:
           type: string
-          description: EVM wallet address (42-character hex string starting with 0x)
+          description: EVM account address (42-character hex string starting with 0x)
           pattern: "^0x[a-fA-F0-9]{40}$"
         chain_id:
           type: string
-          description: The id that identifies the chain where the wallet exists
+          description: The id that identifies the chain where the account exists
       required:
         - address
         - chain_id
-    Wallet:
+    Account:
       type: object
       properties:
-        wallet_id:
+        account_id:
           type: string
           format: uuid
-          description: Unique identifier for the wallet
+          description: Unique identifier for the account
         name:
           type: string
-          description: Name of the wallet
+          description: Name of the account
         address:
           type: string
-          description: EVM wallet address
+          description: EVM account address
         chain_id:
           type: string
-          description: The id that identifies the chain where the wallet exists
+          description: The id that identifies the chain where the account exists
       required:
-        - wallet_id
+        - account_id
         - address
         - chain_id
-    WalletList:
+    AccountList:
       type: object
       properties:
         data:
           type: array
           items:
-            $ref: "#/components/schemas/Wallet"
+            $ref: "#/components/schemas/Account"
         has_more:
           type: boolean
-          description: True if there are more wallets to fetch
+          description: True if there are more accounts to fetch
       required:
         - data
         - has_more
@@ -662,15 +662,15 @@ components:
     CreateOperation:
       type: object
       properties:
-        wallet_operation_id:
+        account_operation_id:
           type: string
-          description: Unique wallet operation identifier
+          description: Unique account operation identifier
         chain_id:
           type: string
-          description: The id that identifies the chain where the wallet performing the operation lives
-        wallet_address:
+          description: The id that identifies the chain where the account performing the operation lives
+        account_address:
           type: string
-          description: Onchain wallet address performing the operation
+          description: Onchain account address performing the operation
         transactions:
           type: array
           items:
@@ -679,9 +679,9 @@ components:
           type: string
           description: EIP-712 signature of the operation
       required:
-        - wallet_operation_id
+        - account_operation_id
         - chain_id
-        - wallet_address
+        - account_address
         - transactions
         - signature
     Operation:
@@ -691,10 +691,10 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the operation
-        wallet_id:
+        account_id:
           type: string
           format: uuid
-          description: Identifier of the wallet performing the operation
+          description: Identifier of the account performing the operation
         created_at:
           type: integer
           format: int64
@@ -703,21 +703,21 @@ components:
           type: integer
           format: int64
           description: Timestamp of when the operation was confirmed
-        wallet_operation_id:
+        account_operation_id:
           type: string
-          description: Unique wallet operation identifier
+          description: Unique account operation identifier
         transaction_hash:
           type: string
           description: Onchain transaction hash which included the operation
         status:
           type: string
           description: Current status of the operation
-        wallet_address:
+        account_address:
           type: string
-          description: Onchain wallet address performing the operation
+          description: Onchain account address performing the operation
         chain_id:
           type: string
-          description: The id that identifies the chain where the wallet performing the operation lives
+          description: The id that identifies the chain where the account performing the operation lives
         transactions:
           type: array
           items:
@@ -727,11 +727,11 @@ components:
           description: EIP-712 signature of the operation
       required:
         - operation_id
-        - wallet_id
+        - account_id
         - created_at
-        - wallet_operation_id
+        - account_operation_id
         - status
-        - wallet_address
+        - account_address
         - chain_id
         - transactions
         - signature
@@ -751,15 +751,15 @@ components:
     UpdateOperationStatus:
       type: object
       properties:
-        wallet_operation_id:
+        account_operation_id:
           type: string
-          description: Unique wallet operation identifier
-        wallet_address:
+          description: Unique account operation identifier
+        account_address:
           type: string
-          description: Onchain wallet address performing the operation
+          description: Onchain account address performing the operation
         chain_id:
           type: string
-          description: The id that identifies the chain where the wallet performing the operation lives
+          description: The id that identifies the chain where the account performing the operation lives
         transaction_hash:
           type: string
           description: Onchain transaction hash which included the operation
@@ -767,8 +767,8 @@ components:
           type: integer
           description: Timestamp of onchain transaction which included the operation
       required:
-        - wallet_operation_id
-        - wallet_address
+        - account_operation_id
+        - account_address
         - chain_id
         - transaction_hash
         - transaction_timestamp
