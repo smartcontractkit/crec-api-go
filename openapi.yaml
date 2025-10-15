@@ -34,6 +34,26 @@ paths:
       summary: Retrieves event listeners.
       parameters:
         - in: query
+          name: chain_id
+          description: Filter listeners by chain ID
+          schema:
+            type: string
+        - in: query
+          name: status
+          description: Filter listeners by status
+          schema:
+            type: string
+        - in: query
+          name: name
+          description: Filter listeners by name
+          schema:
+            type: string
+        - in: query
+          name: service
+          description: Filter listeners by service
+          schema:
+            type: string
+        - in: query
           name: created.lt
           description: Filter events created before this timestamp
           schema:
@@ -140,6 +160,11 @@ paths:
             type: string
             format: uuid
         - in: query
+          name: chain_id
+          description: Filter events by chain ID
+          schema:
+            type: string
+        - in: query
           name: created.lt
           description: Filter events created before this timestamp
           schema:
@@ -242,6 +267,16 @@ paths:
       summary: Retrieves accounts for the organization.
       parameters:
         - in: query
+          name: name
+          description: Filter accounts by name
+          schema:
+            type: string
+        - in: query
+          name: chain_id
+          description: Filter accounts by chain ID
+          schema:
+            type: string
+        - in: query
           name: limit
           description: Maximum number of accounts to return
           schema:
@@ -286,6 +321,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Account"
+        "404":
+          description: Account not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    patch:
+      summary: Updates an account name.
+      parameters:
+        - in: path
+          name: account_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateAccount"
+      responses:
+        "200":
+          description: Account updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
         "404":
           description: Account not found
           content:
@@ -344,6 +419,16 @@ paths:
         - in: query
           name: account_name
           description: Filter operations by account name (partial match)
+          schema:
+            type: string
+        - in: query
+          name: status
+          description: Filter operations by status
+          schema:
+            type: string
+        - in: query
+          name: chain_id
+          description: Filter operations by chain ID
           schema:
             type: string
         - in: query
@@ -438,6 +523,14 @@ components:
       required:
         - address
         - chain_id
+    UpdateAccount:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New name for the account
+      required:
+        - name
     Account:
       type: object
       properties:

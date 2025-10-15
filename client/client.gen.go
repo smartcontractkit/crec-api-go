@@ -285,6 +285,12 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
+// UpdateAccount defines model for UpdateAccount.
+type UpdateAccount struct {
+	// Name New name for the account
+	Name string `json:"name"`
+}
+
 // UpdateOperationStatus defines model for UpdateOperationStatus.
 type UpdateOperationStatus struct {
 	// AccountAddress Onchain account address performing the operation
@@ -305,6 +311,12 @@ type UpdateOperationStatus struct {
 
 // GetAccountsParams defines parameters for GetAccounts.
 type GetAccountsParams struct {
+	// Name Filter accounts by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// ChainId Filter accounts by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
 	// Limit Maximum number of accounts to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -316,6 +328,9 @@ type GetAccountsParams struct {
 type GetEventsParams struct {
 	// ListenerId Return only events emitted by this listener UUID
 	ListenerId *openapi_types.UUID `form:"listener_id,omitempty" json:"listener_id,omitempty"`
+
+	// ChainId Filter events by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
@@ -341,6 +356,18 @@ type GetEventsParams struct {
 
 // GetListenersParams defines parameters for GetListeners.
 type GetListenersParams struct {
+	// ChainId Filter listeners by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Status Filter listeners by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// Name Filter listeners by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
+	// Service Filter listeners by service
+	Service *string `form:"service,omitempty" json:"service,omitempty"`
+
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
 
@@ -380,6 +407,12 @@ type GetOperationsParams struct {
 	// AccountName Filter operations by account name (partial match)
 	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
 
+	// Status Filter operations by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainId Filter operations by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
 	// Limit The number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -392,6 +425,9 @@ type GetOperationsParams struct {
 
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
 type PostAccountsJSONRequestBody = CreateAccount
+
+// PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
+type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = CreateEvent
@@ -489,6 +525,11 @@ type ClientInterface interface {
 	// GetAccountsAccountId request
 	GetAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PatchAccountsAccountIdWithBody request with any body
+	PatchAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PatchAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetEvents request
 	GetEvents(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -572,6 +613,30 @@ func (c *Client) PostAccounts(ctx context.Context, body PostAccountsJSONRequestB
 
 func (c *Client) GetAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetAccountsAccountIdRequest(c.Server, accountId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchAccountsAccountIdRequestWithBody(c.Server, accountId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchAccountsAccountIdRequest(c.Server, accountId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -796,6 +861,38 @@ func NewGetAccountsRequest(server string, params *GetAccountsParams) (*http.Requ
 	if params != nil {
 		queryValues := queryURL.Query()
 
+		if params.Name != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
@@ -913,6 +1010,53 @@ func NewGetAccountsAccountIdRequest(server string, accountId openapi_types.UUID)
 	return req, nil
 }
 
+// NewPatchAccountsAccountIdRequest calls the generic PatchAccountsAccountId builder with application/json body
+func NewPatchAccountsAccountIdRequest(server string, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchAccountsAccountIdRequestWithBody(server, accountId, "application/json", bodyReader)
+}
+
+// NewPatchAccountsAccountIdRequestWithBody generates requests for PatchAccountsAccountId with any type of body
+func NewPatchAccountsAccountIdRequestWithBody(server string, accountId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "account_id", runtime.ParamLocationPath, accountId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/accounts/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 // NewGetEventsRequest generates requests for GetEvents
 func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request, error) {
 	var err error
@@ -938,6 +1082,22 @@ func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request,
 		if params.ListenerId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "listener_id", runtime.ParamLocationQuery, *params.ListenerId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1196,6 +1356,70 @@ func NewGetListenersRequest(server string, params *GetListenersParams) (*http.Re
 
 	if params != nil {
 		queryValues := queryURL.Query()
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Name != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Service != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "service", runtime.ParamLocationQuery, *params.Service); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
 
 		if params.CreatedLt != nil {
 
@@ -1570,6 +1794,38 @@ func NewGetOperationsRequest(server string, params *GetOperationsParams) (*http.
 
 		}
 
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
@@ -1757,6 +2013,11 @@ type ClientWithResponsesInterface interface {
 	// GetAccountsAccountIdWithResponse request
 	GetAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetAccountsAccountIdResponse, error)
 
+	// PatchAccountsAccountIdWithBodyWithResponse request with any body
+	PatchAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error)
+
+	PatchAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error)
+
 	// GetEventsWithResponse request
 	GetEventsWithResponse(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*GetEventsResponse, error)
 
@@ -1867,6 +2128,31 @@ func (r GetAccountsAccountIdResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetAccountsAccountIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PatchAccountsAccountIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Account
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchAccountsAccountIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchAccountsAccountIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2170,6 +2456,23 @@ func (c *ClientWithResponses) GetAccountsAccountIdWithResponse(ctx context.Conte
 	return ParseGetAccountsAccountIdResponse(rsp)
 }
 
+// PatchAccountsAccountIdWithBodyWithResponse request with arbitrary body returning *PatchAccountsAccountIdResponse
+func (c *ClientWithResponses) PatchAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error) {
+	rsp, err := c.PatchAccountsAccountIdWithBody(ctx, accountId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchAccountsAccountIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PatchAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error) {
+	rsp, err := c.PatchAccountsAccountId(ctx, accountId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchAccountsAccountIdResponse(rsp)
+}
+
 // GetEventsWithResponse request returning *GetEventsResponse
 func (c *ClientWithResponses) GetEventsWithResponse(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*GetEventsResponse, error) {
 	rsp, err := c.GetEvents(ctx, params, reqEditors...)
@@ -2403,6 +2706,53 @@ func ParseGetAccountsAccountIdResponse(rsp *http.Response) (*GetAccountsAccountI
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchAccountsAccountIdResponse parses an HTTP response from a PatchAccountsAccountIdWithResponse call
+func ParsePatchAccountsAccountIdResponse(rsp *http.Response) (*PatchAccountsAccountIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchAccountsAccountIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Account
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
