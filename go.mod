@@ -1,4 +1,4 @@
-module github.com/smartcontractkit/cvn-api-go
+module github.com/smartcontractkit/crec-api-go
 
 go 1.24
 
