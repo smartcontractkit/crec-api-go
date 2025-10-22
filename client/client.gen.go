@@ -7,11 +7,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -27,6 +29,51 @@ const (
 	BadRequest    ApplicationErrorType = "Bad request"
 	InternalError ApplicationErrorType = "Internal error"
 	NotFound      ApplicationErrorType = "Not found"
+)
+
+// Defines values for EventABIType.
+const (
+	EventABITypeEvent EventABIType = "event"
+)
+
+// Defines values for OperationStatusPayloadStatus.
+const (
+	OperationStatusPayloadStatusConfirmed OperationStatusPayloadStatus = "confirmed"
+	OperationStatusPayloadStatusFailed    OperationStatusPayloadStatus = "failed"
+	OperationStatusPayloadStatusPending   OperationStatusPayloadStatus = "pending"
+	OperationStatusPayloadStatusSent      OperationStatusPayloadStatus = "sent"
+)
+
+// Defines values for OperationStatusPayloadType.
+const (
+	OperationStatusPayloadTypeOperationStatus OperationStatusPayloadType = "operation.status"
+)
+
+// Defines values for WatcherEventPayloadType.
+const (
+	WatcherEventPayloadTypeWatcherEvent WatcherEventPayloadType = "watcher.event"
+)
+
+// Defines values for WatcherStatusPayloadStatus.
+const (
+	WatcherStatusPayloadStatusDeleted   WatcherStatusPayloadStatus = "deleted"
+	WatcherStatusPayloadStatusDeleting  WatcherStatusPayloadStatus = "deleting"
+	WatcherStatusPayloadStatusDeploying WatcherStatusPayloadStatus = "deploying"
+	WatcherStatusPayloadStatusFailed    WatcherStatusPayloadStatus = "failed"
+	WatcherStatusPayloadStatusPending   WatcherStatusPayloadStatus = "pending"
+	WatcherStatusPayloadStatusRemoved   WatcherStatusPayloadStatus = "removed"
+)
+
+// Defines values for WatcherStatusPayloadType.
+const (
+	WatcherStatus WatcherStatusPayloadType = "watcher.status"
+)
+
+// Defines values for GetChannelsChannelIdEventsParamsType.
+const (
+	GetChannelsChannelIdEventsParamsTypeOperationStatus GetChannelsChannelIdEventsParamsType = "operation.status"
+	GetChannelsChannelIdEventsParamsTypeWatcherEvent    GetChannelsChannelIdEventsParamsType = "watcher.event"
+	GetChannelsChannelIdEventsParamsTypeWatcherStatus   GetChannelsChannelIdEventsParamsType = "watcher.status"
 )
 
 // Account defines model for Account.
@@ -64,6 +111,29 @@ type ApplicationError struct {
 // ApplicationErrorType Error type
 type ApplicationErrorType string
 
+// Channel defines model for Channel.
+type Channel struct {
+	// ChannelId Unique identifier for the channel
+	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// CreatedAt Timestamp of when the channel was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Name Name of the channel
+	Name string `json:"name"`
+
+	// TenantId Identifier of the tenant that owns this channel
+	TenantId string `json:"tenant_id"`
+}
+
+// ChannelList defines model for ChannelList.
+type ChannelList struct {
+	Data []Channel `json:"data"`
+
+	// HasMore True if there are more channels to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // CreateAccount defines model for CreateAccount.
 type CreateAccount struct {
 	// Address EVM account address (42-character hex string starting with 0x)
@@ -76,109 +146,140 @@ type CreateAccount struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CreateEvent defines model for CreateEvent.
-type CreateEvent struct {
-	// Address Smart contract address from which the event was emitted
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the event happened
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the event
+// CreateChannel defines model for CreateChannel.
+type CreateChannel struct {
+	// Name Name of the channel
 	Name string `json:"name"`
-
-	// OcrContext OCR context for the event
-	OcrContext string `json:"ocr_context"`
-
-	// OcrReport OCR report for the event
-	OcrReport string `json:"ocr_report"`
-
-	// Service Service namespace for the event
-	Service    string   `json:"service"`
-	Signatures []string `json:"signatures"`
-
-	// VerifiableEvent Base64 encoded verifiable event
-	VerifiableEvent string `json:"verifiable_event"`
-}
-
-// CreateListener defines model for CreateListener.
-type CreateListener struct {
-	// Address Smart contract address to listen for events
-	Address string `json:"address"`
-
-	// ChainFamily (Optional) the network to use.
-	ChainFamily *string `json:"chain_family,omitempty"`
-
-	// ChainId The id that identifies the chain where the listener will run
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the event to listen for
-	Name    string             `json:"name"`
-	Options *map[string]string `json:"options,omitempty"`
-
-	// Service Service namespace for the listener
-	Service string `json:"service"`
 }
 
 // CreateOperation defines model for CreateOperation.
 type CreateOperation struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
+	// Address Account address performing the operation
+	Address string `json:"address"`
 
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
+	// ChainFamily The blockchain family
+	ChainFamily *string `json:"chain_family,omitempty"`
 
-	// ChainId The id that identifies the chain where the account performing the operation lives
+	// ChainId The ID that identifies the chain where the operation will be executed
 	ChainId string `json:"chain_id"`
 
 	// Signature EIP-712 signature of the operation
-	Signature    string               `json:"signature"`
+	Signature string `json:"signature"`
+
+	// Transactions List of transactions to execute
 	Transactions []TransactionRequest `json:"transactions"`
+
+	// WalletOperationId Unique wallet operation identifier
+	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// CreateWatcher defines model for CreateWatcher.
+type CreateWatcher struct {
+	union json.RawMessage
+}
+
+// CreateWatcherWithABI defines model for CreateWatcherWithABI.
+type CreateWatcherWithABI struct {
+	// Abi ABI definitions for the events to watch
+	Abi []EventABI `json:"abi"`
+
+	// Address Smart contract address to watch for events
+	Address string `json:"address"`
+
+	// ChainFamily The blockchain family
+	ChainFamily *string `json:"chain_family,omitempty"`
+
+	// ChainId The ID that identifies the chain where the watcher will run
+	ChainId string `json:"chain_id"`
+
+	// Events List of event names to watch for
+	Events []string `json:"events"`
+}
+
+// CreateWatcherWithDomain defines model for CreateWatcherWithDomain.
+type CreateWatcherWithDomain struct {
+	// Address Smart contract address to watch for events
+	Address string `json:"address"`
+
+	// ChainFamily The blockchain family
+	ChainFamily *string `json:"chain_family,omitempty"`
+
+	// ChainId The ID that identifies the chain where the watcher will run
+	ChainId string `json:"chain_id"`
+
+	// Domain Service domain namespace (e.g., "dvp", "dta")
+	Domain string `json:"domain"`
+
+	// Events List of event names to watch for within the domain
+	Events []string `json:"events"`
 }
 
 // Event defines model for Event.
 type Event struct {
-	// Address The address of the smart contract from which the event was emitted
-	Address string `json:"address"`
+	Headers EventHeaders  `json:"headers"`
+	Payload Event_Payload `json:"payload"`
+}
 
-	// ChainId The id that identifies the chain where the event happened
-	ChainId string `json:"chain_id"`
+// Event_Payload defines model for Event.Payload.
+type Event_Payload struct {
+	union json.RawMessage
+}
 
-	// CreatedAt Timestamp of when the event was created
-	CreatedAt int64 `json:"created_at"`
+// EventABI defines model for EventABI.
+type EventABI struct {
+	// Anonymous Whether the event is anonymous
+	Anonymous bool `json:"anonymous"`
 
-	// EventHash Deterministic event hash - keccak256(service.name.base64payload)
-	EventHash string `json:"event_hash"`
-
-	// EventId Unique identifier for the event
-	EventId openapi_types.UUID `json:"event_id"`
-
-	// ListenerId Listener UUID that emitted the event
-	ListenerId openapi_types.UUID `json:"listener_id"`
+	// Inputs Event input parameters
+	Inputs []EventABIInput `json:"inputs"`
 
 	// Name Name of the event
 	Name string `json:"name"`
 
-	// OcrContext OCR context for the event
-	OcrContext string `json:"ocr_context"`
-
-	// OcrReport OCR report for the event
-	OcrReport string `json:"ocr_report"`
-
-	// Service Service namespace for the event
-	Service    string   `json:"service"`
-	Signatures []string `json:"signatures"`
-
-	// VerifiableEvent Base64 encoded verifiable event
-	VerifiableEvent string `json:"verifiable_event"`
+	// Type Type must be 'event'
+	Type EventABIType `json:"type"`
 }
 
-// EventList defines model for EventList.
-type EventList struct {
-	Data []Event `json:"data"`
+// EventABIType Type must be 'event'
+type EventABIType string
 
-	// HasMore True if there are more events to fetch
-	HasMore bool `json:"has_more"`
+// EventABIInput defines model for EventABIInput.
+type EventABIInput struct {
+	// Indexed Whether the parameter is indexed
+	Indexed bool `json:"indexed"`
+
+	// InternalType Internal Solidity type
+	InternalType string `json:"internalType"`
+
+	// Name Parameter name
+	Name string `json:"name"`
+
+	// Type Parameter type
+	Type string `json:"type"`
+}
+
+// EventHeaders defines model for EventHeaders.
+type EventHeaders struct {
+	// Offset Unique offset for message ordering
+	Offset string                     `json:"offset"`
+	Proofs []EventHeaders_Proofs_Item `json:"proofs"`
+}
+
+// EventHeadersProofs1 Generic proof object for future extensibility
+type EventHeadersProofs1 map[string]interface{}
+
+// EventHeaders_Proofs_Item defines model for EventHeaders.proofs.Item.
+type EventHeaders_Proofs_Item struct {
+	union json.RawMessage
+}
+
+// EventTransaction defines model for EventTransaction.
+type EventTransaction struct {
+	// Hash Transaction hash
+	Hash string `json:"hash"`
+
+	// Timestamp Transaction timestamp
+	Timestamp int64 `json:"timestamp"`
 }
 
 // HealthCheck defines model for HealthCheck.
@@ -186,55 +287,31 @@ type HealthCheck struct {
 	Status string `json:"status"`
 }
 
-// Listener defines model for Listener.
-type Listener struct {
-	// Address Smart contract address to listen for events
-	Address string `json:"address"`
+// OCRProof defines model for OCRProof.
+type OCRProof struct {
+	// Alg Algorithm used for the proof
+	Alg string `json:"alg"`
 
-	// ChainId The id that identifies the chain where the listener will run
-	ChainId string `json:"chain_id"`
+	// OcrContext OCR context data
+	OcrContext string `json:"ocr_context"`
 
-	// CreatedAt Timestamp of when the listener was created
-	CreatedAt int64 `json:"created_at"`
+	// OcrReport OCR report data
+	OcrReport string `json:"ocr_report"`
 
-	// ListenerId Unique identifier for the listener
-	ListenerId openapi_types.UUID `json:"listener_id"`
-
-	// Name Name of the event to listen for
-	Name    string            `json:"name"`
-	Options map[string]string `json:"options"`
-
-	// Service Service namespace for the listener
-	Service string `json:"service"`
-
-	// Status Current status of the listener
-	Status string `json:"status"`
-}
-
-// ListenerList defines model for ListenerList.
-type ListenerList struct {
-	Data []Listener `json:"data"`
-
-	// HasMore True if there are more listeners to fetch
-	HasMore bool `json:"has_more"`
+	// Signatures Array of signatures
+	Signatures []string `json:"signatures"`
 }
 
 // Operation defines model for Operation.
 type Operation struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
+	// Address Account address performing the operation
+	Address string `json:"address"`
 
-	// AccountId Identifier of the account performing the operation
-	AccountId openapi_types.UUID `json:"account_id"`
+	// ChainFamily The blockchain family
+	ChainFamily string `json:"chain_family"`
 
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
-
-	// ChainId The id that identifies the chain where the account performing the operation lives
+	// ChainId The ID that identifies the chain where the operation is executed
 	ChainId string `json:"chain_id"`
-
-	// ConfirmedAt Timestamp of when the operation was confirmed
-	ConfirmedAt *int64 `json:"confirmed_at,omitempty"`
 
 	// CreatedAt Timestamp of when the operation was created
 	CreatedAt int64 `json:"created_at"`
@@ -248,30 +325,47 @@ type Operation struct {
 	// Status Current status of the operation
 	Status string `json:"status"`
 
-	// TransactionHash Onchain transaction hash which included the operation
-	TransactionHash *string       `json:"transaction_hash,omitempty"`
-	Transactions    []Transaction `json:"transactions"`
+	// Transactions List of transactions to execute
+	Transactions []TransactionRequest `json:"transactions"`
+
+	// WalletOperationId Unique wallet operation identifier
+	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationList defines model for OperationList.
-type OperationList struct {
-	Data []Operation `json:"data"`
-
-	// HasMore True if there are more operations to fetch
-	HasMore bool `json:"has_more"`
+// OperationResponse defines model for OperationResponse.
+type OperationResponse struct {
+	// OperationId Unique identifier for the operation
+	OperationId openapi_types.UUID `json:"operation_id"`
 }
 
-// Transaction defines model for Transaction.
-type Transaction struct {
-	// Data Hex-encoded calldata for the transaction
-	Data string `json:"data"`
+// OperationStatusPayload defines model for OperationStatusPayload.
+type OperationStatusPayload struct {
+	// AccountOperationId Account operation identifier
+	AccountOperationId string `json:"account_operation_id"`
 
-	// To Address receiving the transaction
-	To string `json:"to"`
+	// Address Account address
+	Address string `json:"address"`
 
-	// Value Amount of native token value being sent in the transaction
-	Value string `json:"value"`
+	// ChainFamily Blockchain family (e.g., evm)
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain identifier
+	ChainId string `json:"chain_id"`
+
+	// Status Current status of the operation
+	Status OperationStatusPayloadStatus `json:"status"`
+
+	// StatusReason Reason for the status
+	StatusReason string                     `json:"status_reason"`
+	Transaction  *EventTransaction          `json:"transaction,omitempty"`
+	Type         OperationStatusPayloadType `json:"type"`
 }
+
+// OperationStatusPayloadStatus Current status of the operation
+type OperationStatusPayloadStatus string
+
+// OperationStatusPayloadType defines model for OperationStatusPayload.Type.
+type OperationStatusPayloadType string
 
 // TransactionRequest defines model for TransactionRequest.
 type TransactionRequest struct {
@@ -291,23 +385,156 @@ type UpdateAccount struct {
 	Name string `json:"name"`
 }
 
-// UpdateOperationStatus defines model for UpdateOperationStatus.
-type UpdateOperationStatus struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
+// Watcher defines model for Watcher.
+type Watcher struct {
+	// Abi ABI definitions for the events (if not using domain-based events)
+	Abi *[]EventABI `json:"abi,omitempty"`
 
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
+	// Address Smart contract address being watched
+	Address string `json:"address"`
 
-	// ChainId The id that identifies the chain where the account performing the operation lives
+	// ChainFamily The blockchain family
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId The ID that identifies the chain where the watcher runs
 	ChainId string `json:"chain_id"`
 
-	// TransactionHash Onchain transaction hash which included the operation
-	TransactionHash string `json:"transaction_hash"`
+	// ChannelId ID of the channel this watcher belongs to
+	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// TransactionTimestamp Timestamp of onchain transaction which included the operation
-	TransactionTimestamp int `json:"transaction_timestamp"`
+	// CreatedAt Timestamp of when the watcher was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Domain Service domain namespace (if using domain-based events)
+	Domain *string `json:"domain,omitempty"`
+
+	// Events List of event names being watched
+	Events []string `json:"events"`
+
+	// Status Current status of the watcher
+	Status string `json:"status"`
+
+	// WatcherId Unique identifier for the watcher
+	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
+
+// WatcherDetectedEvent defines model for WatcherDetectedEvent.
+type WatcherDetectedEvent struct {
+	// Address The address of the smart contract from which the event was emitted
+	Address string `json:"address"`
+
+	// ChainId The id that identifies the chain where the event happened
+	ChainId string `json:"chain_id"`
+
+	// CreatedAt Timestamp of when the event was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Domain Domain namespace for the event
+	Domain string `json:"domain"`
+
+	// EventHash Deterministic event hash - keccak256(domain.name.base64payload)
+	EventHash string `json:"event_hash"`
+
+	// EventId Unique identifier for the event
+	EventId openapi_types.UUID `json:"event_id"`
+
+	// Name Name of the event
+	Name string `json:"name"`
+
+	// OcrContext OCR context for the event
+	OcrContext string `json:"ocr_context"`
+
+	// OcrReport OCR report for the event
+	OcrReport  string   `json:"ocr_report"`
+	Signatures []string `json:"signatures"`
+
+	// VerifiableEvent Base64 encoded verifiable event
+	VerifiableEvent string `json:"verifiable_event"`
+
+	// WatcherId Watcher UUID that detected the event
+	WatcherId openapi_types.UUID `json:"watcher_id"`
+}
+
+// WatcherEvent defines model for WatcherEvent.
+type WatcherEvent struct {
+	// Data Event data - can be any structure
+	Data map[string]interface{} `json:"data"`
+
+	// Domain Domain associated with the event (optional)
+	Domain *string `json:"domain,omitempty"`
+
+	// EventName Name of the event
+	EventName string `json:"event_name"`
+
+	// LogIndex Log index in the transaction
+	LogIndex int `json:"log_index"`
+
+	// Metadata Event metadata - can be any structure
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+
+	// Timestamp Event timestamp
+	Timestamp time.Time `json:"timestamp"`
+
+	// TopicHash Event topic hash
+	TopicHash string `json:"topic_hash"`
+}
+
+// WatcherEventPayload defines model for WatcherEventPayload.
+type WatcherEventPayload struct {
+	// Address Contract address that emitted the event
+	Address string `json:"address"`
+
+	// ChainFamily Blockchain family (e.g., evm)
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain identifier
+	ChainId     string                  `json:"chain_id"`
+	Event       WatcherEvent            `json:"event"`
+	Transaction EventTransaction        `json:"transaction"`
+	Type        WatcherEventPayloadType `json:"type"`
+
+	// WatcherId Unique watcher identifier
+	WatcherId string `json:"watcher_id"`
+}
+
+// WatcherEventPayloadType defines model for WatcherEventPayload.Type.
+type WatcherEventPayloadType string
+
+// WatcherList defines model for WatcherList.
+type WatcherList struct {
+	Data []Watcher `json:"data"`
+
+	// HasMore True if there are more watchers to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WatcherStatusPayload defines model for WatcherStatusPayload.
+type WatcherStatusPayload struct {
+	// ChainFamily Blockchain family (e.g., evm)
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain identifier
+	ChainId string `json:"chain_id"`
+
+	// Status Current status of the watcher
+	Status WatcherStatusPayloadStatus `json:"status"`
+
+	// StatusCode Status code
+	StatusCode string `json:"status_code"`
+
+	// StatusReason Reason for the status
+	StatusReason string                   `json:"status_reason"`
+	Type         WatcherStatusPayloadType `json:"type"`
+
+	// WatcherId Unique watcher identifier
+	WatcherId string `json:"watcher_id"`
+}
+
+// WatcherStatusPayloadStatus Current status of the watcher
+type WatcherStatusPayloadStatus string
+
+// WatcherStatusPayloadType defines model for WatcherStatusPayload.Type.
+type WatcherStatusPayloadType string
 
 // GetAccountsParams defines parameters for GetAccounts.
 type GetAccountsParams struct {
@@ -324,103 +551,49 @@ type GetAccountsParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetEventsParams defines parameters for GetEvents.
-type GetEventsParams struct {
-	// ListenerId Return only events emitted by this listener UUID
-	ListenerId *openapi_types.UUID `form:"listener_id,omitempty" json:"listener_id,omitempty"`
-
-	// ChainId Filter events by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// CreatedLt Filter events created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
-
-	// CreatedLte Filter events created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter events created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter events created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// Limit The number of events to return
+// GetChannelsParams defines parameters for GetChannels.
+type GetChannelsParams struct {
+	// Limit Maximum number of channels to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// StartingAfter Return events starting after this event UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
-
-	// EndingBefore Return events occurring before this event UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
+	// Offset Number of channels to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetListenersParams defines parameters for GetListeners.
-type GetListenersParams struct {
-	// ChainId Filter listeners by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// Status Filter listeners by status
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
-
-	// Name Filter listeners by name
-	Name *string `form:"name,omitempty" json:"name,omitempty"`
-
-	// Service Filter listeners by service
-	Service *string `form:"service,omitempty" json:"service,omitempty"`
-
-	// CreatedLt Filter events created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
-
-	// CreatedLte Filter events created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter events created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter events created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// Limit The number of events to return
+// GetChannelsChannelIdEventsParams defines parameters for GetChannelsChannelIdEvents.
+type GetChannelsChannelIdEventsParams struct {
+	// Limit Maximum number of events to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// StartingAfter Return events starting after this event UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
+	// Offset Offset for message-oriented pagination
+	Offset *string `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// EndingBefore Return events occurring before this event UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
+	// Type Filter events by type
+	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
 }
 
-// GetOperationsParams defines parameters for GetOperations.
-type GetOperationsParams struct {
-	// CreatedLt Filter operations created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
+// GetChannelsChannelIdEventsParamsType defines parameters for GetChannelsChannelIdEvents.
+type GetChannelsChannelIdEventsParamsType string
 
-	// CreatedLte Filter operations created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter operations created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter operations created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// AccountName Filter operations by account name (partial match)
-	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
-
-	// Status Filter operations by status
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
-
-	// ChainId Filter operations by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// Limit The number of operations to return
+// GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
+type GetChannelsChannelIdWatchersParams struct {
+	// Limit Maximum number of watchers to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// StartingAfter Return operations starting after this operation UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
+	// Offset Number of watchers to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// EndingBefore Return operations occurring before this operation UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
+	// ChainFamily Filter watchers by blockchain family
+	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
+
+	// ChainId Filter watchers by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Address Filter watchers by contract address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// EventName Filter watchers by event name
+	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
@@ -429,17 +602,287 @@ type PostAccountsJSONRequestBody = CreateAccount
 // PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
 type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
 
+// PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
+type PostChannelsJSONRequestBody = CreateChannel
+
+// PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
+type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
+
+// PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
+type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
-type PostEventsJSONRequestBody = CreateEvent
+type PostEventsJSONRequestBody = WatcherDetectedEvent
 
-// PostListenersJSONRequestBody defines body for PostListeners for application/json ContentType.
-type PostListenersJSONRequestBody = CreateListener
+// AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
+func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
+	var body CreateWatcherWithDomain
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
 
-// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
-type PostOperationStatusJSONRequestBody = UpdateOperationStatus
+// FromCreateWatcherWithDomain overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithDomain
+func (t *CreateWatcher) FromCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+	v.Domain = "domain_present"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
 
-// PostOperationsJSONRequestBody defines body for PostOperations for application/json ContentType.
-type PostOperationsJSONRequestBody = CreateOperation
+// MergeCreateWatcherWithDomain performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithDomain
+func (t *CreateWatcher) MergeCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+	v.Domain = "domain_present"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateWatcherWithABI returns the union data inside the CreateWatcher as a CreateWatcherWithABI
+func (t CreateWatcher) AsCreateWatcherWithABI() (CreateWatcherWithABI, error) {
+	var body CreateWatcherWithABI
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateWatcherWithABI overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithABI
+func (t *CreateWatcher) FromCreateWatcherWithABI(v CreateWatcherWithABI) error {
+	v.Domain = "domain_absent"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateWatcherWithABI performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithABI
+func (t *CreateWatcher) MergeCreateWatcherWithABI(v CreateWatcherWithABI) error {
+	v.Domain = "domain_absent"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateWatcher) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"domain"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t CreateWatcher) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "domain_absent":
+		return t.AsCreateWatcherWithABI()
+	case "domain_present":
+		return t.AsCreateWatcherWithDomain()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t CreateWatcher) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateWatcher) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOperationStatusPayload returns the union data inside the Event_Payload as a OperationStatusPayload
+func (t Event_Payload) AsOperationStatusPayload() (OperationStatusPayload, error) {
+	var body OperationStatusPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOperationStatusPayload overwrites any union data inside the Event_Payload as the provided OperationStatusPayload
+func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) error {
+	v.Type = "OperationStatusPayload"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOperationStatusPayload performs a merge with any union data inside the Event_Payload, using the provided OperationStatusPayload
+func (t *Event_Payload) MergeOperationStatusPayload(v OperationStatusPayload) error {
+	v.Type = "OperationStatusPayload"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsWatcherStatusPayload returns the union data inside the Event_Payload as a WatcherStatusPayload
+func (t Event_Payload) AsWatcherStatusPayload() (WatcherStatusPayload, error) {
+	var body WatcherStatusPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWatcherStatusPayload overwrites any union data inside the Event_Payload as the provided WatcherStatusPayload
+func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
+	v.Type = "WatcherStatusPayload"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWatcherStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherStatusPayload
+func (t *Event_Payload) MergeWatcherStatusPayload(v WatcherStatusPayload) error {
+	v.Type = "WatcherStatusPayload"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsWatcherEventPayload returns the union data inside the Event_Payload as a WatcherEventPayload
+func (t Event_Payload) AsWatcherEventPayload() (WatcherEventPayload, error) {
+	var body WatcherEventPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWatcherEventPayload overwrites any union data inside the Event_Payload as the provided WatcherEventPayload
+func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
+	v.Type = "WatcherEventPayload"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWatcherEventPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherEventPayload
+func (t *Event_Payload) MergeWatcherEventPayload(v WatcherEventPayload) error {
+	v.Type = "WatcherEventPayload"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Event_Payload) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t Event_Payload) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "OperationStatusPayload":
+		return t.AsOperationStatusPayload()
+	case "WatcherEventPayload":
+		return t.AsWatcherEventPayload()
+	case "WatcherStatusPayload":
+		return t.AsWatcherStatusPayload()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t Event_Payload) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Event_Payload) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOCRProof returns the union data inside the EventHeaders_Proofs_Item as a OCRProof
+func (t EventHeaders_Proofs_Item) AsOCRProof() (OCRProof, error) {
+	var body OCRProof
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOCRProof overwrites any union data inside the EventHeaders_Proofs_Item as the provided OCRProof
+func (t *EventHeaders_Proofs_Item) FromOCRProof(v OCRProof) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOCRProof performs a merge with any union data inside the EventHeaders_Proofs_Item, using the provided OCRProof
+func (t *EventHeaders_Proofs_Item) MergeOCRProof(v OCRProof) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsEventHeadersProofs1 returns the union data inside the EventHeaders_Proofs_Item as a EventHeadersProofs1
+func (t EventHeaders_Proofs_Item) AsEventHeadersProofs1() (EventHeadersProofs1, error) {
+	var body EventHeadersProofs1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromEventHeadersProofs1 overwrites any union data inside the EventHeaders_Proofs_Item as the provided EventHeadersProofs1
+func (t *EventHeaders_Proofs_Item) FromEventHeadersProofs1(v EventHeadersProofs1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeEventHeadersProofs1 performs a merge with any union data inside the EventHeaders_Proofs_Item, using the provided EventHeadersProofs1
+func (t *EventHeaders_Proofs_Item) MergeEventHeadersProofs1(v EventHeadersProofs1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t EventHeaders_Proofs_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *EventHeaders_Proofs_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -530,49 +973,52 @@ type ClientInterface interface {
 
 	PatchAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetEvents request
-	GetEvents(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetChannels request
+	GetChannels(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChannelsWithBody request with any body
+	PostChannelsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChannels(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChannelsChannelId request
+	DeleteChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChannelsChannelId request
+	GetChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChannelsChannelIdEvents request
+	GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChannelsChannelIdOperationsWithBody request with any body
+	PostChannelsChannelIdOperationsWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChannelsChannelIdOperationsOperationId request
+	GetChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChannelsChannelIdWatchers request
+	GetChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostChannelsChannelIdWatchersWithBody request with any body
+	PostChannelsChannelIdWatchersWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// DeleteChannelsChannelIdWatchersWatcherId request
+	DeleteChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetChannelsChannelIdWatchersWatcherId request
+	GetChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PostEventsWithBody request with any body
 	PostEventsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostEvents(ctx context.Context, body PostEventsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetEventsEventId request
-	GetEventsEventId(ctx context.Context, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetListeners request
-	GetListeners(ctx context.Context, params *GetListenersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// PostListenersWithBody request with any body
-	PostListenersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PostListeners(ctx context.Context, body PostListenersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// DeleteListenersListenerId request
-	DeleteListenersListenerId(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetListenersListenerId request
-	GetListenersListenerId(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// PostOperationStatusWithBody request with any body
-	PostOperationStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PostOperationStatus(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetOperations request
-	GetOperations(ctx context.Context, params *GetOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// PostOperationsWithBody request with any body
-	PostOperationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PostOperations(ctx context.Context, body PostOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetOperationsOperationId request
-	GetOperationsOperationId(ctx context.Context, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccounts(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -647,8 +1093,164 @@ func (c *Client) PatchAccountsAccountId(ctx context.Context, accountId openapi_t
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetEvents(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetEventsRequest(c.Server, params)
+func (c *Client) GetChannels(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsRequest(c.Server, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChannelsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChannelsRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChannels(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChannelsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChannelsChannelIdRequest(c.Server, channelId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdRequest(c.Server, channelId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdEventsRequest(c.Server, channelId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChannelsChannelIdOperationsWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChannelsChannelIdOperationsRequestWithBody(c.Server, channelId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChannelsChannelIdOperationsRequest(c.Server, channelId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdOperationsOperationIdRequest(c.Server, channelId, operationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdWatchersRequest(c.Server, channelId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChannelsChannelIdWatchersWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChannelsChannelIdWatchersRequestWithBody(c.Server, channelId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostChannelsChannelIdWatchersRequest(c.Server, channelId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteChannelsChannelIdWatchersWatcherIdRequest(c.Server, channelId, watcherId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdWatchersWatcherIdRequest(c.Server, channelId, watcherId)
 	if err != nil {
 		return nil, err
 	}
@@ -683,152 +1285,8 @@ func (c *Client) PostEvents(ctx context.Context, body PostEventsJSONRequestBody,
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetEventsEventId(ctx context.Context, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetEventsEventIdRequest(c.Server, eventId)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetHealthCheckRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetListeners(ctx context.Context, params *GetListenersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetListenersRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostListenersWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostListenersRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostListeners(ctx context.Context, body PostListenersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostListenersRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteListenersListenerId(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteListenersListenerIdRequest(c.Server, listenerId)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetListenersListenerId(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetListenersListenerIdRequest(c.Server, listenerId)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOperationStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOperationStatusRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOperationStatus(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOperationStatusRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetOperations(ctx context.Context, params *GetOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetOperationsRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOperationsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOperationsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOperations(ctx context.Context, body PostOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOperationsRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetOperationsOperationId(ctx context.Context, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetOperationsOperationIdRequest(c.Server, operationId)
 	if err != nil {
 		return nil, err
 	}
@@ -1057,8 +1515,8 @@ func NewPatchAccountsAccountIdRequestWithBody(server string, accountId openapi_t
 	return req, nil
 }
 
-// NewGetEventsRequest generates requests for GetEvents
-func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request, error) {
+// NewGetChannelsRequest generates requests for GetChannels
+func NewGetChannelsRequest(server string, params *GetChannelsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1066,7 +1524,7 @@ func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request,
 		return nil, err
 	}
 
-	operationPath := fmt.Sprintf("/events")
+	operationPath := fmt.Sprintf("/channels")
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -1079,9 +1537,397 @@ func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request,
 	if params != nil {
 		queryValues := queryURL.Query()
 
-		if params.ListenerId != nil {
+		if params.Limit != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "listener_id", runtime.ParamLocationQuery, *params.ListenerId); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChannelsRequest calls the generic PostChannels builder with application/json body
+func NewPostChannelsRequest(server string, body PostChannelsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChannelsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostChannelsRequestWithBody generates requests for PostChannels with any type of body
+func NewPostChannelsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChannelsChannelIdRequest generates requests for DeleteChannelsChannelId
+func NewDeleteChannelsChannelIdRequest(server string, channelId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdRequest generates requests for GetChannelsChannelId
+func NewGetChannelsChannelIdRequest(server string, channelId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdEventsRequest generates requests for GetChannelsChannelIdEvents
+func NewGetChannelsChannelIdEventsRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/events", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "type", runtime.ParamLocationQuery, *params.Type); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChannelsChannelIdOperationsRequest calls the generic PostChannelsChannelIdOperations builder with application/json body
+func NewPostChannelsChannelIdOperationsRequest(server string, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChannelsChannelIdOperationsRequestWithBody(server, channelId, "application/json", bodyReader)
+}
+
+// NewPostChannelsChannelIdOperationsRequestWithBody generates requests for PostChannelsChannelIdOperations with any type of body
+func NewPostChannelsChannelIdOperationsRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/operations", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdOperationsOperationIdRequest generates requests for GetChannelsChannelIdOperationsOperationId
+func NewGetChannelsChannelIdOperationsOperationIdRequest(server string, channelId openapi_types.UUID, operationId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "operation_id", runtime.ParamLocationPath, operationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/operations/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdWatchersRequest generates requests for GetChannelsChannelIdWatchers
+func NewGetChannelsChannelIdWatchersRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/watchers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainFamily != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_family", runtime.ParamLocationQuery, *params.ChainFamily); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1111,9 +1957,9 @@ func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request,
 
 		}
 
-		if params.CreatedLt != nil {
+		if params.Address != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lt", runtime.ParamLocationQuery, *params.CreatedLt); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, *params.Address); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1127,89 +1973,9 @@ func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request,
 
 		}
 
-		if params.CreatedLte != nil {
+		if params.EventName != nil {
 
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lte", runtime.ParamLocationQuery, *params.CreatedLte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGt != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gt", runtime.ParamLocationQuery, *params.CreatedGt); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGte != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gte", runtime.ParamLocationQuery, *params.CreatedGte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Limit != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.StartingAfter != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "starting_after", runtime.ParamLocationQuery, *params.StartingAfter); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.EndingBefore != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ending_before", runtime.ParamLocationQuery, *params.EndingBefore); err != nil {
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "event_name", runtime.ParamLocationQuery, *params.EventName); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -1224,6 +1990,135 @@ func NewGetEventsRequest(server string, params *GetEventsParams) (*http.Request,
 		}
 
 		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostChannelsChannelIdWatchersRequest calls the generic PostChannelsChannelIdWatchers builder with application/json body
+func NewPostChannelsChannelIdWatchersRequest(server string, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostChannelsChannelIdWatchersRequestWithBody(server, channelId, "application/json", bodyReader)
+}
+
+// NewPostChannelsChannelIdWatchersRequestWithBody generates requests for PostChannelsChannelIdWatchers with any type of body
+func NewPostChannelsChannelIdWatchersRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/watchers", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewDeleteChannelsChannelIdWatchersWatcherIdRequest generates requests for DeleteChannelsChannelIdWatchersWatcherId
+func NewDeleteChannelsChannelIdWatchersWatcherIdRequest(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "watcher_id", runtime.ParamLocationPath, watcherId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/watchers/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdWatchersWatcherIdRequest generates requests for GetChannelsChannelIdWatchersWatcherId
+func NewGetChannelsChannelIdWatchersWatcherIdRequest(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "watcher_id", runtime.ParamLocationPath, watcherId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/watchers/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -1274,40 +2169,6 @@ func NewPostEventsRequestWithBody(server string, contentType string, body io.Rea
 	return req, nil
 }
 
-// NewGetEventsEventIdRequest generates requests for GetEventsEventId
-func NewGetEventsEventIdRequest(server string, eventId openapi_types.UUID) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "event_id", runtime.ParamLocationPath, eventId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/events/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewGetHealthCheckRequest generates requests for GetHealthCheck
 func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	var err error
@@ -1318,630 +2179,6 @@ func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	}
 
 	operationPath := fmt.Sprintf("/health-check")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetListenersRequest generates requests for GetListeners
-func NewGetListenersRequest(server string, params *GetListenersParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/listeners")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.ChainId != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Status != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Name != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Service != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "service", runtime.ParamLocationQuery, *params.Service); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedLt != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lt", runtime.ParamLocationQuery, *params.CreatedLt); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedLte != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lte", runtime.ParamLocationQuery, *params.CreatedLte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGt != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gt", runtime.ParamLocationQuery, *params.CreatedGt); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGte != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gte", runtime.ParamLocationQuery, *params.CreatedGte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Limit != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.StartingAfter != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "starting_after", runtime.ParamLocationQuery, *params.StartingAfter); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.EndingBefore != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ending_before", runtime.ParamLocationQuery, *params.EndingBefore); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewPostListenersRequest calls the generic PostListeners builder with application/json body
-func NewPostListenersRequest(server string, body PostListenersJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostListenersRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewPostListenersRequestWithBody generates requests for PostListeners with any type of body
-func NewPostListenersRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/listeners")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewDeleteListenersListenerIdRequest generates requests for DeleteListenersListenerId
-func NewDeleteListenersListenerIdRequest(server string, listenerId openapi_types.UUID) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "listener_id", runtime.ParamLocationPath, listenerId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/listeners/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewGetListenersListenerIdRequest generates requests for GetListenersListenerId
-func NewGetListenersListenerIdRequest(server string, listenerId openapi_types.UUID) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "listener_id", runtime.ParamLocationPath, listenerId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/listeners/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewPostOperationStatusRequest calls the generic PostOperationStatus builder with application/json body
-func NewPostOperationStatusRequest(server string, body PostOperationStatusJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostOperationStatusRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewPostOperationStatusRequestWithBody generates requests for PostOperationStatus with any type of body
-func NewPostOperationStatusRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/operation_status")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewGetOperationsRequest generates requests for GetOperations
-func NewGetOperationsRequest(server string, params *GetOperationsParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/operations")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.CreatedLt != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lt", runtime.ParamLocationQuery, *params.CreatedLt); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedLte != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lte", runtime.ParamLocationQuery, *params.CreatedLte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGt != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gt", runtime.ParamLocationQuery, *params.CreatedGt); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.CreatedGte != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gte", runtime.ParamLocationQuery, *params.CreatedGte); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.AccountName != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "account_name", runtime.ParamLocationQuery, *params.AccountName); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Status != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.ChainId != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Limit != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.StartingAfter != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "starting_after", runtime.ParamLocationQuery, *params.StartingAfter); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.EndingBefore != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "ending_before", runtime.ParamLocationQuery, *params.EndingBefore); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
-// NewPostOperationsRequest calls the generic PostOperations builder with application/json body
-func NewPostOperationsRequest(server string, body PostOperationsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostOperationsRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewPostOperationsRequestWithBody generates requests for PostOperations with any type of body
-func NewPostOperationsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/operations")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
-// NewGetOperationsOperationIdRequest generates requests for GetOperationsOperationId
-func NewGetOperationsOperationIdRequest(server string, operationId openapi_types.UUID) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "operation_id", runtime.ParamLocationPath, operationId)
-	if err != nil {
-		return nil, err
-	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/operations/%s", pathParam0)
 	if operationPath[0] == '/' {
 		operationPath = "." + operationPath
 	}
@@ -2018,49 +2255,52 @@ type ClientWithResponsesInterface interface {
 
 	PatchAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error)
 
-	// GetEventsWithResponse request
-	GetEventsWithResponse(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*GetEventsResponse, error)
+	// GetChannelsWithResponse request
+	GetChannelsWithResponse(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*GetChannelsResponse, error)
+
+	// PostChannelsWithBodyWithResponse request with any body
+	PostChannelsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error)
+
+	PostChannelsWithResponse(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error)
+
+	// DeleteChannelsChannelIdWithResponse request
+	DeleteChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteChannelsChannelIdResponse, error)
+
+	// GetChannelsChannelIdWithResponse request
+	GetChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdResponse, error)
+
+	// GetChannelsChannelIdEventsWithResponse request
+	GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error)
+
+	// PostChannelsChannelIdOperationsWithBodyWithResponse request with any body
+	PostChannelsChannelIdOperationsWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error)
+
+	PostChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error)
+
+	// GetChannelsChannelIdOperationsOperationIdWithResponse request
+	GetChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsOperationIdResponse, error)
+
+	// GetChannelsChannelIdWatchersWithResponse request
+	GetChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersResponse, error)
+
+	// PostChannelsChannelIdWatchersWithBodyWithResponse request with any body
+	PostChannelsChannelIdWatchersWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error)
+
+	PostChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error)
+
+	// DeleteChannelsChannelIdWatchersWatcherIdWithResponse request
+	DeleteChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteChannelsChannelIdWatchersWatcherIdResponse, error)
+
+	// GetChannelsChannelIdWatchersWatcherIdWithResponse request
+	GetChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersWatcherIdResponse, error)
 
 	// PostEventsWithBodyWithResponse request with any body
 	PostEventsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostEventsResponse, error)
 
 	PostEventsWithResponse(ctx context.Context, body PostEventsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostEventsResponse, error)
 
-	// GetEventsEventIdWithResponse request
-	GetEventsEventIdWithResponse(ctx context.Context, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetEventsEventIdResponse, error)
-
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
-
-	// GetListenersWithResponse request
-	GetListenersWithResponse(ctx context.Context, params *GetListenersParams, reqEditors ...RequestEditorFn) (*GetListenersResponse, error)
-
-	// PostListenersWithBodyWithResponse request with any body
-	PostListenersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostListenersResponse, error)
-
-	PostListenersWithResponse(ctx context.Context, body PostListenersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostListenersResponse, error)
-
-	// DeleteListenersListenerIdWithResponse request
-	DeleteListenersListenerIdWithResponse(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteListenersListenerIdResponse, error)
-
-	// GetListenersListenerIdWithResponse request
-	GetListenersListenerIdWithResponse(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetListenersListenerIdResponse, error)
-
-	// PostOperationStatusWithBodyWithResponse request with any body
-	PostOperationStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error)
-
-	PostOperationStatusWithResponse(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error)
-
-	// GetOperationsWithResponse request
-	GetOperationsWithResponse(ctx context.Context, params *GetOperationsParams, reqEditors ...RequestEditorFn) (*GetOperationsResponse, error)
-
-	// PostOperationsWithBodyWithResponse request with any body
-	PostOperationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationsResponse, error)
-
-	PostOperationsWithResponse(ctx context.Context, body PostOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationsResponse, error)
-
-	// GetOperationsOperationIdWithResponse request
-	GetOperationsOperationIdWithResponse(ctx context.Context, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetOperationsOperationIdResponse, error)
 }
 
 type GetAccountsResponse struct {
@@ -2159,14 +2399,15 @@ func (r PatchAccountsAccountIdResponse) StatusCode() int {
 	return 0
 }
 
-type GetEventsResponse struct {
+type GetChannelsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *EventList
+	JSON200      *ChannelList
+	JSON500      *ApplicationError
 }
 
 // Status returns HTTPResponse.Status
-func (r GetEventsResponse) Status() string {
+func (r GetChannelsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -2174,7 +2415,248 @@ func (r GetEventsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetEventsResponse) StatusCode() int {
+func (r GetChannelsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChannelsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Channel
+	JSON400      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChannelsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChannelsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChannelsChannelIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChannelsChannelIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChannelsChannelIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Channel
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdEventsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *[]Event
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdEventsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdEventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChannelsChannelIdOperationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *OperationResponse
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChannelsChannelIdOperationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChannelsChannelIdOperationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdOperationsOperationIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdOperationsOperationIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdOperationsOperationIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdWatchersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WatcherList
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdWatchersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdWatchersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PostChannelsChannelIdWatchersResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Watcher
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PostChannelsChannelIdWatchersResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostChannelsChannelIdWatchersResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type DeleteChannelsChannelIdWatchersWatcherIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteChannelsChannelIdWatchersWatcherIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdWatchersWatcherIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Watcher
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdWatchersWatcherIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2184,7 +2666,10 @@ func (r GetEventsResponse) StatusCode() int {
 type PostEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON201      *Event
+	JSON201      *struct {
+		// EventId Unique identifier for the created event
+		EventId openapi_types.UUID `json:"event_id"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -2197,28 +2682,6 @@ func (r PostEventsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r PostEventsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetEventsEventIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Event
-}
-
-// Status returns HTTPResponse.Status
-func (r GetEventsEventIdResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetEventsEventIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2241,180 +2704,6 @@ func (r GetHealthCheckResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetHealthCheckResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetListenersResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ListenerList
-}
-
-// Status returns HTTPResponse.Status
-func (r GetListenersResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetListenersResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostListenersResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *Listener
-}
-
-// Status returns HTTPResponse.Status
-func (r PostListenersResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostListenersResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type DeleteListenersListenerIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r DeleteListenersListenerIdResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r DeleteListenersListenerIdResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetListenersListenerIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Listener
-}
-
-// Status returns HTTPResponse.Status
-func (r GetListenersListenerIdResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetListenersListenerIdResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostOperationStatusResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PostOperationStatusResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostOperationStatusResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetOperationsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *OperationList
-}
-
-// Status returns HTTPResponse.Status
-func (r GetOperationsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetOperationsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostOperationsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *Operation
-}
-
-// Status returns HTTPResponse.Status
-func (r PostOperationsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostOperationsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetOperationsOperationIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Operation
-}
-
-// Status returns HTTPResponse.Status
-func (r GetOperationsOperationIdResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetOperationsOperationIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2473,13 +2762,127 @@ func (c *ClientWithResponses) PatchAccountsAccountIdWithResponse(ctx context.Con
 	return ParsePatchAccountsAccountIdResponse(rsp)
 }
 
-// GetEventsWithResponse request returning *GetEventsResponse
-func (c *ClientWithResponses) GetEventsWithResponse(ctx context.Context, params *GetEventsParams, reqEditors ...RequestEditorFn) (*GetEventsResponse, error) {
-	rsp, err := c.GetEvents(ctx, params, reqEditors...)
+// GetChannelsWithResponse request returning *GetChannelsResponse
+func (c *ClientWithResponses) GetChannelsWithResponse(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*GetChannelsResponse, error) {
+	rsp, err := c.GetChannels(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetEventsResponse(rsp)
+	return ParseGetChannelsResponse(rsp)
+}
+
+// PostChannelsWithBodyWithResponse request with arbitrary body returning *PostChannelsResponse
+func (c *ClientWithResponses) PostChannelsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error) {
+	rsp, err := c.PostChannelsWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChannelsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChannelsWithResponse(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error) {
+	rsp, err := c.PostChannels(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChannelsResponse(rsp)
+}
+
+// DeleteChannelsChannelIdWithResponse request returning *DeleteChannelsChannelIdResponse
+func (c *ClientWithResponses) DeleteChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteChannelsChannelIdResponse, error) {
+	rsp, err := c.DeleteChannelsChannelId(ctx, channelId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChannelsChannelIdResponse(rsp)
+}
+
+// GetChannelsChannelIdWithResponse request returning *GetChannelsChannelIdResponse
+func (c *ClientWithResponses) GetChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdResponse, error) {
+	rsp, err := c.GetChannelsChannelId(ctx, channelId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdResponse(rsp)
+}
+
+// GetChannelsChannelIdEventsWithResponse request returning *GetChannelsChannelIdEventsResponse
+func (c *ClientWithResponses) GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error) {
+	rsp, err := c.GetChannelsChannelIdEvents(ctx, channelId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdEventsResponse(rsp)
+}
+
+// PostChannelsChannelIdOperationsWithBodyWithResponse request with arbitrary body returning *PostChannelsChannelIdOperationsResponse
+func (c *ClientWithResponses) PostChannelsChannelIdOperationsWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error) {
+	rsp, err := c.PostChannelsChannelIdOperationsWithBody(ctx, channelId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChannelsChannelIdOperationsResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error) {
+	rsp, err := c.PostChannelsChannelIdOperations(ctx, channelId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChannelsChannelIdOperationsResponse(rsp)
+}
+
+// GetChannelsChannelIdOperationsOperationIdWithResponse request returning *GetChannelsChannelIdOperationsOperationIdResponse
+func (c *ClientWithResponses) GetChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsOperationIdResponse, error) {
+	rsp, err := c.GetChannelsChannelIdOperationsOperationId(ctx, channelId, operationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdOperationsOperationIdResponse(rsp)
+}
+
+// GetChannelsChannelIdWatchersWithResponse request returning *GetChannelsChannelIdWatchersResponse
+func (c *ClientWithResponses) GetChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersResponse, error) {
+	rsp, err := c.GetChannelsChannelIdWatchers(ctx, channelId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdWatchersResponse(rsp)
+}
+
+// PostChannelsChannelIdWatchersWithBodyWithResponse request with arbitrary body returning *PostChannelsChannelIdWatchersResponse
+func (c *ClientWithResponses) PostChannelsChannelIdWatchersWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error) {
+	rsp, err := c.PostChannelsChannelIdWatchersWithBody(ctx, channelId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChannelsChannelIdWatchersResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error) {
+	rsp, err := c.PostChannelsChannelIdWatchers(ctx, channelId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostChannelsChannelIdWatchersResponse(rsp)
+}
+
+// DeleteChannelsChannelIdWatchersWatcherIdWithResponse request returning *DeleteChannelsChannelIdWatchersWatcherIdResponse
+func (c *ClientWithResponses) DeleteChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteChannelsChannelIdWatchersWatcherIdResponse, error) {
+	rsp, err := c.DeleteChannelsChannelIdWatchersWatcherId(ctx, channelId, watcherId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteChannelsChannelIdWatchersWatcherIdResponse(rsp)
+}
+
+// GetChannelsChannelIdWatchersWatcherIdWithResponse request returning *GetChannelsChannelIdWatchersWatcherIdResponse
+func (c *ClientWithResponses) GetChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersWatcherIdResponse, error) {
+	rsp, err := c.GetChannelsChannelIdWatchersWatcherId(ctx, channelId, watcherId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp)
 }
 
 // PostEventsWithBodyWithResponse request with arbitrary body returning *PostEventsResponse
@@ -2499,15 +2902,6 @@ func (c *ClientWithResponses) PostEventsWithResponse(ctx context.Context, body P
 	return ParsePostEventsResponse(rsp)
 }
 
-// GetEventsEventIdWithResponse request returning *GetEventsEventIdResponse
-func (c *ClientWithResponses) GetEventsEventIdWithResponse(ctx context.Context, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetEventsEventIdResponse, error) {
-	rsp, err := c.GetEventsEventId(ctx, eventId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetEventsEventIdResponse(rsp)
-}
-
 // GetHealthCheckWithResponse request returning *GetHealthCheckResponse
 func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error) {
 	rsp, err := c.GetHealthCheck(ctx, reqEditors...)
@@ -2515,102 +2909,6 @@ func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseGetHealthCheckResponse(rsp)
-}
-
-// GetListenersWithResponse request returning *GetListenersResponse
-func (c *ClientWithResponses) GetListenersWithResponse(ctx context.Context, params *GetListenersParams, reqEditors ...RequestEditorFn) (*GetListenersResponse, error) {
-	rsp, err := c.GetListeners(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetListenersResponse(rsp)
-}
-
-// PostListenersWithBodyWithResponse request with arbitrary body returning *PostListenersResponse
-func (c *ClientWithResponses) PostListenersWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostListenersResponse, error) {
-	rsp, err := c.PostListenersWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostListenersResponse(rsp)
-}
-
-func (c *ClientWithResponses) PostListenersWithResponse(ctx context.Context, body PostListenersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostListenersResponse, error) {
-	rsp, err := c.PostListeners(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostListenersResponse(rsp)
-}
-
-// DeleteListenersListenerIdWithResponse request returning *DeleteListenersListenerIdResponse
-func (c *ClientWithResponses) DeleteListenersListenerIdWithResponse(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteListenersListenerIdResponse, error) {
-	rsp, err := c.DeleteListenersListenerId(ctx, listenerId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseDeleteListenersListenerIdResponse(rsp)
-}
-
-// GetListenersListenerIdWithResponse request returning *GetListenersListenerIdResponse
-func (c *ClientWithResponses) GetListenersListenerIdWithResponse(ctx context.Context, listenerId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetListenersListenerIdResponse, error) {
-	rsp, err := c.GetListenersListenerId(ctx, listenerId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetListenersListenerIdResponse(rsp)
-}
-
-// PostOperationStatusWithBodyWithResponse request with arbitrary body returning *PostOperationStatusResponse
-func (c *ClientWithResponses) PostOperationStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error) {
-	rsp, err := c.PostOperationStatusWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOperationStatusResponse(rsp)
-}
-
-func (c *ClientWithResponses) PostOperationStatusWithResponse(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error) {
-	rsp, err := c.PostOperationStatus(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOperationStatusResponse(rsp)
-}
-
-// GetOperationsWithResponse request returning *GetOperationsResponse
-func (c *ClientWithResponses) GetOperationsWithResponse(ctx context.Context, params *GetOperationsParams, reqEditors ...RequestEditorFn) (*GetOperationsResponse, error) {
-	rsp, err := c.GetOperations(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetOperationsResponse(rsp)
-}
-
-// PostOperationsWithBodyWithResponse request with arbitrary body returning *PostOperationsResponse
-func (c *ClientWithResponses) PostOperationsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationsResponse, error) {
-	rsp, err := c.PostOperationsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOperationsResponse(rsp)
-}
-
-func (c *ClientWithResponses) PostOperationsWithResponse(ctx context.Context, body PostOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationsResponse, error) {
-	rsp, err := c.PostOperations(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOperationsResponse(rsp)
-}
-
-// GetOperationsOperationIdWithResponse request returning *GetOperationsOperationIdResponse
-func (c *ClientWithResponses) GetOperationsOperationIdWithResponse(ctx context.Context, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetOperationsOperationIdResponse, error) {
-	rsp, err := c.GetOperationsOperationId(ctx, operationId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetOperationsOperationIdResponse(rsp)
 }
 
 // ParseGetAccountsResponse parses an HTTP response from a GetAccountsWithResponse call
@@ -2773,26 +3071,440 @@ func ParsePatchAccountsAccountIdResponse(rsp *http.Response) (*PatchAccountsAcco
 	return response, nil
 }
 
-// ParseGetEventsResponse parses an HTTP response from a GetEventsWithResponse call
-func ParseGetEventsResponse(rsp *http.Response) (*GetEventsResponse, error) {
+// ParseGetChannelsResponse parses an HTTP response from a GetChannelsWithResponse call
+func ParseGetChannelsResponse(rsp *http.Response) (*GetChannelsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetEventsResponse{
+	response := &GetChannelsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest EventList
+		var dest ChannelList
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChannelsResponse parses an HTTP response from a PostChannelsWithResponse call
+func ParsePostChannelsResponse(rsp *http.Response) (*PostChannelsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChannelsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Channel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChannelsChannelIdResponse parses an HTTP response from a DeleteChannelsChannelIdWithResponse call
+func ParseDeleteChannelsChannelIdResponse(rsp *http.Response) (*DeleteChannelsChannelIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChannelsChannelIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdResponse parses an HTTP response from a GetChannelsChannelIdWithResponse call
+func ParseGetChannelsChannelIdResponse(rsp *http.Response) (*GetChannelsChannelIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Channel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdEventsResponse parses an HTTP response from a GetChannelsChannelIdEventsWithResponse call
+func ParseGetChannelsChannelIdEventsResponse(rsp *http.Response) (*GetChannelsChannelIdEventsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdEventsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest []Event
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChannelsChannelIdOperationsResponse parses an HTTP response from a PostChannelsChannelIdOperationsWithResponse call
+func ParsePostChannelsChannelIdOperationsResponse(rsp *http.Response) (*PostChannelsChannelIdOperationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChannelsChannelIdOperationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest OperationResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdOperationsOperationIdResponse parses an HTTP response from a GetChannelsChannelIdOperationsOperationIdWithResponse call
+func ParseGetChannelsChannelIdOperationsOperationIdResponse(rsp *http.Response) (*GetChannelsChannelIdOperationsOperationIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdOperationsOperationIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdWatchersResponse parses an HTTP response from a GetChannelsChannelIdWatchersWithResponse call
+func ParseGetChannelsChannelIdWatchersResponse(rsp *http.Response) (*GetChannelsChannelIdWatchersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdWatchersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WatcherList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostChannelsChannelIdWatchersResponse parses an HTTP response from a PostChannelsChannelIdWatchersWithResponse call
+func ParsePostChannelsChannelIdWatchersResponse(rsp *http.Response) (*PostChannelsChannelIdWatchersResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostChannelsChannelIdWatchersResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Watcher
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteChannelsChannelIdWatchersWatcherIdResponse parses an HTTP response from a DeleteChannelsChannelIdWatchersWatcherIdWithResponse call
+func ParseDeleteChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*DeleteChannelsChannelIdWatchersWatcherIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteChannelsChannelIdWatchersWatcherIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdWatchersWatcherIdResponse parses an HTTP response from a GetChannelsChannelIdWatchersWatcherIdWithResponse call
+func ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*GetChannelsChannelIdWatchersWatcherIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdWatchersWatcherIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Watcher
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
@@ -2814,37 +3526,14 @@ func ParsePostEventsResponse(rsp *http.Response) (*PostEventsResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest Event
+		var dest struct {
+			// EventId Unique identifier for the created event
+			EventId openapi_types.UUID `json:"event_id"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON201 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetEventsEventIdResponse parses an HTTP response from a GetEventsEventIdWithResponse call
-func ParseGetEventsEventIdResponse(rsp *http.Response) (*GetEventsEventIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetEventsEventIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Event
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
 
 	}
 
@@ -2867,194 +3556,6 @@ func ParseGetHealthCheckResponse(rsp *http.Response) (*GetHealthCheckResponse, e
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest HealthCheck
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetListenersResponse parses an HTTP response from a GetListenersWithResponse call
-func ParseGetListenersResponse(rsp *http.Response) (*GetListenersResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetListenersResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ListenerList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParsePostListenersResponse parses an HTTP response from a PostListenersWithResponse call
-func ParsePostListenersResponse(rsp *http.Response) (*PostListenersResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostListenersResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest Listener
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseDeleteListenersListenerIdResponse parses an HTTP response from a DeleteListenersListenerIdWithResponse call
-func ParseDeleteListenersListenerIdResponse(rsp *http.Response) (*DeleteListenersListenerIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &DeleteListenersListenerIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetListenersListenerIdResponse parses an HTTP response from a GetListenersListenerIdWithResponse call
-func ParseGetListenersListenerIdResponse(rsp *http.Response) (*GetListenersListenerIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetListenersListenerIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Listener
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParsePostOperationStatusResponse parses an HTTP response from a PostOperationStatusWithResponse call
-func ParsePostOperationStatusResponse(rsp *http.Response) (*PostOperationStatusResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostOperationStatusResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	return response, nil
-}
-
-// ParseGetOperationsResponse parses an HTTP response from a GetOperationsWithResponse call
-func ParseGetOperationsResponse(rsp *http.Response) (*GetOperationsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetOperationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest OperationList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParsePostOperationsResponse parses an HTTP response from a PostOperationsWithResponse call
-func ParsePostOperationsResponse(rsp *http.Response) (*PostOperationsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostOperationsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest Operation
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetOperationsOperationIdResponse parses an HTTP response from a GetOperationsOperationIdWithResponse call
-func ParseGetOperationsOperationIdResponse(rsp *http.Response) (*GetOperationsOperationIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetOperationsOperationIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Operation
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

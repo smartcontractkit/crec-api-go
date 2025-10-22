@@ -4,8 +4,11 @@
 package ginserver
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/oapi-codegen/runtime"
@@ -22,6 +25,51 @@ const (
 	BadRequest    ApplicationErrorType = "Bad request"
 	InternalError ApplicationErrorType = "Internal error"
 	NotFound      ApplicationErrorType = "Not found"
+)
+
+// Defines values for EventABIType.
+const (
+	EventABITypeEvent EventABIType = "event"
+)
+
+// Defines values for OperationStatusPayloadStatus.
+const (
+	OperationStatusPayloadStatusConfirmed OperationStatusPayloadStatus = "confirmed"
+	OperationStatusPayloadStatusFailed    OperationStatusPayloadStatus = "failed"
+	OperationStatusPayloadStatusPending   OperationStatusPayloadStatus = "pending"
+	OperationStatusPayloadStatusSent      OperationStatusPayloadStatus = "sent"
+)
+
+// Defines values for OperationStatusPayloadType.
+const (
+	OperationStatusPayloadTypeOperationStatus OperationStatusPayloadType = "operation.status"
+)
+
+// Defines values for WatcherEventPayloadType.
+const (
+	WatcherEventPayloadTypeWatcherEvent WatcherEventPayloadType = "watcher.event"
+)
+
+// Defines values for WatcherStatusPayloadStatus.
+const (
+	WatcherStatusPayloadStatusDeleted   WatcherStatusPayloadStatus = "deleted"
+	WatcherStatusPayloadStatusDeleting  WatcherStatusPayloadStatus = "deleting"
+	WatcherStatusPayloadStatusDeploying WatcherStatusPayloadStatus = "deploying"
+	WatcherStatusPayloadStatusFailed    WatcherStatusPayloadStatus = "failed"
+	WatcherStatusPayloadStatusPending   WatcherStatusPayloadStatus = "pending"
+	WatcherStatusPayloadStatusRemoved   WatcherStatusPayloadStatus = "removed"
+)
+
+// Defines values for WatcherStatusPayloadType.
+const (
+	WatcherStatus WatcherStatusPayloadType = "watcher.status"
+)
+
+// Defines values for GetChannelsChannelIdEventsParamsType.
+const (
+	GetChannelsChannelIdEventsParamsTypeOperationStatus GetChannelsChannelIdEventsParamsType = "operation.status"
+	GetChannelsChannelIdEventsParamsTypeWatcherEvent    GetChannelsChannelIdEventsParamsType = "watcher.event"
+	GetChannelsChannelIdEventsParamsTypeWatcherStatus   GetChannelsChannelIdEventsParamsType = "watcher.status"
 )
 
 // Account defines model for Account.
@@ -59,6 +107,29 @@ type ApplicationError struct {
 // ApplicationErrorType Error type
 type ApplicationErrorType string
 
+// Channel defines model for Channel.
+type Channel struct {
+	// ChannelId Unique identifier for the channel
+	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// CreatedAt Timestamp of when the channel was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Name Name of the channel
+	Name string `json:"name"`
+
+	// TenantId Identifier of the tenant that owns this channel
+	TenantId string `json:"tenant_id"`
+}
+
+// ChannelList defines model for ChannelList.
+type ChannelList struct {
+	Data []Channel `json:"data"`
+
+	// HasMore True if there are more channels to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // CreateAccount defines model for CreateAccount.
 type CreateAccount struct {
 	// Address EVM account address (42-character hex string starting with 0x)
@@ -71,109 +142,140 @@ type CreateAccount struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CreateEvent defines model for CreateEvent.
-type CreateEvent struct {
-	// Address Smart contract address from which the event was emitted
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the event happened
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the event
+// CreateChannel defines model for CreateChannel.
+type CreateChannel struct {
+	// Name Name of the channel
 	Name string `json:"name"`
-
-	// OcrContext OCR context for the event
-	OcrContext string `json:"ocr_context"`
-
-	// OcrReport OCR report for the event
-	OcrReport string `json:"ocr_report"`
-
-	// Service Service namespace for the event
-	Service    string   `json:"service"`
-	Signatures []string `json:"signatures"`
-
-	// VerifiableEvent Base64 encoded verifiable event
-	VerifiableEvent string `json:"verifiable_event"`
-}
-
-// CreateListener defines model for CreateListener.
-type CreateListener struct {
-	// Address Smart contract address to listen for events
-	Address string `json:"address"`
-
-	// ChainFamily (Optional) the network to use.
-	ChainFamily *string `json:"chain_family,omitempty"`
-
-	// ChainId The id that identifies the chain where the listener will run
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the event to listen for
-	Name    string             `json:"name"`
-	Options *map[string]string `json:"options,omitempty"`
-
-	// Service Service namespace for the listener
-	Service string `json:"service"`
 }
 
 // CreateOperation defines model for CreateOperation.
 type CreateOperation struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
+	// Address Account address performing the operation
+	Address string `json:"address"`
 
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
+	// ChainFamily The blockchain family
+	ChainFamily *string `json:"chain_family,omitempty"`
 
-	// ChainId The id that identifies the chain where the account performing the operation lives
+	// ChainId The ID that identifies the chain where the operation will be executed
 	ChainId string `json:"chain_id"`
 
 	// Signature EIP-712 signature of the operation
-	Signature    string               `json:"signature"`
+	Signature string `json:"signature"`
+
+	// Transactions List of transactions to execute
 	Transactions []TransactionRequest `json:"transactions"`
+
+	// WalletOperationId Unique wallet operation identifier
+	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// CreateWatcher defines model for CreateWatcher.
+type CreateWatcher struct {
+	union json.RawMessage
+}
+
+// CreateWatcherWithABI defines model for CreateWatcherWithABI.
+type CreateWatcherWithABI struct {
+	// Abi ABI definitions for the events to watch
+	Abi []EventABI `json:"abi"`
+
+	// Address Smart contract address to watch for events
+	Address string `json:"address"`
+
+	// ChainFamily The blockchain family
+	ChainFamily *string `json:"chain_family,omitempty"`
+
+	// ChainId The ID that identifies the chain where the watcher will run
+	ChainId string `json:"chain_id"`
+
+	// Events List of event names to watch for
+	Events []string `json:"events"`
+}
+
+// CreateWatcherWithDomain defines model for CreateWatcherWithDomain.
+type CreateWatcherWithDomain struct {
+	// Address Smart contract address to watch for events
+	Address string `json:"address"`
+
+	// ChainFamily The blockchain family
+	ChainFamily *string `json:"chain_family,omitempty"`
+
+	// ChainId The ID that identifies the chain where the watcher will run
+	ChainId string `json:"chain_id"`
+
+	// Domain Service domain namespace (e.g., "dvp", "dta")
+	Domain string `json:"domain"`
+
+	// Events List of event names to watch for within the domain
+	Events []string `json:"events"`
 }
 
 // Event defines model for Event.
 type Event struct {
-	// Address The address of the smart contract from which the event was emitted
-	Address string `json:"address"`
+	Headers EventHeaders  `json:"headers"`
+	Payload Event_Payload `json:"payload"`
+}
 
-	// ChainId The id that identifies the chain where the event happened
-	ChainId string `json:"chain_id"`
+// Event_Payload defines model for Event.Payload.
+type Event_Payload struct {
+	union json.RawMessage
+}
 
-	// CreatedAt Timestamp of when the event was created
-	CreatedAt int64 `json:"created_at"`
+// EventABI defines model for EventABI.
+type EventABI struct {
+	// Anonymous Whether the event is anonymous
+	Anonymous bool `json:"anonymous"`
 
-	// EventHash Deterministic event hash - keccak256(service.name.base64payload)
-	EventHash string `json:"event_hash"`
-
-	// EventId Unique identifier for the event
-	EventId openapi_types.UUID `json:"event_id"`
-
-	// ListenerId Listener UUID that emitted the event
-	ListenerId openapi_types.UUID `json:"listener_id"`
+	// Inputs Event input parameters
+	Inputs []EventABIInput `json:"inputs"`
 
 	// Name Name of the event
 	Name string `json:"name"`
 
-	// OcrContext OCR context for the event
-	OcrContext string `json:"ocr_context"`
-
-	// OcrReport OCR report for the event
-	OcrReport string `json:"ocr_report"`
-
-	// Service Service namespace for the event
-	Service    string   `json:"service"`
-	Signatures []string `json:"signatures"`
-
-	// VerifiableEvent Base64 encoded verifiable event
-	VerifiableEvent string `json:"verifiable_event"`
+	// Type Type must be 'event'
+	Type EventABIType `json:"type"`
 }
 
-// EventList defines model for EventList.
-type EventList struct {
-	Data []Event `json:"data"`
+// EventABIType Type must be 'event'
+type EventABIType string
 
-	// HasMore True if there are more events to fetch
-	HasMore bool `json:"has_more"`
+// EventABIInput defines model for EventABIInput.
+type EventABIInput struct {
+	// Indexed Whether the parameter is indexed
+	Indexed bool `json:"indexed"`
+
+	// InternalType Internal Solidity type
+	InternalType string `json:"internalType"`
+
+	// Name Parameter name
+	Name string `json:"name"`
+
+	// Type Parameter type
+	Type string `json:"type"`
+}
+
+// EventHeaders defines model for EventHeaders.
+type EventHeaders struct {
+	// Offset Unique offset for message ordering
+	Offset string                     `json:"offset"`
+	Proofs []EventHeaders_Proofs_Item `json:"proofs"`
+}
+
+// EventHeadersProofs1 Generic proof object for future extensibility
+type EventHeadersProofs1 map[string]interface{}
+
+// EventHeaders_Proofs_Item defines model for EventHeaders.proofs.Item.
+type EventHeaders_Proofs_Item struct {
+	union json.RawMessage
+}
+
+// EventTransaction defines model for EventTransaction.
+type EventTransaction struct {
+	// Hash Transaction hash
+	Hash string `json:"hash"`
+
+	// Timestamp Transaction timestamp
+	Timestamp int64 `json:"timestamp"`
 }
 
 // HealthCheck defines model for HealthCheck.
@@ -181,55 +283,31 @@ type HealthCheck struct {
 	Status string `json:"status"`
 }
 
-// Listener defines model for Listener.
-type Listener struct {
-	// Address Smart contract address to listen for events
-	Address string `json:"address"`
+// OCRProof defines model for OCRProof.
+type OCRProof struct {
+	// Alg Algorithm used for the proof
+	Alg string `json:"alg"`
 
-	// ChainId The id that identifies the chain where the listener will run
-	ChainId string `json:"chain_id"`
+	// OcrContext OCR context data
+	OcrContext string `json:"ocr_context"`
 
-	// CreatedAt Timestamp of when the listener was created
-	CreatedAt int64 `json:"created_at"`
+	// OcrReport OCR report data
+	OcrReport string `json:"ocr_report"`
 
-	// ListenerId Unique identifier for the listener
-	ListenerId openapi_types.UUID `json:"listener_id"`
-
-	// Name Name of the event to listen for
-	Name    string            `json:"name"`
-	Options map[string]string `json:"options"`
-
-	// Service Service namespace for the listener
-	Service string `json:"service"`
-
-	// Status Current status of the listener
-	Status string `json:"status"`
-}
-
-// ListenerList defines model for ListenerList.
-type ListenerList struct {
-	Data []Listener `json:"data"`
-
-	// HasMore True if there are more listeners to fetch
-	HasMore bool `json:"has_more"`
+	// Signatures Array of signatures
+	Signatures []string `json:"signatures"`
 }
 
 // Operation defines model for Operation.
 type Operation struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
+	// Address Account address performing the operation
+	Address string `json:"address"`
 
-	// AccountId Identifier of the account performing the operation
-	AccountId openapi_types.UUID `json:"account_id"`
+	// ChainFamily The blockchain family
+	ChainFamily string `json:"chain_family"`
 
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
-
-	// ChainId The id that identifies the chain where the account performing the operation lives
+	// ChainId The ID that identifies the chain where the operation is executed
 	ChainId string `json:"chain_id"`
-
-	// ConfirmedAt Timestamp of when the operation was confirmed
-	ConfirmedAt *int64 `json:"confirmed_at,omitempty"`
 
 	// CreatedAt Timestamp of when the operation was created
 	CreatedAt int64 `json:"created_at"`
@@ -243,30 +321,47 @@ type Operation struct {
 	// Status Current status of the operation
 	Status string `json:"status"`
 
-	// TransactionHash Onchain transaction hash which included the operation
-	TransactionHash *string       `json:"transaction_hash,omitempty"`
-	Transactions    []Transaction `json:"transactions"`
+	// Transactions List of transactions to execute
+	Transactions []TransactionRequest `json:"transactions"`
+
+	// WalletOperationId Unique wallet operation identifier
+	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationList defines model for OperationList.
-type OperationList struct {
-	Data []Operation `json:"data"`
-
-	// HasMore True if there are more operations to fetch
-	HasMore bool `json:"has_more"`
+// OperationResponse defines model for OperationResponse.
+type OperationResponse struct {
+	// OperationId Unique identifier for the operation
+	OperationId openapi_types.UUID `json:"operation_id"`
 }
 
-// Transaction defines model for Transaction.
-type Transaction struct {
-	// Data Hex-encoded calldata for the transaction
-	Data string `json:"data"`
+// OperationStatusPayload defines model for OperationStatusPayload.
+type OperationStatusPayload struct {
+	// AccountOperationId Account operation identifier
+	AccountOperationId string `json:"account_operation_id"`
 
-	// To Address receiving the transaction
-	To string `json:"to"`
+	// Address Account address
+	Address string `json:"address"`
 
-	// Value Amount of native token value being sent in the transaction
-	Value string `json:"value"`
+	// ChainFamily Blockchain family (e.g., evm)
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain identifier
+	ChainId string `json:"chain_id"`
+
+	// Status Current status of the operation
+	Status OperationStatusPayloadStatus `json:"status"`
+
+	// StatusReason Reason for the status
+	StatusReason string                     `json:"status_reason"`
+	Transaction  *EventTransaction          `json:"transaction,omitempty"`
+	Type         OperationStatusPayloadType `json:"type"`
 }
+
+// OperationStatusPayloadStatus Current status of the operation
+type OperationStatusPayloadStatus string
+
+// OperationStatusPayloadType defines model for OperationStatusPayload.Type.
+type OperationStatusPayloadType string
 
 // TransactionRequest defines model for TransactionRequest.
 type TransactionRequest struct {
@@ -286,23 +381,156 @@ type UpdateAccount struct {
 	Name string `json:"name"`
 }
 
-// UpdateOperationStatus defines model for UpdateOperationStatus.
-type UpdateOperationStatus struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
+// Watcher defines model for Watcher.
+type Watcher struct {
+	// Abi ABI definitions for the events (if not using domain-based events)
+	Abi *[]EventABI `json:"abi,omitempty"`
 
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
+	// Address Smart contract address being watched
+	Address string `json:"address"`
 
-	// ChainId The id that identifies the chain where the account performing the operation lives
+	// ChainFamily The blockchain family
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId The ID that identifies the chain where the watcher runs
 	ChainId string `json:"chain_id"`
 
-	// TransactionHash Onchain transaction hash which included the operation
-	TransactionHash string `json:"transaction_hash"`
+	// ChannelId ID of the channel this watcher belongs to
+	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// TransactionTimestamp Timestamp of onchain transaction which included the operation
-	TransactionTimestamp int `json:"transaction_timestamp"`
+	// CreatedAt Timestamp of when the watcher was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Domain Service domain namespace (if using domain-based events)
+	Domain *string `json:"domain,omitempty"`
+
+	// Events List of event names being watched
+	Events []string `json:"events"`
+
+	// Status Current status of the watcher
+	Status string `json:"status"`
+
+	// WatcherId Unique identifier for the watcher
+	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
+
+// WatcherDetectedEvent defines model for WatcherDetectedEvent.
+type WatcherDetectedEvent struct {
+	// Address The address of the smart contract from which the event was emitted
+	Address string `json:"address"`
+
+	// ChainId The id that identifies the chain where the event happened
+	ChainId string `json:"chain_id"`
+
+	// CreatedAt Timestamp of when the event was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Domain Domain namespace for the event
+	Domain string `json:"domain"`
+
+	// EventHash Deterministic event hash - keccak256(domain.name.base64payload)
+	EventHash string `json:"event_hash"`
+
+	// EventId Unique identifier for the event
+	EventId openapi_types.UUID `json:"event_id"`
+
+	// Name Name of the event
+	Name string `json:"name"`
+
+	// OcrContext OCR context for the event
+	OcrContext string `json:"ocr_context"`
+
+	// OcrReport OCR report for the event
+	OcrReport  string   `json:"ocr_report"`
+	Signatures []string `json:"signatures"`
+
+	// VerifiableEvent Base64 encoded verifiable event
+	VerifiableEvent string `json:"verifiable_event"`
+
+	// WatcherId Watcher UUID that detected the event
+	WatcherId openapi_types.UUID `json:"watcher_id"`
+}
+
+// WatcherEvent defines model for WatcherEvent.
+type WatcherEvent struct {
+	// Data Event data - can be any structure
+	Data map[string]interface{} `json:"data"`
+
+	// Domain Domain associated with the event (optional)
+	Domain *string `json:"domain,omitempty"`
+
+	// EventName Name of the event
+	EventName string `json:"event_name"`
+
+	// LogIndex Log index in the transaction
+	LogIndex int `json:"log_index"`
+
+	// Metadata Event metadata - can be any structure
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+
+	// Timestamp Event timestamp
+	Timestamp time.Time `json:"timestamp"`
+
+	// TopicHash Event topic hash
+	TopicHash string `json:"topic_hash"`
+}
+
+// WatcherEventPayload defines model for WatcherEventPayload.
+type WatcherEventPayload struct {
+	// Address Contract address that emitted the event
+	Address string `json:"address"`
+
+	// ChainFamily Blockchain family (e.g., evm)
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain identifier
+	ChainId     string                  `json:"chain_id"`
+	Event       WatcherEvent            `json:"event"`
+	Transaction EventTransaction        `json:"transaction"`
+	Type        WatcherEventPayloadType `json:"type"`
+
+	// WatcherId Unique watcher identifier
+	WatcherId string `json:"watcher_id"`
+}
+
+// WatcherEventPayloadType defines model for WatcherEventPayload.Type.
+type WatcherEventPayloadType string
+
+// WatcherList defines model for WatcherList.
+type WatcherList struct {
+	Data []Watcher `json:"data"`
+
+	// HasMore True if there are more watchers to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WatcherStatusPayload defines model for WatcherStatusPayload.
+type WatcherStatusPayload struct {
+	// ChainFamily Blockchain family (e.g., evm)
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain identifier
+	ChainId string `json:"chain_id"`
+
+	// Status Current status of the watcher
+	Status WatcherStatusPayloadStatus `json:"status"`
+
+	// StatusCode Status code
+	StatusCode string `json:"status_code"`
+
+	// StatusReason Reason for the status
+	StatusReason string                   `json:"status_reason"`
+	Type         WatcherStatusPayloadType `json:"type"`
+
+	// WatcherId Unique watcher identifier
+	WatcherId string `json:"watcher_id"`
+}
+
+// WatcherStatusPayloadStatus Current status of the watcher
+type WatcherStatusPayloadStatus string
+
+// WatcherStatusPayloadType defines model for WatcherStatusPayload.Type.
+type WatcherStatusPayloadType string
 
 // GetAccountsParams defines parameters for GetAccounts.
 type GetAccountsParams struct {
@@ -319,103 +547,49 @@ type GetAccountsParams struct {
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetEventsParams defines parameters for GetEvents.
-type GetEventsParams struct {
-	// ListenerId Return only events emitted by this listener UUID
-	ListenerId *openapi_types.UUID `form:"listener_id,omitempty" json:"listener_id,omitempty"`
-
-	// ChainId Filter events by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// CreatedLt Filter events created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
-
-	// CreatedLte Filter events created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter events created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter events created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// Limit The number of events to return
+// GetChannelsParams defines parameters for GetChannels.
+type GetChannelsParams struct {
+	// Limit Maximum number of channels to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// StartingAfter Return events starting after this event UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
-
-	// EndingBefore Return events occurring before this event UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
+	// Offset Number of channels to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetListenersParams defines parameters for GetListeners.
-type GetListenersParams struct {
-	// ChainId Filter listeners by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// Status Filter listeners by status
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
-
-	// Name Filter listeners by name
-	Name *string `form:"name,omitempty" json:"name,omitempty"`
-
-	// Service Filter listeners by service
-	Service *string `form:"service,omitempty" json:"service,omitempty"`
-
-	// CreatedLt Filter events created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
-
-	// CreatedLte Filter events created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter events created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter events created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// Limit The number of events to return
+// GetChannelsChannelIdEventsParams defines parameters for GetChannelsChannelIdEvents.
+type GetChannelsChannelIdEventsParams struct {
+	// Limit Maximum number of events to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// StartingAfter Return events starting after this event UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
+	// Offset Offset for message-oriented pagination
+	Offset *string `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// EndingBefore Return events occurring before this event UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
+	// Type Filter events by type
+	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
 }
 
-// GetOperationsParams defines parameters for GetOperations.
-type GetOperationsParams struct {
-	// CreatedLt Filter operations created before this timestamp
-	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
+// GetChannelsChannelIdEventsParamsType defines parameters for GetChannelsChannelIdEvents.
+type GetChannelsChannelIdEventsParamsType string
 
-	// CreatedLte Filter operations created at or before this timestamp
-	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
-
-	// CreatedGt Filter operations created after this timestamp
-	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
-
-	// CreatedGte Filter operations created at or after this timestamp
-	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
-
-	// AccountName Filter operations by account name (partial match)
-	AccountName *string `form:"account_name,omitempty" json:"account_name,omitempty"`
-
-	// Status Filter operations by status
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
-
-	// ChainId Filter operations by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// Limit The number of operations to return
+// GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
+type GetChannelsChannelIdWatchersParams struct {
+	// Limit Maximum number of watchers to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// StartingAfter Return operations starting after this operation UUID
-	StartingAfter *openapi_types.UUID `form:"starting_after,omitempty" json:"starting_after,omitempty"`
+	// Offset Number of watchers to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// EndingBefore Return operations occurring before this operation UUID
-	EndingBefore *openapi_types.UUID `form:"ending_before,omitempty" json:"ending_before,omitempty"`
+	// ChainFamily Filter watchers by blockchain family
+	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
+
+	// ChainId Filter watchers by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Address Filter watchers by contract address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// EventName Filter watchers by event name
+	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
 // PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
@@ -424,17 +598,287 @@ type PostAccountsJSONRequestBody = CreateAccount
 // PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
 type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
 
+// PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
+type PostChannelsJSONRequestBody = CreateChannel
+
+// PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
+type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
+
+// PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
+type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
-type PostEventsJSONRequestBody = CreateEvent
+type PostEventsJSONRequestBody = WatcherDetectedEvent
 
-// PostListenersJSONRequestBody defines body for PostListeners for application/json ContentType.
-type PostListenersJSONRequestBody = CreateListener
+// AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
+func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
+	var body CreateWatcherWithDomain
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
 
-// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
-type PostOperationStatusJSONRequestBody = UpdateOperationStatus
+// FromCreateWatcherWithDomain overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithDomain
+func (t *CreateWatcher) FromCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+	v.Domain = "domain_present"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
 
-// PostOperationsJSONRequestBody defines body for PostOperations for application/json ContentType.
-type PostOperationsJSONRequestBody = CreateOperation
+// MergeCreateWatcherWithDomain performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithDomain
+func (t *CreateWatcher) MergeCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+	v.Domain = "domain_present"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCreateWatcherWithABI returns the union data inside the CreateWatcher as a CreateWatcherWithABI
+func (t CreateWatcher) AsCreateWatcherWithABI() (CreateWatcherWithABI, error) {
+	var body CreateWatcherWithABI
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCreateWatcherWithABI overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithABI
+func (t *CreateWatcher) FromCreateWatcherWithABI(v CreateWatcherWithABI) error {
+	v.Domain = "domain_absent"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCreateWatcherWithABI performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithABI
+func (t *CreateWatcher) MergeCreateWatcherWithABI(v CreateWatcherWithABI) error {
+	v.Domain = "domain_absent"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t CreateWatcher) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"domain"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t CreateWatcher) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "domain_absent":
+		return t.AsCreateWatcherWithABI()
+	case "domain_present":
+		return t.AsCreateWatcherWithDomain()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t CreateWatcher) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *CreateWatcher) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOperationStatusPayload returns the union data inside the Event_Payload as a OperationStatusPayload
+func (t Event_Payload) AsOperationStatusPayload() (OperationStatusPayload, error) {
+	var body OperationStatusPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOperationStatusPayload overwrites any union data inside the Event_Payload as the provided OperationStatusPayload
+func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) error {
+	v.Type = "OperationStatusPayload"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOperationStatusPayload performs a merge with any union data inside the Event_Payload, using the provided OperationStatusPayload
+func (t *Event_Payload) MergeOperationStatusPayload(v OperationStatusPayload) error {
+	v.Type = "OperationStatusPayload"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsWatcherStatusPayload returns the union data inside the Event_Payload as a WatcherStatusPayload
+func (t Event_Payload) AsWatcherStatusPayload() (WatcherStatusPayload, error) {
+	var body WatcherStatusPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWatcherStatusPayload overwrites any union data inside the Event_Payload as the provided WatcherStatusPayload
+func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
+	v.Type = "WatcherStatusPayload"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWatcherStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherStatusPayload
+func (t *Event_Payload) MergeWatcherStatusPayload(v WatcherStatusPayload) error {
+	v.Type = "WatcherStatusPayload"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsWatcherEventPayload returns the union data inside the Event_Payload as a WatcherEventPayload
+func (t Event_Payload) AsWatcherEventPayload() (WatcherEventPayload, error) {
+	var body WatcherEventPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWatcherEventPayload overwrites any union data inside the Event_Payload as the provided WatcherEventPayload
+func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
+	v.Type = "WatcherEventPayload"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWatcherEventPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherEventPayload
+func (t *Event_Payload) MergeWatcherEventPayload(v WatcherEventPayload) error {
+	v.Type = "WatcherEventPayload"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t Event_Payload) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t Event_Payload) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "OperationStatusPayload":
+		return t.AsOperationStatusPayload()
+	case "WatcherEventPayload":
+		return t.AsWatcherEventPayload()
+	case "WatcherStatusPayload":
+		return t.AsWatcherStatusPayload()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t Event_Payload) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *Event_Payload) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsOCRProof returns the union data inside the EventHeaders_Proofs_Item as a OCRProof
+func (t EventHeaders_Proofs_Item) AsOCRProof() (OCRProof, error) {
+	var body OCRProof
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromOCRProof overwrites any union data inside the EventHeaders_Proofs_Item as the provided OCRProof
+func (t *EventHeaders_Proofs_Item) FromOCRProof(v OCRProof) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeOCRProof performs a merge with any union data inside the EventHeaders_Proofs_Item, using the provided OCRProof
+func (t *EventHeaders_Proofs_Item) MergeOCRProof(v OCRProof) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsEventHeadersProofs1 returns the union data inside the EventHeaders_Proofs_Item as a EventHeadersProofs1
+func (t EventHeaders_Proofs_Item) AsEventHeadersProofs1() (EventHeadersProofs1, error) {
+	var body EventHeadersProofs1
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromEventHeadersProofs1 overwrites any union data inside the EventHeaders_Proofs_Item as the provided EventHeadersProofs1
+func (t *EventHeaders_Proofs_Item) FromEventHeadersProofs1(v EventHeadersProofs1) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeEventHeadersProofs1 performs a merge with any union data inside the EventHeaders_Proofs_Item, using the provided EventHeadersProofs1
+func (t *EventHeaders_Proofs_Item) MergeEventHeadersProofs1(v EventHeadersProofs1) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t EventHeaders_Proofs_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *EventHeaders_Proofs_Item) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -450,42 +894,45 @@ type ServerInterface interface {
 	// Updates an account name.
 	// (PATCH /accounts/{account_id})
 	PatchAccountsAccountId(c *gin.Context, accountId openapi_types.UUID)
-	// Retrieves events.
-	// (GET /events)
-	GetEvents(c *gin.Context, params GetEventsParams)
+	// Retrieves channels for the organization.
+	// (GET /channels)
+	GetChannels(c *gin.Context, params GetChannelsParams)
+	// Creates a new channel.
+	// (POST /channels)
+	PostChannels(c *gin.Context)
+	// Deletes a channel.
+	// (DELETE /channels/{channel_id})
+	DeleteChannelsChannelId(c *gin.Context, channelId openapi_types.UUID)
+	// Retrieves a specific channel by ID.
+	// (GET /channels/{channel_id})
+	GetChannelsChannelId(c *gin.Context, channelId openapi_types.UUID)
+	// Retrieves events from a channel.
+	// (GET /channels/{channel_id}/events)
+	GetChannelsChannelIdEvents(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams)
+	// Sends a CreateOperation request to a channel.
+	// (POST /channels/{channel_id}/operations)
+	PostChannelsChannelIdOperations(c *gin.Context, channelId openapi_types.UUID)
+	// Gets Operation record for a specific operation.
+	// (GET /channels/{channel_id}/operations/{operation_id})
+	GetChannelsChannelIdOperationsOperationId(c *gin.Context, channelId openapi_types.UUID, operationId openapi_types.UUID)
+	// Retrieves watchers for a channel.
+	// (GET /channels/{channel_id}/watchers)
+	GetChannelsChannelIdWatchers(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdWatchersParams)
+	// Creates a watcher in a channel.
+	// (POST /channels/{channel_id}/watchers)
+	PostChannelsChannelIdWatchers(c *gin.Context, channelId openapi_types.UUID)
+	// Deletes a watcher.
+	// (DELETE /channels/{channel_id}/watchers/{watcher_id})
+	DeleteChannelsChannelIdWatchersWatcherId(c *gin.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID)
+	// Retrieves a specific watcher by ID.
+	// (GET /channels/{channel_id}/watchers/{watcher_id})
+	GetChannelsChannelIdWatchersWatcherId(c *gin.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID)
 	// Creates a new event.
 	// (POST /events)
 	PostEvents(c *gin.Context)
-	// Retrieves a single event.
-	// (GET /events/{event_id})
-	GetEventsEventId(c *gin.Context, eventId openapi_types.UUID)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(c *gin.Context)
-	// Retrieves event listeners.
-	// (GET /listeners)
-	GetListeners(c *gin.Context, params GetListenersParams)
-	// Creates a new listener.
-	// (POST /listeners)
-	PostListeners(c *gin.Context)
-	// Deletes a listener.
-	// (DELETE /listeners/{listener_id})
-	DeleteListenersListenerId(c *gin.Context, listenerId openapi_types.UUID)
-	// Retrieves a single listener.
-	// (GET /listeners/{listener_id})
-	GetListenersListenerId(c *gin.Context, listenerId openapi_types.UUID)
-	// Updates the status of an operation.
-	// (POST /operation_status)
-	PostOperationStatus(c *gin.Context)
-	// Retrieves operations.
-	// (GET /operations)
-	GetOperations(c *gin.Context, params GetOperationsParams)
-	// Sends an onchain transaction.
-	// (POST /operations)
-	PostOperations(c *gin.Context)
-	// Retrieves the status of an operation.
-	// (GET /operations/{operation_id})
-	GetOperationsOperationId(c *gin.Context, operationId openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -616,63 +1063,15 @@ func (siw *ServerInterfaceWrapper) PatchAccountsAccountId(c *gin.Context) {
 	siw.Handler.PatchAccountsAccountId(c, accountId)
 }
 
-// GetEvents operation middleware
-func (siw *ServerInterfaceWrapper) GetEvents(c *gin.Context) {
+// GetChannels operation middleware
+func (siw *ServerInterfaceWrapper) GetChannels(c *gin.Context) {
 
 	var err error
 
 	c.Set(ApiKeyAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetEventsParams
-
-	// ------------- Optional query parameter "listener_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "listener_id", c.Request.URL.Query(), &params.ListenerId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter listener_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "chain_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.lt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lt", c.Request.URL.Query(), &params.CreatedLt)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lt: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.lte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lte", c.Request.URL.Query(), &params.CreatedLte)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lte: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.gt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gt", c.Request.URL.Query(), &params.CreatedGt)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gt: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.gte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gte", c.Request.URL.Query(), &params.CreatedGte)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gte: %w", err), http.StatusBadRequest)
-		return
-	}
+	var params GetChannelsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -682,19 +1081,11 @@ func (siw *ServerInterfaceWrapper) GetEvents(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "starting_after" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "starting_after", c.Request.URL.Query(), &params.StartingAfter)
+	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starting_after: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "ending_before" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "ending_before", c.Request.URL.Query(), &params.EndingBefore)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter ending_before: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -705,11 +1096,11 @@ func (siw *ServerInterfaceWrapper) GetEvents(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetEvents(c, params)
+	siw.Handler.GetChannels(c, params)
 }
 
-// PostEvents operation middleware
-func (siw *ServerInterfaceWrapper) PostEvents(c *gin.Context) {
+// PostChannels operation middleware
+func (siw *ServerInterfaceWrapper) PostChannels(c *gin.Context) {
 
 	c.Set(ApiKeyAuthScopes, []string{})
 
@@ -720,20 +1111,20 @@ func (siw *ServerInterfaceWrapper) PostEvents(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.PostEvents(c)
+	siw.Handler.PostChannels(c)
 }
 
-// GetEventsEventId operation middleware
-func (siw *ServerInterfaceWrapper) GetEventsEventId(c *gin.Context) {
+// DeleteChannelsChannelId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChannelsChannelId(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "event_id" -------------
-	var eventId openapi_types.UUID
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "event_id", c.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_id: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -746,11 +1137,22 @@ func (siw *ServerInterfaceWrapper) GetEventsEventId(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetEventsEventId(c, eventId)
+	siw.Handler.DeleteChannelsChannelId(c, channelId)
 }
 
-// GetHealthCheck operation middleware
-func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
+// GetChannelsChannelId operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
 
 	c.Set(ApiKeyAuthScopes, []string{})
 
@@ -761,82 +1163,27 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetHealthCheck(c)
+	siw.Handler.GetChannelsChannelId(c, channelId)
 }
 
-// GetListeners operation middleware
-func (siw *ServerInterfaceWrapper) GetListeners(c *gin.Context) {
+// GetChannelsChannelIdEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(c *gin.Context) {
 
 	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
 
 	c.Set(ApiKeyAuthScopes, []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetListenersParams
-
-	// ------------- Optional query parameter "chain_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "name" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "service" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "service", c.Request.URL.Query(), &params.Service)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.lt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lt", c.Request.URL.Query(), &params.CreatedLt)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lt: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.lte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lte", c.Request.URL.Query(), &params.CreatedLte)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lte: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.gt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gt", c.Request.URL.Query(), &params.CreatedGt)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gt: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.gte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gte", c.Request.URL.Query(), &params.CreatedGte)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gte: %w", err), http.StatusBadRequest)
-		return
-	}
+	var params GetChannelsChannelIdEventsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -846,19 +1193,19 @@ func (siw *ServerInterfaceWrapper) GetListeners(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "starting_after" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "starting_after", c.Request.URL.Query(), &params.StartingAfter)
+	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starting_after: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
 		return
 	}
 
-	// ------------- Optional query parameter "ending_before" -------------
+	// ------------- Optional query parameter "type" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "ending_before", c.Request.URL.Query(), &params.EndingBefore)
+	err = runtime.BindQueryParameter("form", true, false, "type", c.Request.URL.Query(), &params.Type)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter ending_before: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter type: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -869,35 +1216,20 @@ func (siw *ServerInterfaceWrapper) GetListeners(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetListeners(c, params)
+	siw.Handler.GetChannelsChannelIdEvents(c, channelId, params)
 }
 
-// PostListeners operation middleware
-func (siw *ServerInterfaceWrapper) PostListeners(c *gin.Context) {
-
-	c.Set(ApiKeyAuthScopes, []string{})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostListeners(c)
-}
-
-// DeleteListenersListenerId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteListenersListenerId(c *gin.Context) {
+// PostChannelsChannelIdOperations operation middleware
+func (siw *ServerInterfaceWrapper) PostChannelsChannelIdOperations(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "listener_id" -------------
-	var listenerId openapi_types.UUID
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "listener_id", c.Param("listener_id"), &listenerId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter listener_id: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -910,169 +1242,22 @@ func (siw *ServerInterfaceWrapper) DeleteListenersListenerId(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.DeleteListenersListenerId(c, listenerId)
+	siw.Handler.PostChannelsChannelIdOperations(c, channelId)
 }
 
-// GetListenersListenerId operation middleware
-func (siw *ServerInterfaceWrapper) GetListenersListenerId(c *gin.Context) {
+// GetChannelsChannelIdOperationsOperationId operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperationsOperationId(c *gin.Context) {
 
 	var err error
 
-	// ------------- Path parameter "listener_id" -------------
-	var listenerId openapi_types.UUID
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "listener_id", c.Param("listener_id"), &listenerId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter listener_id: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
 		return
 	}
-
-	c.Set(ApiKeyAuthScopes, []string{})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetListenersListenerId(c, listenerId)
-}
-
-// PostOperationStatus operation middleware
-func (siw *ServerInterfaceWrapper) PostOperationStatus(c *gin.Context) {
-
-	c.Set(ApiKeyAuthScopes, []string{})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostOperationStatus(c)
-}
-
-// GetOperations operation middleware
-func (siw *ServerInterfaceWrapper) GetOperations(c *gin.Context) {
-
-	var err error
-
-	c.Set(ApiKeyAuthScopes, []string{})
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetOperationsParams
-
-	// ------------- Optional query parameter "created.lt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lt", c.Request.URL.Query(), &params.CreatedLt)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lt: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.lte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.lte", c.Request.URL.Query(), &params.CreatedLte)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lte: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.gt" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gt", c.Request.URL.Query(), &params.CreatedGt)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gt: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "created.gte" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "created.gte", c.Request.URL.Query(), &params.CreatedGte)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gte: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "account_name" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "account_name", c.Request.URL.Query(), &params.AccountName)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter account_name: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "chain_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter limit: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "starting_after" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "starting_after", c.Request.URL.Query(), &params.StartingAfter)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter starting_after: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "ending_before" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "ending_before", c.Request.URL.Query(), &params.EndingBefore)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter ending_before: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.GetOperations(c, params)
-}
-
-// PostOperations operation middleware
-func (siw *ServerInterfaceWrapper) PostOperations(c *gin.Context) {
-
-	c.Set(ApiKeyAuthScopes, []string{})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostOperations(c)
-}
-
-// GetOperationsOperationId operation middleware
-func (siw *ServerInterfaceWrapper) GetOperationsOperationId(c *gin.Context) {
-
-	var err error
 
 	// ------------- Path parameter "operation_id" -------------
 	var operationId openapi_types.UUID
@@ -1092,7 +1277,210 @@ func (siw *ServerInterfaceWrapper) GetOperationsOperationId(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetOperationsOperationId(c, operationId)
+	siw.Handler.GetChannelsChannelIdOperationsOperationId(c, channelId, operationId)
+}
+
+// GetChannelsChannelIdWatchers operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChannelsChannelIdWatchersParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter limit: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_family" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_family", c.Request.URL.Query(), &params.ChainFamily)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_family: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "address" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address", c.Request.URL.Query(), &params.Address)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "event_name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "event_name", c.Request.URL.Query(), &params.EventName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChannelsChannelIdWatchers(c, channelId, params)
+}
+
+// PostChannelsChannelIdWatchers operation middleware
+func (siw *ServerInterfaceWrapper) PostChannelsChannelIdWatchers(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostChannelsChannelIdWatchers(c, channelId)
+}
+
+// DeleteChannelsChannelIdWatchersWatcherId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteChannelsChannelIdWatchersWatcherId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "watcher_id" -------------
+	var watcherId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "watcher_id", c.Param("watcher_id"), &watcherId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter watcher_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteChannelsChannelIdWatchersWatcherId(c, channelId, watcherId)
+}
+
+// GetChannelsChannelIdWatchersWatcherId operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchersWatcherId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "watcher_id" -------------
+	var watcherId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "watcher_id", c.Param("watcher_id"), &watcherId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter watcher_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChannelsChannelIdWatchersWatcherId(c, channelId, watcherId)
+}
+
+// PostEvents operation middleware
+func (siw *ServerInterfaceWrapper) PostEvents(c *gin.Context) {
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostEvents(c)
+}
+
+// GetHealthCheck operation middleware
+func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetHealthCheck(c)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -1126,16 +1514,17 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/accounts", wrapper.PostAccounts)
 	router.GET(options.BaseURL+"/accounts/:account_id", wrapper.GetAccountsAccountId)
 	router.PATCH(options.BaseURL+"/accounts/:account_id", wrapper.PatchAccountsAccountId)
-	router.GET(options.BaseURL+"/events", wrapper.GetEvents)
+	router.GET(options.BaseURL+"/channels", wrapper.GetChannels)
+	router.POST(options.BaseURL+"/channels", wrapper.PostChannels)
+	router.DELETE(options.BaseURL+"/channels/:channel_id", wrapper.DeleteChannelsChannelId)
+	router.GET(options.BaseURL+"/channels/:channel_id", wrapper.GetChannelsChannelId)
+	router.GET(options.BaseURL+"/channels/:channel_id/events", wrapper.GetChannelsChannelIdEvents)
+	router.POST(options.BaseURL+"/channels/:channel_id/operations", wrapper.PostChannelsChannelIdOperations)
+	router.GET(options.BaseURL+"/channels/:channel_id/operations/:operation_id", wrapper.GetChannelsChannelIdOperationsOperationId)
+	router.GET(options.BaseURL+"/channels/:channel_id/watchers", wrapper.GetChannelsChannelIdWatchers)
+	router.POST(options.BaseURL+"/channels/:channel_id/watchers", wrapper.PostChannelsChannelIdWatchers)
+	router.DELETE(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.DeleteChannelsChannelIdWatchersWatcherId)
+	router.GET(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	router.POST(options.BaseURL+"/events", wrapper.PostEvents)
-	router.GET(options.BaseURL+"/events/:event_id", wrapper.GetEventsEventId)
 	router.GET(options.BaseURL+"/health-check", wrapper.GetHealthCheck)
-	router.GET(options.BaseURL+"/listeners", wrapper.GetListeners)
-	router.POST(options.BaseURL+"/listeners", wrapper.PostListeners)
-	router.DELETE(options.BaseURL+"/listeners/:listener_id", wrapper.DeleteListenersListenerId)
-	router.GET(options.BaseURL+"/listeners/:listener_id", wrapper.GetListenersListenerId)
-	router.POST(options.BaseURL+"/operation_status", wrapper.PostOperationStatus)
-	router.GET(options.BaseURL+"/operations", wrapper.GetOperations)
-	router.POST(options.BaseURL+"/operations", wrapper.PostOperations)
-	router.GET(options.BaseURL+"/operations/:operation_id", wrapper.GetOperationsOperationId)
 }
