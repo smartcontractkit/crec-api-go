@@ -194,6 +194,9 @@ type CreateWatcherWithABI struct {
 
 	// Events List of event names to watch for
 	Events []string `json:"events"`
+
+	// Name Name for the watcher to help identify it
+	Name *string `json:"name,omitempty"`
 }
 
 // CreateWatcherWithDomain defines model for CreateWatcherWithDomain.
@@ -212,6 +215,9 @@ type CreateWatcherWithDomain struct {
 
 	// Events List of event names to watch for within the domain
 	Events []string `json:"events"`
+
+	// Name Name for the watcher to help identify it
+	Name *string `json:"name,omitempty"`
 }
 
 // Event defines model for Event.
@@ -332,6 +338,14 @@ type Operation struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
+// OperationList defines model for OperationList.
+type OperationList struct {
+	Data []Operation `json:"data"`
+
+	// HasMore True if there are more operations to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // OperationResponse defines model for OperationResponse.
 type OperationResponse struct {
 	// OperationId Unique identifier for the operation
@@ -410,6 +424,9 @@ type Watcher struct {
 
 	// Events List of event names being watched
 	Events []string `json:"events"`
+
+	// Name Name of the watcher for identification
+	Name *string `json:"name,omitempty"`
 
 	// Status Current status of the watcher
 	Status string `json:"status"`
@@ -553,6 +570,9 @@ type GetAccountsParams struct {
 
 // GetChannelsParams defines parameters for GetChannels.
 type GetChannelsParams struct {
+	// Name Filter channels by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
 	// Limit Maximum number of channels to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -570,10 +590,40 @@ type GetChannelsChannelIdEventsParams struct {
 
 	// Type Filter events by type
 	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// Status Filter by operation or watcher status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// EventName Filter by event name (for watcher.event type)
+	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
+
+	// Domain Filter by watcher domain (for watcher events)
+	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 }
 
 // GetChannelsChannelIdEventsParamsType defines parameters for GetChannelsChannelIdEvents.
 type GetChannelsChannelIdEventsParamsType string
+
+// GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
+type GetChannelsChannelIdOperationsParams struct {
+	// Limit Maximum number of operations to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of operations to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Status Filter operations by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainFamily Filter operations by blockchain family
+	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
+
+	// ChainId Filter operations by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Address Filter operations by account address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+}
 
 // GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
 type GetChannelsChannelIdWatchersParams struct {
@@ -583,6 +633,9 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Offset Number of watchers to skip for pagination
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
+	// Status Filter watchers by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
 	// ChainFamily Filter watchers by blockchain family
 	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
 
@@ -591,6 +644,9 @@ type GetChannelsChannelIdWatchersParams struct {
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// Domain Filter watchers by domain
+	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 
 	// EventName Filter watchers by event name
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
@@ -990,6 +1046,9 @@ type ClientInterface interface {
 	// GetChannelsChannelIdEvents request
 	GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetChannelsChannelIdOperations request
+	GetChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// PostChannelsChannelIdOperationsWithBody request with any body
 	PostChannelsChannelIdOperationsWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1155,6 +1214,18 @@ func (c *Client) GetChannelsChannelId(ctx context.Context, channelId openapi_typ
 
 func (c *Client) GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetChannelsChannelIdEventsRequest(c.Server, channelId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdOperationsRequest(c.Server, channelId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1537,6 +1608,22 @@ func NewGetChannelsRequest(server string, params *GetChannelsParams) (*http.Requ
 	if params != nil {
 		queryValues := queryURL.Query()
 
+		if params.Name != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Limit != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
@@ -1765,6 +1852,190 @@ func NewGetChannelsChannelIdEventsRequest(server string, channelId openapi_types
 
 		}
 
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EventName != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "event_name", runtime.ParamLocationQuery, *params.EventName); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Domain != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "domain", runtime.ParamLocationQuery, *params.Domain); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdOperationsRequest generates requests for GetChannelsChannelIdOperations
+func NewGetChannelsChannelIdOperationsRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/operations", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainFamily != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_family", runtime.ParamLocationQuery, *params.ChainFamily); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Address != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, *params.Address); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 
@@ -1925,6 +2196,22 @@ func NewGetChannelsChannelIdWatchersRequest(server string, channelId openapi_typ
 
 		}
 
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.ChainFamily != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_family", runtime.ParamLocationQuery, *params.ChainFamily); err != nil {
@@ -1960,6 +2247,22 @@ func NewGetChannelsChannelIdWatchersRequest(server string, channelId openapi_typ
 		if params.Address != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, *params.Address); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Domain != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "domain", runtime.ParamLocationQuery, *params.Domain); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2272,6 +2575,9 @@ type ClientWithResponsesInterface interface {
 	// GetChannelsChannelIdEventsWithResponse request
 	GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error)
 
+	// GetChannelsChannelIdOperationsWithResponse request
+	GetChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsResponse, error)
+
 	// PostChannelsChannelIdOperationsWithBodyWithResponse request with any body
 	PostChannelsChannelIdOperationsWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error)
 
@@ -2512,6 +2818,30 @@ func (r GetChannelsChannelIdEventsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetChannelsChannelIdEventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdOperationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *OperationList
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdOperationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdOperationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -2813,6 +3143,15 @@ func (c *ClientWithResponses) GetChannelsChannelIdEventsWithResponse(ctx context
 		return nil, err
 	}
 	return ParseGetChannelsChannelIdEventsResponse(rsp)
+}
+
+// GetChannelsChannelIdOperationsWithResponse request returning *GetChannelsChannelIdOperationsResponse
+func (c *ClientWithResponses) GetChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsResponse, error) {
+	rsp, err := c.GetChannelsChannelIdOperations(ctx, channelId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdOperationsResponse(rsp)
 }
 
 // PostChannelsChannelIdOperationsWithBodyWithResponse request with arbitrary body returning *PostChannelsChannelIdOperationsResponse
@@ -3244,6 +3583,46 @@ func ParseGetChannelsChannelIdEventsResponse(rsp *http.Response) (*GetChannelsCh
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdOperationsResponse parses an HTTP response from a GetChannelsChannelIdOperationsWithResponse call
+func ParseGetChannelsChannelIdOperationsResponse(rsp *http.Response) (*GetChannelsChannelIdOperationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdOperationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest OperationList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError

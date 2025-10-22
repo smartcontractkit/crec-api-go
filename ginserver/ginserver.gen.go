@@ -190,6 +190,9 @@ type CreateWatcherWithABI struct {
 
 	// Events List of event names to watch for
 	Events []string `json:"events"`
+
+	// Name Name for the watcher to help identify it
+	Name *string `json:"name,omitempty"`
 }
 
 // CreateWatcherWithDomain defines model for CreateWatcherWithDomain.
@@ -208,6 +211,9 @@ type CreateWatcherWithDomain struct {
 
 	// Events List of event names to watch for within the domain
 	Events []string `json:"events"`
+
+	// Name Name for the watcher to help identify it
+	Name *string `json:"name,omitempty"`
 }
 
 // Event defines model for Event.
@@ -328,6 +334,14 @@ type Operation struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
+// OperationList defines model for OperationList.
+type OperationList struct {
+	Data []Operation `json:"data"`
+
+	// HasMore True if there are more operations to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // OperationResponse defines model for OperationResponse.
 type OperationResponse struct {
 	// OperationId Unique identifier for the operation
@@ -406,6 +420,9 @@ type Watcher struct {
 
 	// Events List of event names being watched
 	Events []string `json:"events"`
+
+	// Name Name of the watcher for identification
+	Name *string `json:"name,omitempty"`
 
 	// Status Current status of the watcher
 	Status string `json:"status"`
@@ -549,6 +566,9 @@ type GetAccountsParams struct {
 
 // GetChannelsParams defines parameters for GetChannels.
 type GetChannelsParams struct {
+	// Name Filter channels by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
 	// Limit Maximum number of channels to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -566,10 +586,40 @@ type GetChannelsChannelIdEventsParams struct {
 
 	// Type Filter events by type
 	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// Status Filter by operation or watcher status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// EventName Filter by event name (for watcher.event type)
+	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
+
+	// Domain Filter by watcher domain (for watcher events)
+	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 }
 
 // GetChannelsChannelIdEventsParamsType defines parameters for GetChannelsChannelIdEvents.
 type GetChannelsChannelIdEventsParamsType string
+
+// GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
+type GetChannelsChannelIdOperationsParams struct {
+	// Limit Maximum number of operations to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of operations to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Status Filter operations by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainFamily Filter operations by blockchain family
+	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
+
+	// ChainId Filter operations by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Address Filter operations by account address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+}
 
 // GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
 type GetChannelsChannelIdWatchersParams struct {
@@ -579,6 +629,9 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Offset Number of watchers to skip for pagination
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
+	// Status Filter watchers by status
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
 	// ChainFamily Filter watchers by blockchain family
 	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
 
@@ -587,6 +640,9 @@ type GetChannelsChannelIdWatchersParams struct {
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// Domain Filter watchers by domain
+	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 
 	// EventName Filter watchers by event name
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
@@ -909,6 +965,9 @@ type ServerInterface interface {
 	// Retrieves events from a channel.
 	// (GET /channels/{channel_id}/events)
 	GetChannelsChannelIdEvents(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams)
+	// Retrieves operations for a channel.
+	// (GET /channels/{channel_id}/operations)
+	GetChannelsChannelIdOperations(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdOperationsParams)
 	// Sends a CreateOperation request to a channel.
 	// (POST /channels/{channel_id}/operations)
 	PostChannelsChannelIdOperations(c *gin.Context, channelId openapi_types.UUID)
@@ -1073,6 +1132,14 @@ func (siw *ServerInterfaceWrapper) GetChannels(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetChannelsParams
 
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "limit" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
@@ -1209,6 +1276,30 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "event_name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "event_name", c.Request.URL.Query(), &params.EventName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "domain" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "domain", c.Request.URL.Query(), &params.Domain)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter domain: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -1217,6 +1308,83 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(c *gin.Context) {
 	}
 
 	siw.Handler.GetChannelsChannelIdEvents(c, channelId, params)
+}
+
+// GetChannelsChannelIdOperations operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperations(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChannelsChannelIdOperationsParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter limit: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_family" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_family", c.Request.URL.Query(), &params.ChainFamily)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_family: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "address" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address", c.Request.URL.Query(), &params.Address)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChannelsChannelIdOperations(c, channelId, params)
 }
 
 // PostChannelsChannelIdOperations operation middleware
@@ -1315,6 +1483,14 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(c *gin.Context) 
 		return
 	}
 
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "chain_family" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "chain_family", c.Request.URL.Query(), &params.ChainFamily)
@@ -1336,6 +1512,14 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(c *gin.Context) 
 	err = runtime.BindQueryParameter("form", true, false, "address", c.Request.URL.Query(), &params.Address)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "domain" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "domain", c.Request.URL.Query(), &params.Domain)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter domain: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -1519,6 +1703,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/channels/:channel_id", wrapper.DeleteChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id", wrapper.GetChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id/events", wrapper.GetChannelsChannelIdEvents)
+	router.GET(options.BaseURL+"/channels/:channel_id/operations", wrapper.GetChannelsChannelIdOperations)
 	router.POST(options.BaseURL+"/channels/:channel_id/operations", wrapper.PostChannelsChannelIdOperations)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations/:operation_id", wrapper.GetChannelsChannelIdOperationsOperationId)
 	router.GET(options.BaseURL+"/channels/:channel_id/watchers", wrapper.GetChannelsChannelIdWatchers)

@@ -210,6 +210,11 @@ paths:
       summary: Retrieves channels for the organization.
       parameters:
         - in: query
+          name: name
+          description: Filter channels by name
+          schema:
+            type: string
+        - in: query
           name: limit
           description: Maximum number of channels to return
           schema:
@@ -357,6 +362,11 @@ paths:
             minimum: 0
             default: 0
         - in: query
+          name: status
+          description: Filter watchers by status
+          schema:
+            type: string
+        - in: query
           name: chain_family
           description: Filter watchers by blockchain family
           schema:
@@ -369,6 +379,11 @@ paths:
         - in: query
           name: address
           description: Filter watchers by contract address
+          schema:
+            type: string
+        - in: query
+          name: domain
+          description: Filter watchers by domain
           schema:
             type: string
         - in: query
@@ -502,6 +517,69 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+    get:
+      summary: Retrieves operations for a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          description: Maximum number of operations to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          description: Number of operations to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: status
+          description: Filter operations by status
+          schema:
+            type: string
+        - in: query
+          name: chain_family
+          description: Filter operations by blockchain family
+          schema:
+            type: string
+        - in: query
+          name: chain_id
+          description: Filter operations by chain ID
+          schema:
+            type: string
+        - in: query
+          name: address
+          description: Filter operations by account address
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OperationList"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
   /channels/{channel_id}/operations/{operation_id}:
     get:
       summary: Gets Operation record for a specific operation.
@@ -569,6 +647,21 @@ paths:
               - operation.status
               - watcher.status
               - watcher.event
+        - in: query
+          name: status
+          description: Filter by operation or watcher status
+          schema:
+            type: string
+        - in: query
+          name: event_name
+          description: Filter by event name (for watcher.event type)
+          schema:
+            type: string
+        - in: query
+          name: domain
+          description: Filter by watcher domain (for watcher events)
+          schema:
+            type: string
       responses:
         "200":
           description: Events retrieved successfully
@@ -860,6 +953,9 @@ components:
     CreateWatcherWithDomain:
       type: object
       properties:
+        name:
+          type: string
+          description: Name for the watcher to help identify it
         chain_family:
           type: string
           description: The blockchain family
@@ -887,6 +983,9 @@ components:
     CreateWatcherWithABI:
       type: object
       properties:
+        name:
+          type: string
+          description: Name for the watcher to help identify it
         chain_family:
           type: string
           description: The blockchain family
@@ -964,6 +1063,9 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the watcher
+        name:
+          type: string
+          description: Name of the watcher for identification
         channel_id:
           type: string
           format: uuid
@@ -1103,6 +1205,19 @@ components:
           description: Unique identifier for the operation
       required:
         - operation_id
+    OperationList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Operation"
+        has_more:
+          type: boolean
+          description: True if there are more operations to fetch
+      required:
+        - data
+        - has_more
     Event:
       type: object
       properties:
