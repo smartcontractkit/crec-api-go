@@ -117,9 +117,6 @@ type Channel struct {
 
 	// Name Name of the channel
 	Name string `json:"name"`
-
-	// TenantId Identifier of the tenant that owns this channel
-	TenantId string `json:"tenant_id"`
 }
 
 // ChannelList defines model for ChannelList.
@@ -395,6 +392,24 @@ type UpdateAccount struct {
 	Name string `json:"name"`
 }
 
+// UpdateOperationStatus defines model for UpdateOperationStatus.
+type UpdateOperationStatus struct {
+	// AccountAddress Onchain account address performing the operation
+	AccountAddress string `json:"account_address"`
+
+	// AccountOperationId Unique account operation identifier
+	AccountOperationId string `json:"account_operation_id"`
+
+	// ChainId The id that identifies the chain where the account performing the operation lives
+	ChainId string `json:"chain_id"`
+
+	// TransactionHash Onchain transaction hash which included the operation
+	TransactionHash string `json:"transaction_hash"`
+
+	// TransactionTimestamp Timestamp of onchain transaction which included the operation
+	TransactionTimestamp int `json:"transaction_timestamp"`
+}
+
 // Watcher defines model for Watcher.
 type Watcher struct {
 	// Abi ABI definitions for the events (if not using domain-based events)
@@ -665,6 +680,9 @@ type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = WatcherDetectedEvent
+
+// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
+type PostOperationStatusJSONRequestBody = UpdateOperationStatus
 
 // AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
 func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
@@ -992,6 +1010,9 @@ type ServerInterface interface {
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(c *gin.Context)
+	// Updates the status of an operation.
+	// (POST /operation_status)
+	PostOperationStatus(c *gin.Context)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -1667,6 +1688,21 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
 	siw.Handler.GetHealthCheck(c)
 }
 
+// PostOperationStatus operation middleware
+func (siw *ServerInterfaceWrapper) PostOperationStatus(c *gin.Context) {
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PostOperationStatus(c)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -1712,4 +1748,5 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	router.POST(options.BaseURL+"/events", wrapper.PostEvents)
 	router.GET(options.BaseURL+"/health-check", wrapper.GetHealthCheck)
+	router.POST(options.BaseURL+"/operation_status", wrapper.PostOperationStatus)
 }

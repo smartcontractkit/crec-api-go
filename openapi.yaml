@@ -615,6 +615,20 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+
+  /operation_status:
+    post:
+      summary: Updates the status of an operation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOperationStatus"
+      responses:
+        "202":
+          description: Operation status recorded successfully
+
   /channels/{channel_id}/events:
     get:
       summary: Retrieves events from a channel.

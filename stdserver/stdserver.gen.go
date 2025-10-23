@@ -119,9 +119,6 @@ type Channel struct {
 
 	// Name Name of the channel
 	Name string `json:"name"`
-
-	// TenantId Identifier of the tenant that owns this channel
-	TenantId string `json:"tenant_id"`
 }
 
 // ChannelList defines model for ChannelList.
@@ -397,6 +394,24 @@ type UpdateAccount struct {
 	Name string `json:"name"`
 }
 
+// UpdateOperationStatus defines model for UpdateOperationStatus.
+type UpdateOperationStatus struct {
+	// AccountAddress Onchain account address performing the operation
+	AccountAddress string `json:"account_address"`
+
+	// AccountOperationId Unique account operation identifier
+	AccountOperationId string `json:"account_operation_id"`
+
+	// ChainId The id that identifies the chain where the account performing the operation lives
+	ChainId string `json:"chain_id"`
+
+	// TransactionHash Onchain transaction hash which included the operation
+	TransactionHash string `json:"transaction_hash"`
+
+	// TransactionTimestamp Timestamp of onchain transaction which included the operation
+	TransactionTimestamp int `json:"transaction_timestamp"`
+}
+
 // Watcher defines model for Watcher.
 type Watcher struct {
 	// Abi ABI definitions for the events (if not using domain-based events)
@@ -667,6 +682,9 @@ type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = WatcherDetectedEvent
+
+// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
+type PostOperationStatusJSONRequestBody = UpdateOperationStatus
 
 // AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
 func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
@@ -994,6 +1012,9 @@ type ServerInterface interface {
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(w http.ResponseWriter, r *http.Request)
+	// Updates the status of an operation.
+	// (POST /operation_status)
+	PostOperationStatus(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -1759,6 +1780,26 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// PostOperationStatus operation middleware
+func (siw *ServerInterfaceWrapper) PostOperationStatus(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostOperationStatus(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -1897,6 +1938,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("POST "+options.BaseURL+"/events", wrapper.PostEvents)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
+	m.HandleFunc("POST "+options.BaseURL+"/operation_status", wrapper.PostOperationStatus)
 
 	return m
 }

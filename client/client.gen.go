@@ -121,9 +121,6 @@ type Channel struct {
 
 	// Name Name of the channel
 	Name string `json:"name"`
-
-	// TenantId Identifier of the tenant that owns this channel
-	TenantId string `json:"tenant_id"`
 }
 
 // ChannelList defines model for ChannelList.
@@ -399,6 +396,24 @@ type UpdateAccount struct {
 	Name string `json:"name"`
 }
 
+// UpdateOperationStatus defines model for UpdateOperationStatus.
+type UpdateOperationStatus struct {
+	// AccountAddress Onchain account address performing the operation
+	AccountAddress string `json:"account_address"`
+
+	// AccountOperationId Unique account operation identifier
+	AccountOperationId string `json:"account_operation_id"`
+
+	// ChainId The id that identifies the chain where the account performing the operation lives
+	ChainId string `json:"chain_id"`
+
+	// TransactionHash Onchain transaction hash which included the operation
+	TransactionHash string `json:"transaction_hash"`
+
+	// TransactionTimestamp Timestamp of onchain transaction which included the operation
+	TransactionTimestamp int `json:"transaction_timestamp"`
+}
+
 // Watcher defines model for Watcher.
 type Watcher struct {
 	// Abi ABI definitions for the events (if not using domain-based events)
@@ -669,6 +684,9 @@ type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
 
 // PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
 type PostEventsJSONRequestBody = WatcherDetectedEvent
+
+// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
+type PostOperationStatusJSONRequestBody = UpdateOperationStatus
 
 // AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
 func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
@@ -1078,6 +1096,11 @@ type ClientInterface interface {
 
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PostOperationStatusWithBody request with any body
+	PostOperationStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PostOperationStatus(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccounts(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1358,6 +1381,30 @@ func (c *Client) PostEvents(ctx context.Context, body PostEventsJSONRequestBody,
 
 func (c *Client) GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetHealthCheckRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOperationStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOperationStatusRequestWithBody(c.Server, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PostOperationStatus(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostOperationStatusRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2499,6 +2546,46 @@ func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewPostOperationStatusRequest calls the generic PostOperationStatus builder with application/json body
+func NewPostOperationStatusRequest(server string, body PostOperationStatusJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostOperationStatusRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostOperationStatusRequestWithBody generates requests for PostOperationStatus with any type of body
+func NewPostOperationStatusRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/operation_status")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -2607,6 +2694,11 @@ type ClientWithResponsesInterface interface {
 
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
+
+	// PostOperationStatusWithBodyWithResponse request with any body
+	PostOperationStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error)
+
+	PostOperationStatusWithResponse(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error)
 }
 
 type GetAccountsResponse struct {
@@ -3040,6 +3132,27 @@ func (r GetHealthCheckResponse) StatusCode() int {
 	return 0
 }
 
+type PostOperationStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+}
+
+// Status returns HTTPResponse.Status
+func (r PostOperationStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostOperationStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // GetAccountsWithResponse request returning *GetAccountsResponse
 func (c *ClientWithResponses) GetAccountsWithResponse(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*GetAccountsResponse, error) {
 	rsp, err := c.GetAccounts(ctx, params, reqEditors...)
@@ -3248,6 +3361,23 @@ func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseGetHealthCheckResponse(rsp)
+}
+
+// PostOperationStatusWithBodyWithResponse request with arbitrary body returning *PostOperationStatusResponse
+func (c *ClientWithResponses) PostOperationStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error) {
+	rsp, err := c.PostOperationStatusWithBody(ctx, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOperationStatusResponse(rsp)
+}
+
+func (c *ClientWithResponses) PostOperationStatusWithResponse(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error) {
+	rsp, err := c.PostOperationStatus(ctx, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePostOperationStatusResponse(rsp)
 }
 
 // ParseGetAccountsResponse parses an HTTP response from a GetAccountsWithResponse call
@@ -3940,6 +4070,22 @@ func ParseGetHealthCheckResponse(rsp *http.Response) (*GetHealthCheckResponse, e
 		}
 		response.JSON200 = &dest
 
+	}
+
+	return response, nil
+}
+
+// ParsePostOperationStatusResponse parses an HTTP response from a PostOperationStatusWithResponse call
+func ParsePostOperationStatusResponse(rsp *http.Response) (*PostOperationStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostOperationStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
 	}
 
 	return response, nil
