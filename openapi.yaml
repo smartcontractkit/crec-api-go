@@ -920,14 +920,10 @@ components:
           type: integer
           format: int64
           description: Timestamp of when the channel was created
-        tenant_id:
-          type: string
-          description: Identifier of the tenant that owns this channel
       required:
         - channel_id
         - name
         - created_at
-        - tenant_id
     ChannelList:
       type: object
       properties:
