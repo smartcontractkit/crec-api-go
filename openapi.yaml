@@ -14,126 +14,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthCheck"
-  /listeners:
-    post:
-      summary: Creates a new listener.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateListener"
-      responses:
-        "201":
-          description: Listener created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Listener"
-    get:
-      summary: Retrieves event listeners.
-      parameters:
-        - in: query
-          name: chain_id
-          description: Filter listeners by chain ID
-          schema:
-            type: string
-        - in: query
-          name: status
-          description: Filter listeners by status
-          schema:
-            type: string
-        - in: query
-          name: name
-          description: Filter listeners by name
-          schema:
-            type: string
-        - in: query
-          name: service
-          description: Filter listeners by service
-          schema:
-            type: string
-        - in: query
-          name: created.lt
-          description: Filter events created before this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.lte
-          description: Filter events created at or before this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.gt
-          description: Filter events created after this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.gte
-          description: Filter events created at or after this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: limit
-          description: The number of events to return
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-        - in: query
-          name: starting_after
-          description: Return events starting after this event UUID
-          schema:
-            type: string
-            format: uuid
-        - in: query
-          name: ending_before
-          description: Return events occurring before this event UUID
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListenerList"
-  /listeners/{listener_id}:
-    get:
-      summary: Retrieves a single listener.
-      parameters:
-        - in: path
-          required: true
-          name: listener_id
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Listener"
-        "404":
-          description: Listener not found
-    delete:
-      summary: Deletes a listener.
-      parameters:
-        - in: path
-          required: true
-          name: listener_id
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "202":
-          description: Delete request accepted.
+
   /events:
     post:
       summary: Creates a new event.
@@ -142,98 +23,21 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateEvent"
+              $ref: "#/components/schemas/WatcherDetectedEvent"
       responses:
         "201":
           description: Event created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Event"
-    get:
-      summary: Retrieves events.
-      parameters:
-        - in: query
-          name: listener_id
-          description: Return only events emitted by this listener UUID
-          schema:
-            type: string
-            format: uuid
-        - in: query
-          name: chain_id
-          description: Filter events by chain ID
-          schema:
-            type: string
-        - in: query
-          name: created.lt
-          description: Filter events created before this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.lte
-          description: Filter events created at or before this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.gt
-          description: Filter events created after this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.gte
-          description: Filter events created at or after this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: limit
-          description: The number of events to return
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-        - in: query
-          name: starting_after
-          description: Return events starting after this event UUID
-          schema:
-            type: string
-            format: uuid
-        - in: query
-          name: ending_before
-          description: Return events occurring before this event UUID
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/EventList"
-  /events/{event_id}:
-    get:
-      summary: Retrieves a single event.
-      parameters:
-        - in: path
-          name: event_id
-          required: true
-          description: Unique identifier for the event
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Event"
-        "404":
-          description: Event not found
+                type: object
+                properties:
+                  event_id:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the created event
+                required:
+                  - event_id
 
   /accounts:
     post:
@@ -373,9 +177,315 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-  /operations:
+
+  /channels:
     post:
-      summary: Sends an onchain transaction.
+      summary: Creates a new channel.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChannel"
+      responses:
+        "201":
+          description: Channel created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    get:
+      summary: Retrieves channels for the organization.
+      parameters:
+        - in: query
+          name: name
+          description: Filter channels by name
+          schema:
+            type: string
+        - in: query
+          name: limit
+          description: Maximum number of channels to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - in: query
+          name: offset
+          description: Number of channels to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChannelList"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+  /channels/{channel_id}:
+    get:
+      summary: Retrieves a specific channel by ID.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Channel found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    delete:
+      summary: Deletes a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "202":
+          description: Delete request accepted.
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
+  /channels/{channel_id}/watchers:
+    post:
+      summary: Creates a watcher in a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWatcher"
+      responses:
+        "201":
+          description: Watcher created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watcher"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    get:
+      summary: Retrieves watchers for a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          description: Maximum number of watchers to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+        - in: query
+          name: offset
+          description: Number of watchers to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
+        - in: query
+          name: status
+          description: Filter watchers by status
+          schema:
+            type: string
+        - in: query
+          name: chain_family
+          description: Filter watchers by blockchain family
+          schema:
+            type: string
+        - in: query
+          name: chain_id
+          description: Filter watchers by chain ID
+          schema:
+            type: string
+        - in: query
+          name: address
+          description: Filter watchers by contract address
+          schema:
+            type: string
+        - in: query
+          name: domain
+          description: Filter watchers by domain
+          schema:
+            type: string
+        - in: query
+          name: event_name
+          description: Filter watchers by event name
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatcherList"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+  /channels/{channel_id}/watchers/{watcher_id}:
+    get:
+      summary: Retrieves a specific watcher by ID.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: watcher_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Watcher found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watcher"
+        "404":
+          description: Channel or watcher not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    delete:
+      summary: Deletes a watcher.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: watcher_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "202":
+          description: Delete request accepted.
+        "404":
+          description: Channel or watcher not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
+  /channels/{channel_id}/operations:
+    post:
+      summary: Sends a CreateOperation request to a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
@@ -388,42 +498,57 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Operation"
+                $ref: "#/components/schemas/OperationResponse"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
     get:
-      summary: Retrieves operations.
+      summary: Retrieves operations for a channel.
       parameters:
-        - in: query
-          name: created.lt
-          description: Filter operations created before this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.lte
-          description: Filter operations created at or before this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.gt
-          description: Filter operations created after this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: created.gte
-          description: Filter operations created at or after this timestamp
-          schema:
-            type: integer
-            format: int64
-        - in: query
-          name: account_name
-          description: Filter operations by account name (partial match)
+        - in: path
+          name: channel_id
+          required: true
           schema:
             type: string
+            format: uuid
+        - in: query
+          name: limit
+          description: Maximum number of operations to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          description: Number of operations to skip for pagination
+          schema:
+            type: integer
+            minimum: 0
+            default: 0
         - in: query
           name: status
           description: Filter operations by status
+          schema:
+            type: string
+        - in: query
+          name: chain_family
+          description: Filter operations by blockchain family
           schema:
             type: string
         - in: query
@@ -432,49 +557,65 @@ paths:
           schema:
             type: string
         - in: query
-          name: limit
-          description: The number of operations to return
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-        - in: query
-          name: starting_after
-          description: Return operations starting after this operation UUID
+          name: address
+          description: Filter operations by account address
           schema:
             type: string
-            format: uuid
-        - in: query
-          name: ending_before
-          description: Return operations occurring before this operation UUID
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Successful operation status retrieval
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/OperationList"
-  /operations/{operation_id}:
-    get:
-      summary: Retrieves the status of an operation.
-      parameters:
-        - in: path
-          name: operation_id
-          required: true
-          description: Unique identifier for the operation
-          schema:
-            type: string
-            format: uuid
       responses:
         "200":
           description: Successful operation
           content:
             application/json:
               schema:
+                $ref: "#/components/schemas/OperationList"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+  /channels/{channel_id}/operations/{operation_id}:
+    get:
+      summary: Gets Operation record for a specific operation.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: operation_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Operation found
+          content:
+            application/json:
+              schema:
                 $ref: "#/components/schemas/Operation"
+        "404":
+          description: Channel or operation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
   /operation_status:
     post:
       summary: Updates the status of an operation.
@@ -487,6 +628,81 @@ paths:
       responses:
         "202":
           description: Operation status recorded successfully
+
+  /channels/{channel_id}/events:
+    get:
+      summary: Retrieves events from a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          description: Maximum number of events to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - in: query
+          name: offset
+          description: Offset for message-oriented pagination
+          schema:
+            type: string
+        - in: query
+          name: type
+          description: Filter events by type
+          schema:
+            type: string
+            enum:
+              - operation.status
+              - watcher.status
+              - watcher.event
+        - in: query
+          name: status
+          description: Filter by operation or watcher status
+          schema:
+            type: string
+        - in: query
+          name: event_name
+          description: Filter by event name (for watcher.event type)
+          schema:
+            type: string
+        - in: query
+          name: domain
+          description: Filter by watcher domain (for watcher events)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+        "400":
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
 
 security:
   - ApiKeyAuth: []
@@ -564,125 +780,8 @@ components:
       required:
         - data
         - has_more
-    CreateListener:
-      type: object
-      properties:
-        service:
-          type: string
-          description: Service namespace for the listener
-        name:
-          type: string
-          description: Name of the event to listen for
-        chain_id:
-          type: string
-          description: The id that identifies the chain where the listener will run
-        address:
-          type: string
-          description: Smart contract address to listen for events
-        chain_family:
-          type: string
-          default: evm
-          description: (Optional) the network to use.
-        options:
-          type: object
-          additionalProperties:
-            type: string
-      required:
-        - service
-        - name
-        - chain_id
-        - address
-    Listener:
-      type: object
-      properties:
-        listener_id:
-          type: string
-          format: uuid
-          description: Unique identifier for the listener
-        created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the listener was created
-        status:
-          type: string
-          description: Current status of the listener
-        service:
-          type: string
-          description: Service namespace for the listener
-        name:
-          type: string
-          description: Name of the event to listen for
-        chain_id:
-          type: string
-          description: The id that identifies the chain where the listener will run
-        address:
-          type: string
-          description: Smart contract address to listen for events
-        options:
-          type: object
-          additionalProperties:
-            type: string
-      required:
-        - listener_id
-        - created_at
-        - status
-        - service
-        - name
-        - chain_id
-        - address
-        - options
-    ListenerList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Listener"
-        has_more:
-          type: boolean
-          description: True if there are more listeners to fetch
-      required:
-        - data
-        - has_more
-    CreateEvent:
-      type: object
-      properties:
-        service:
-          type: string
-          description: Service namespace for the event
-        name:
-          type: string
-          description: Name of the event
-        chain_id:
-          type: string
-          description: The id that identifies the chain where the event happened
-        address:
-          type: string
-          description: Smart contract address from which the event was emitted
-        ocr_report:
-          type: string
-          description: OCR report for the event
-        ocr_context:
-          type: string
-          description: OCR context for the event
-        verifiable_event:
-          type: string
-          description: Base64 encoded verifiable event
-        signatures:
-          type: array
-          items:
-            type: string
-            description: Signature of the event
-      required:
-        - service
-        - name
-        - chain_id
-        - address
-        - ocr_report
-        - ocr_context
-        - verifiable_event
-        - signatures
-    Event:
+
+    WatcherDetectedEvent:
       type: object
       properties:
         event_id:
@@ -693,13 +792,13 @@ components:
           type: integer
           format: int64
           description: Timestamp of when the event was created
-        listener_id:
+        watcher_id:
           type: string
           format: uuid
-          description: Listener UUID that emitted the event
-        service:
+          description: Watcher UUID that detected the event
+        domain:
           type: string
-          description: Service namespace for the event
+          description: Domain namespace for the event
         name:
           type: string
           description: Name of the event
@@ -725,12 +824,12 @@ components:
             description: Signature of the event
         event_hash:
           type: string
-          description: Deterministic event hash - keccak256(service.name.base64payload)
+          description: Deterministic event hash - keccak256(domain.name.base64payload)
       required:
         - event_id
         - created_at
-        - listener_id
-        - service
+        - watcher_id
+        - domain
         - name
         - chain_id
         - address
@@ -739,108 +838,7 @@ components:
         - verifiable_event
         - signatures
         - event_hash
-    EventList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Event"
-        has_more:
-          type: boolean
-          description: True if there are more events to fetch
-      required:
-        - data
-        - has_more
-    CreateOperation:
-      type: object
-      properties:
-        account_operation_id:
-          type: string
-          description: Unique account operation identifier
-        chain_id:
-          type: string
-          description: The id that identifies the chain where the account performing the operation lives
-        account_address:
-          type: string
-          description: Onchain account address performing the operation
-        transactions:
-          type: array
-          items:
-            $ref: "#/components/schemas/TransactionRequest"
-        signature:
-          type: string
-          description: EIP-712 signature of the operation
-      required:
-        - account_operation_id
-        - chain_id
-        - account_address
-        - transactions
-        - signature
-    Operation:
-      type: object
-      properties:
-        operation_id:
-          type: string
-          format: uuid
-          description: Unique identifier for the operation
-        account_id:
-          type: string
-          format: uuid
-          description: Identifier of the account performing the operation
-        created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the operation was created
-        confirmed_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the operation was confirmed
-        account_operation_id:
-          type: string
-          description: Unique account operation identifier
-        transaction_hash:
-          type: string
-          description: Onchain transaction hash which included the operation
-        status:
-          type: string
-          description: Current status of the operation
-        account_address:
-          type: string
-          description: Onchain account address performing the operation
-        chain_id:
-          type: string
-          description: The id that identifies the chain where the account performing the operation lives
-        transactions:
-          type: array
-          items:
-            $ref: "#/components/schemas/Transaction"
-        signature:
-          type: string
-          description: EIP-712 signature of the operation
-      required:
-        - operation_id
-        - account_id
-        - created_at
-        - account_operation_id
-        - status
-        - account_address
-        - chain_id
-        - transactions
-        - signature
-    OperationList:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Operation"
-        has_more:
-          type: boolean
-          description: True if there are more operations to fetch
-      required:
-        - data
-        - has_more
+
     UpdateOperationStatus:
       type: object
       properties:
@@ -914,3 +912,517 @@ components:
       required:
         - type
         - message
+    CreateChannel:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the channel
+      required:
+        - name
+    Channel:
+      type: object
+      properties:
+        channel_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the channel
+        name:
+          type: string
+          description: Name of the channel
+        created_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the channel was created
+      required:
+        - channel_id
+        - name
+        - created_at
+    ChannelList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Channel"
+        has_more:
+          type: boolean
+          description: True if there are more channels to fetch
+      required:
+        - data
+        - has_more
+    CreateWatcher:
+      oneOf:
+        - $ref: "#/components/schemas/CreateWatcherWithDomain"
+        - $ref: "#/components/schemas/CreateWatcherWithABI"
+      discriminator:
+        propertyName: domain
+        mapping:
+          domain_present: "#/components/schemas/CreateWatcherWithDomain"
+          domain_absent: "#/components/schemas/CreateWatcherWithABI"
+    CreateWatcherWithDomain:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name for the watcher to help identify it
+        chain_family:
+          type: string
+          description: The blockchain family
+          default: "evm"
+        chain_id:
+          type: string
+          description: The ID that identifies the chain where the watcher will run
+        address:
+          type: string
+          description: Smart contract address to watch for events
+        domain:
+          type: string
+          description: Service domain namespace (e.g., "dvp", "dta")
+        events:
+          type: array
+          items:
+            type: string
+          description: List of event names to watch for within the domain
+          minItems: 1
+      required:
+        - chain_id
+        - address
+        - domain
+        - events
+    CreateWatcherWithABI:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name for the watcher to help identify it
+        chain_family:
+          type: string
+          description: The blockchain family
+          default: "evm"
+        chain_id:
+          type: string
+          description: The ID that identifies the chain where the watcher will run
+        address:
+          type: string
+          description: Smart contract address to watch for events
+        events:
+          type: array
+          items:
+            type: string
+          description: List of event names to watch for
+          minItems: 1
+        abi:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventABI"
+          description: ABI definitions for the events to watch
+          minItems: 1
+      required:
+        - chain_id
+        - address
+        - events
+        - abi
+    EventABI:
+      type: object
+      properties:
+        anonymous:
+          type: boolean
+          description: Whether the event is anonymous
+        inputs:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventABIInput"
+          description: Event input parameters
+        name:
+          type: string
+          description: Name of the event
+        type:
+          type: string
+          enum: ["event"]
+          description: Type must be 'event'
+      required:
+        - anonymous
+        - inputs
+        - name
+        - type
+    EventABIInput:
+      type: object
+      properties:
+        indexed:
+          type: boolean
+          description: Whether the parameter is indexed
+        internalType:
+          type: string
+          description: Internal Solidity type
+        name:
+          type: string
+          description: Parameter name
+        type:
+          type: string
+          description: Parameter type
+      required:
+        - indexed
+        - internalType
+        - name
+        - type
+    Watcher:
+      type: object
+      properties:
+        watcher_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the watcher
+        name:
+          type: string
+          description: Name of the watcher for identification
+        channel_id:
+          type: string
+          format: uuid
+          description: ID of the channel this watcher belongs to
+        created_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the watcher was created
+        status:
+          type: string
+          description: Current status of the watcher
+        chain_family:
+          type: string
+          description: The blockchain family
+        chain_id:
+          type: string
+          description: The ID that identifies the chain where the watcher runs
+        address:
+          type: string
+          description: Smart contract address being watched
+        domain:
+          type: string
+          description: Service domain namespace (if using domain-based events)
+        events:
+          type: array
+          items:
+            type: string
+          description: List of event names being watched
+        abi:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventABI"
+          description: ABI definitions for the events (if not using domain-based events)
+      required:
+        - watcher_id
+        - channel_id
+        - created_at
+        - status
+        - chain_family
+        - chain_id
+        - address
+        - events
+    WatcherList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Watcher"
+        has_more:
+          type: boolean
+          description: True if there are more watchers to fetch
+      required:
+        - data
+        - has_more
+    CreateOperation:
+      type: object
+      properties:
+        chain_family:
+          type: string
+          description: The blockchain family
+          default: "evm"
+        chain_id:
+          type: string
+          description: The ID that identifies the chain where the operation will be executed
+        address:
+          type: string
+          description: Account address performing the operation
+        wallet_operation_id:
+          type: string
+          description: Unique wallet operation identifier
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionRequest"
+          description: List of transactions to execute
+          minItems: 1
+        signature:
+          type: string
+          description: EIP-712 signature of the operation
+      required:
+        - chain_id
+        - address
+        - wallet_operation_id
+        - transactions
+        - signature
+    Operation:
+      type: object
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the operation
+        status:
+          type: string
+          description: Current status of the operation
+        chain_family:
+          type: string
+          description: The blockchain family
+        chain_id:
+          type: string
+          description: The ID that identifies the chain where the operation is executed
+        address:
+          type: string
+          description: Account address performing the operation
+        wallet_operation_id:
+          type: string
+          description: Unique wallet operation identifier
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/TransactionRequest"
+          description: List of transactions to execute
+        signature:
+          type: string
+          description: EIP-712 signature of the operation
+        created_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the operation was created
+      required:
+        - operation_id
+        - status
+        - chain_family
+        - chain_id
+        - address
+        - wallet_operation_id
+        - transactions
+        - signature
+        - created_at
+    OperationResponse:
+      type: object
+      properties:
+        operation_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the operation
+      required:
+        - operation_id
+    OperationList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Operation"
+        has_more:
+          type: boolean
+          description: True if there are more operations to fetch
+      required:
+        - data
+        - has_more
+    Event:
+      type: object
+      properties:
+        payload:
+          oneOf:
+            - $ref: "#/components/schemas/OperationStatusPayload"
+            - $ref: "#/components/schemas/WatcherStatusPayload"
+            - $ref: "#/components/schemas/WatcherEventPayload"
+          discriminator:
+            propertyName: type
+        headers:
+          $ref: "#/components/schemas/EventHeaders"
+      required:
+        - payload
+        - headers
+    EventHeaders:
+      type: object
+      properties:
+        offset:
+          type: string
+          description: Unique offset for message ordering
+        proofs:
+          type: array
+          items:
+            oneOf:
+              - $ref: "#/components/schemas/OCRProof"
+              - type: object
+                description: Generic proof object for future extensibility
+                additionalProperties: true
+      required:
+        - offset
+        - proofs
+    OCRProof:
+      type: object
+      properties:
+        alg:
+          type: string
+          description: Algorithm used for the proof
+        ocr_report:
+          type: string
+          description: OCR report data
+        ocr_context:
+          type: string
+          description: OCR context data
+        signatures:
+          type: array
+          items:
+            type: string
+          description: Array of signatures
+      required:
+        - alg
+        - ocr_report
+        - ocr_context
+        - signatures
+    OperationStatusPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [operation.status]
+        status:
+          type: string
+          enum: [pending, sent, confirmed, failed]
+          description: Current status of the operation
+        status_reason:
+          type: string
+          description: Reason for the status
+        chain_family:
+          type: string
+          description: Blockchain family (e.g., evm)
+        chain_id:
+          type: string
+          description: Chain identifier
+        address:
+          type: string
+          description: Account address
+        account_operation_id:
+          type: string
+          description: Account operation identifier
+        transaction:
+          $ref: "#/components/schemas/EventTransaction"
+      required:
+        - type
+        - status
+        - status_reason
+        - chain_family
+        - chain_id
+        - address
+        - account_operation_id
+    WatcherStatusPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [watcher.status]
+        watcher_id:
+          type: string
+          description: Unique watcher identifier
+        status:
+          type: string
+          enum: [pending, deploying, removed, failed, deleting, deleted]
+          description: Current status of the watcher
+        status_code:
+          type: string
+          description: Status code
+        status_reason:
+          type: string
+          description: Reason for the status
+        chain_family:
+          type: string
+          description: Blockchain family (e.g., evm)
+        chain_id:
+          type: string
+          description: Chain identifier
+      required:
+        - type
+        - watcher_id
+        - status
+        - status_code
+        - status_reason
+        - chain_family
+        - chain_id
+    WatcherEventPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [watcher.event]
+        watcher_id:
+          type: string
+          description: Unique watcher identifier
+        chain_family:
+          type: string
+          description: Blockchain family (e.g., evm)
+        chain_id:
+          type: string
+          description: Chain identifier
+        address:
+          type: string
+          description: Contract address that emitted the event
+        transaction:
+          $ref: "#/components/schemas/EventTransaction"
+        event:
+          $ref: "#/components/schemas/WatcherEvent"
+      required:
+        - type
+        - watcher_id
+        - chain_family
+        - chain_id
+        - address
+        - transaction
+        - event
+    EventTransaction:
+      type: object
+      properties:
+        timestamp:
+          type: integer
+          format: int64
+          description: Transaction timestamp
+        hash:
+          type: string
+          description: Transaction hash
+      required:
+        - timestamp
+        - hash
+    WatcherEvent:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        domain:
+          type: string
+          description: Domain associated with the event (optional)
+        event_name:
+          type: string
+          description: Name of the event
+        topic_hash:
+          type: string
+          description: Event topic hash
+        log_index:
+          type: integer
+          description: Log index in the transaction
+        data:
+          type: object
+          additionalProperties: true
+          description: Event data - can be any structure
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Event metadata - can be any structure
+      required:
+        - timestamp
+        - event_name
+        - topic_hash
+        - log_index
+        - data
