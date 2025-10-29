@@ -697,7 +697,6 @@ func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, err
 
 // FromCreateWatcherWithDomain overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithDomain
 func (t *CreateWatcher) FromCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
-	v.Domain = "domain_present"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -705,7 +704,6 @@ func (t *CreateWatcher) FromCreateWatcherWithDomain(v CreateWatcherWithDomain) e
 
 // MergeCreateWatcherWithDomain performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithDomain
 func (t *CreateWatcher) MergeCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
-	v.Domain = "domain_present"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -725,7 +723,6 @@ func (t CreateWatcher) AsCreateWatcherWithABI() (CreateWatcherWithABI, error) {
 
 // FromCreateWatcherWithABI overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithABI
 func (t *CreateWatcher) FromCreateWatcherWithABI(v CreateWatcherWithABI) error {
-	v.Domain = "domain_absent"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -733,7 +730,6 @@ func (t *CreateWatcher) FromCreateWatcherWithABI(v CreateWatcherWithABI) error {
 
 // MergeCreateWatcherWithABI performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithABI
 func (t *CreateWatcher) MergeCreateWatcherWithABI(v CreateWatcherWithABI) error {
-	v.Domain = "domain_absent"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -742,29 +738,6 @@ func (t *CreateWatcher) MergeCreateWatcherWithABI(v CreateWatcherWithABI) error 
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
-}
-
-func (t CreateWatcher) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"domain"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t CreateWatcher) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "domain_absent":
-		return t.AsCreateWatcherWithABI()
-	case "domain_present":
-		return t.AsCreateWatcherWithDomain()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
 }
 
 func (t CreateWatcher) MarshalJSON() ([]byte, error) {

@@ -955,11 +955,6 @@ components:
       oneOf:
         - $ref: "#/components/schemas/CreateWatcherWithDomain"
         - $ref: "#/components/schemas/CreateWatcherWithABI"
-      discriminator:
-        propertyName: domain
-        mapping:
-          domain_present: "#/components/schemas/CreateWatcherWithDomain"
-          domain_absent: "#/components/schemas/CreateWatcherWithABI"
     CreateWatcherWithDomain:
       type: object
       properties:
