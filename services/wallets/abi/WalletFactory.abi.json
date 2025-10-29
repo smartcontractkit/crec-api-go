@@ -1,7 +1,7 @@
 [
   {
     "type": "function",
-    "name": "createAccount",
+    "name": "createWallet",
     "inputs": [
       {
         "name": "implementation",
@@ -9,7 +9,7 @@
         "internalType": "address"
       },
       {
-        "name": "uniqueAccountId",
+        "name": "uniqueWalletId",
         "type": "bytes32",
         "internalType": "bytes32"
       },
@@ -27,7 +27,7 @@
     ],
     "outputs": [
       {
-        "name": "accountAddress",
+        "name": "walletAddress",
         "type": "address",
         "internalType": "address"
       }
@@ -40,7 +40,7 @@
     "inputs": [
       { "name": "sender", "type": "address", "internalType": "address" },
       {
-        "name": "uniqueAccountId",
+        "name": "uniqueWalletId",
         "type": "bytes32",
         "internalType": "bytes32"
       }
@@ -50,7 +50,7 @@
   },
   {
     "type": "function",
-    "name": "predictAccountAddress",
+    "name": "predictWalletAddress",
     "inputs": [
       { "name": "creator", "type": "address", "internalType": "address" },
       {
@@ -59,7 +59,7 @@
         "internalType": "address"
       },
       {
-        "name": "uniqueAccountId",
+        "name": "uniqueWalletId",
         "type": "bytes32",
         "internalType": "bytes32"
       }
@@ -69,10 +69,10 @@
   },
   {
     "type": "event",
-    "name": "AccountCreated",
+    "name": "WalletCreated",
     "inputs": [
       {
-        "name": "account",
+        "name": "wallet",
         "type": "address",
         "indexed": true,
         "internalType": "address"
@@ -84,7 +84,7 @@
         "internalType": "address"
       },
       {
-        "name": "uniqueAccountId",
+        "name": "uniqueWalletId",
         "type": "bytes32",
         "indexed": false,
         "internalType": "bytes32"
@@ -94,12 +94,12 @@
   },
   {
     "type": "error",
-    "name": "AccountCreationInvalidInput",
+    "name": "WalletCreationInvalidInput",
     "inputs": [{ "name": "reason", "type": "string", "internalType": "string" }]
   },
   {
     "type": "error",
-    "name": "AccountInitializationFailed",
+    "name": "WalletInitializationFailed",
     "inputs": [{ "name": "reason", "type": "bytes", "internalType": "bytes" }]
   },
   { "type": "error", "name": "FailedDeployment", "inputs": [] },

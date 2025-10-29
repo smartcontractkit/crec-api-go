@@ -14,5 +14,5 @@ generate:
 	abigen --abi services/dta/abi/DTAWalletU.abi.json --pkg dtawallet --out services/dta/gen/dtawallet/dtawallet.gen.go
 	abigen --abi services/dta/abi/DTARequestManagementU.abi.json --pkg dtarequestmanagement --out services/dta/gen/dtarequestmanagement/dtarequestmanagement.gen.go
 	abigen --abi services/dta/abi/DTARequestSettlement.abi.json --pkg dtarequestsettlement --out services/dta/gen/dtarequestsettlement/dtarequestsettlement.gen.go
-	abigen --abi services/accounts/abi/AccountFactory.abi.json --pkg accounts --out services/accounts/gen/accounts/accounts.gen.go
+	abigen --abi services/wallets/abi/WalletFactory.abi.json --pkg wallets --out services/wallets/gen/wallets/wallets.gen.go
 
