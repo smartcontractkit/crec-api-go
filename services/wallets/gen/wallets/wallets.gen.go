@@ -31,7 +31,7 @@ var (
 
 // WalletsMetaData contains all meta data concerning the Wallets contract.
 var WalletsMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"function\",\"name\":\"createWallet\",\"inputs\":[{\"name\":\"implementation\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"uniqueWalletId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"keystoneForwarder\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"initialOwner\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"configData\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"walletAddress\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"getSalt\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"uniqueWalletId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"pure\"},{\"type\":\"function\",\"name\":\"predictWalletAddress\",\"inputs\":[{\"name\":\"creator\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"implementation\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"uniqueWalletId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"WalletCreated\",\"inputs\":[{\"name\":\"wallet\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"creator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"uniqueWalletId\",\"type\":\"bytes32\",\"indexed\":false,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"WalletCreationInvalidInput\",\"inputs\":[{\"name\":\"reason\",\"type\":\"string\",\"internalType\":\"string\"}]},{\"type\":\"error\",\"name\":\"WalletInitializationFailed\",\"inputs\":[{\"name\":\"reason\",\"type\":\"bytes\",\"internalType\":\"bytes\"}]},{\"type\":\"error\",\"name\":\"FailedDeployment\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InsufficientBalance\",\"inputs\":[{\"name\":\"balance\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"needed\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]}]",
+	ABI: "[{\"type\":\"function\",\"name\":\"createAccount\",\"inputs\":[{\"name\":\"implementation\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"uniqueAccountId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"keystoneForwarder\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"initialOwner\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"configData\",\"type\":\"bytes\",\"internalType\":\"bytes\"}],\"outputs\":[{\"name\":\"accountAddress\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"getSalt\",\"inputs\":[{\"name\":\"sender\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"uniqueAccountId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"pure\"},{\"type\":\"function\",\"name\":\"predictAccountAddress\",\"inputs\":[{\"name\":\"creator\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"implementation\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"uniqueAccountId\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"stateMutability\":\"view\"},{\"type\":\"event\",\"name\":\"AccountCreated\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"creator\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"uniqueAccountId\",\"type\":\"bytes32\",\"indexed\":false,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccountCreationInvalidInput\",\"inputs\":[{\"name\":\"reason\",\"type\":\"string\",\"internalType\":\"string\"}]},{\"type\":\"error\",\"name\":\"AccountInitializationFailed\",\"inputs\":[{\"name\":\"reason\",\"type\":\"bytes\",\"internalType\":\"bytes\"}]},{\"type\":\"error\",\"name\":\"FailedDeployment\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InsufficientBalance\",\"inputs\":[{\"name\":\"balance\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"needed\",\"type\":\"uint256\",\"internalType\":\"uint256\"}]}]",
 }
 
 // WalletsABI is the input ABI used to generate the binding from.
@@ -182,10 +182,10 @@ func (_Wallets *WalletsTransactorRaw) Transact(opts *bind.TransactOpts, method s
 
 // GetSalt is a free data retrieval call binding the contract method 0xb3e3bf42.
 //
-// Solidity: function getSalt(address sender, bytes32 uniqueWalletId) pure returns(bytes32)
-func (_Wallets *WalletsCaller) GetSalt(opts *bind.CallOpts, sender common.Address, uniqueWalletId [32]byte) ([32]byte, error) {
+// Solidity: function getSalt(address sender, bytes32 uniqueAccountId) pure returns(bytes32)
+func (_Wallets *WalletsCaller) GetSalt(opts *bind.CallOpts, sender common.Address, uniqueAccountId [32]byte) ([32]byte, error) {
 	var out []interface{}
-	err := _Wallets.contract.Call(opts, &out, "getSalt", sender, uniqueWalletId)
+	err := _Wallets.contract.Call(opts, &out, "getSalt", sender, uniqueAccountId)
 
 	if err != nil {
 		return *new([32]byte), err
@@ -199,24 +199,24 @@ func (_Wallets *WalletsCaller) GetSalt(opts *bind.CallOpts, sender common.Addres
 
 // GetSalt is a free data retrieval call binding the contract method 0xb3e3bf42.
 //
-// Solidity: function getSalt(address sender, bytes32 uniqueWalletId) pure returns(bytes32)
-func (_Wallets *WalletsSession) GetSalt(sender common.Address, uniqueWalletId [32]byte) ([32]byte, error) {
-	return _Wallets.Contract.GetSalt(&_Wallets.CallOpts, sender, uniqueWalletId)
+// Solidity: function getSalt(address sender, bytes32 uniqueAccountId) pure returns(bytes32)
+func (_Wallets *WalletsSession) GetSalt(sender common.Address, uniqueAccountId [32]byte) ([32]byte, error) {
+	return _Wallets.Contract.GetSalt(&_Wallets.CallOpts, sender, uniqueAccountId)
 }
 
 // GetSalt is a free data retrieval call binding the contract method 0xb3e3bf42.
 //
-// Solidity: function getSalt(address sender, bytes32 uniqueWalletId) pure returns(bytes32)
-func (_Wallets *WalletsCallerSession) GetSalt(sender common.Address, uniqueWalletId [32]byte) ([32]byte, error) {
-	return _Wallets.Contract.GetSalt(&_Wallets.CallOpts, sender, uniqueWalletId)
+// Solidity: function getSalt(address sender, bytes32 uniqueAccountId) pure returns(bytes32)
+func (_Wallets *WalletsCallerSession) GetSalt(sender common.Address, uniqueAccountId [32]byte) ([32]byte, error) {
+	return _Wallets.Contract.GetSalt(&_Wallets.CallOpts, sender, uniqueAccountId)
 }
 
-// PredictWalletAddress is a free data retrieval call binding the contract method 0x2d09a5df.
+// PredictAccountAddress is a free data retrieval call binding the contract method 0xa57e4eef.
 //
-// Solidity: function predictWalletAddress(address creator, address implementation, bytes32 uniqueWalletId) view returns(address)
-func (_Wallets *WalletsCaller) PredictWalletAddress(opts *bind.CallOpts, creator common.Address, implementation common.Address, uniqueWalletId [32]byte) (common.Address, error) {
+// Solidity: function predictAccountAddress(address creator, address implementation, bytes32 uniqueAccountId) view returns(address)
+func (_Wallets *WalletsCaller) PredictAccountAddress(opts *bind.CallOpts, creator common.Address, implementation common.Address, uniqueAccountId [32]byte) (common.Address, error) {
 	var out []interface{}
-	err := _Wallets.contract.Call(opts, &out, "predictWalletAddress", creator, implementation, uniqueWalletId)
+	err := _Wallets.contract.Call(opts, &out, "predictAccountAddress", creator, implementation, uniqueAccountId)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -228,44 +228,44 @@ func (_Wallets *WalletsCaller) PredictWalletAddress(opts *bind.CallOpts, creator
 
 }
 
-// PredictWalletAddress is a free data retrieval call binding the contract method 0x2d09a5df.
+// PredictAccountAddress is a free data retrieval call binding the contract method 0xa57e4eef.
 //
-// Solidity: function predictWalletAddress(address creator, address implementation, bytes32 uniqueWalletId) view returns(address)
-func (_Wallets *WalletsSession) PredictWalletAddress(creator common.Address, implementation common.Address, uniqueWalletId [32]byte) (common.Address, error) {
-	return _Wallets.Contract.PredictWalletAddress(&_Wallets.CallOpts, creator, implementation, uniqueWalletId)
+// Solidity: function predictAccountAddress(address creator, address implementation, bytes32 uniqueAccountId) view returns(address)
+func (_Wallets *WalletsSession) PredictAccountAddress(creator common.Address, implementation common.Address, uniqueAccountId [32]byte) (common.Address, error) {
+	return _Wallets.Contract.PredictAccountAddress(&_Wallets.CallOpts, creator, implementation, uniqueAccountId)
 }
 
-// PredictWalletAddress is a free data retrieval call binding the contract method 0x2d09a5df.
+// PredictAccountAddress is a free data retrieval call binding the contract method 0xa57e4eef.
 //
-// Solidity: function predictWalletAddress(address creator, address implementation, bytes32 uniqueWalletId) view returns(address)
-func (_Wallets *WalletsCallerSession) PredictWalletAddress(creator common.Address, implementation common.Address, uniqueWalletId [32]byte) (common.Address, error) {
-	return _Wallets.Contract.PredictWalletAddress(&_Wallets.CallOpts, creator, implementation, uniqueWalletId)
+// Solidity: function predictAccountAddress(address creator, address implementation, bytes32 uniqueAccountId) view returns(address)
+func (_Wallets *WalletsCallerSession) PredictAccountAddress(creator common.Address, implementation common.Address, uniqueAccountId [32]byte) (common.Address, error) {
+	return _Wallets.Contract.PredictAccountAddress(&_Wallets.CallOpts, creator, implementation, uniqueAccountId)
 }
 
-// CreateWallet is a paid mutator transaction binding the contract method 0x8fb77911.
+// CreateAccount is a paid mutator transaction binding the contract method 0x02ce00fc.
 //
-// Solidity: function createWallet(address implementation, bytes32 uniqueWalletId, address keystoneForwarder, address initialOwner, bytes configData) returns(address walletAddress)
-func (_Wallets *WalletsTransactor) CreateWallet(opts *bind.TransactOpts, implementation common.Address, uniqueWalletId [32]byte, keystoneForwarder common.Address, initialOwner common.Address, configData []byte) (*types.Transaction, error) {
-	return _Wallets.contract.Transact(opts, "createWallet", implementation, uniqueWalletId, keystoneForwarder, initialOwner, configData)
+// Solidity: function createAccount(address implementation, bytes32 uniqueAccountId, address keystoneForwarder, address initialOwner, bytes configData) returns(address accountAddress)
+func (_Wallets *WalletsTransactor) CreateAccount(opts *bind.TransactOpts, implementation common.Address, uniqueAccountId [32]byte, keystoneForwarder common.Address, initialOwner common.Address, configData []byte) (*types.Transaction, error) {
+	return _Wallets.contract.Transact(opts, "createAccount", implementation, uniqueAccountId, keystoneForwarder, initialOwner, configData)
 }
 
-// CreateWallet is a paid mutator transaction binding the contract method 0x8fb77911.
+// CreateAccount is a paid mutator transaction binding the contract method 0x02ce00fc.
 //
-// Solidity: function createWallet(address implementation, bytes32 uniqueWalletId, address keystoneForwarder, address initialOwner, bytes configData) returns(address walletAddress)
-func (_Wallets *WalletsSession) CreateWallet(implementation common.Address, uniqueWalletId [32]byte, keystoneForwarder common.Address, initialOwner common.Address, configData []byte) (*types.Transaction, error) {
-	return _Wallets.Contract.CreateWallet(&_Wallets.TransactOpts, implementation, uniqueWalletId, keystoneForwarder, initialOwner, configData)
+// Solidity: function createAccount(address implementation, bytes32 uniqueAccountId, address keystoneForwarder, address initialOwner, bytes configData) returns(address accountAddress)
+func (_Wallets *WalletsSession) CreateAccount(implementation common.Address, uniqueAccountId [32]byte, keystoneForwarder common.Address, initialOwner common.Address, configData []byte) (*types.Transaction, error) {
+	return _Wallets.Contract.CreateAccount(&_Wallets.TransactOpts, implementation, uniqueAccountId, keystoneForwarder, initialOwner, configData)
 }
 
-// CreateWallet is a paid mutator transaction binding the contract method 0x8fb77911.
+// CreateAccount is a paid mutator transaction binding the contract method 0x02ce00fc.
 //
-// Solidity: function createWallet(address implementation, bytes32 uniqueWalletId, address keystoneForwarder, address initialOwner, bytes configData) returns(address walletAddress)
-func (_Wallets *WalletsTransactorSession) CreateWallet(implementation common.Address, uniqueWalletId [32]byte, keystoneForwarder common.Address, initialOwner common.Address, configData []byte) (*types.Transaction, error) {
-	return _Wallets.Contract.CreateWallet(&_Wallets.TransactOpts, implementation, uniqueWalletId, keystoneForwarder, initialOwner, configData)
+// Solidity: function createAccount(address implementation, bytes32 uniqueAccountId, address keystoneForwarder, address initialOwner, bytes configData) returns(address accountAddress)
+func (_Wallets *WalletsTransactorSession) CreateAccount(implementation common.Address, uniqueAccountId [32]byte, keystoneForwarder common.Address, initialOwner common.Address, configData []byte) (*types.Transaction, error) {
+	return _Wallets.Contract.CreateAccount(&_Wallets.TransactOpts, implementation, uniqueAccountId, keystoneForwarder, initialOwner, configData)
 }
 
-// WalletsWalletCreatedIterator is returned from FilterWalletCreated and is used to iterate over the raw logs and unpacked data for WalletCreated events raised by the Wallets contract.
-type WalletsWalletCreatedIterator struct {
-	Event *WalletsWalletCreated // Event containing the contract specifics and raw log
+// WalletsAccountCreatedIterator is returned from FilterAccountCreated and is used to iterate over the raw logs and unpacked data for AccountCreated events raised by the Wallets contract.
+type WalletsAccountCreatedIterator struct {
+	Event *WalletsAccountCreated // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -279,7 +279,7 @@ type WalletsWalletCreatedIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *WalletsWalletCreatedIterator) Next() bool {
+func (it *WalletsAccountCreatedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -288,7 +288,7 @@ func (it *WalletsWalletCreatedIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(WalletsWalletCreated)
+			it.Event = new(WalletsAccountCreated)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -303,7 +303,7 @@ func (it *WalletsWalletCreatedIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(WalletsWalletCreated)
+		it.Event = new(WalletsAccountCreated)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -319,61 +319,61 @@ func (it *WalletsWalletCreatedIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *WalletsWalletCreatedIterator) Error() error {
+func (it *WalletsAccountCreatedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *WalletsWalletCreatedIterator) Close() error {
+func (it *WalletsAccountCreatedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// WalletsWalletCreated represents a WalletCreated event raised by the Wallets contract.
-type WalletsWalletCreated struct {
-	Wallet         common.Address
-	Creator        common.Address
-	UniqueWalletId [32]byte
-	Raw            types.Log // Blockchain specific contextual infos
+// WalletsAccountCreated represents a AccountCreated event raised by the Wallets contract.
+type WalletsAccountCreated struct {
+	Account         common.Address
+	Creator         common.Address
+	UniqueAccountId [32]byte
+	Raw             types.Log // Blockchain specific contextual infos
 }
 
-// FilterWalletCreated is a free log retrieval operation binding the contract event 0xbdbcb584581e4f688b28038d847fa0c73130b688da678029bcb98e32fec769a2.
+// FilterAccountCreated is a free log retrieval operation binding the contract event 0xf66707ae2820569ece31cb5ac7cfcdd4d076c3f31ed9e28bf94394bedc0f329d.
 //
-// Solidity: event WalletCreated(address indexed wallet, address indexed creator, bytes32 uniqueWalletId)
-func (_Wallets *WalletsFilterer) FilterWalletCreated(opts *bind.FilterOpts, wallet []common.Address, creator []common.Address) (*WalletsWalletCreatedIterator, error) {
+// Solidity: event AccountCreated(address indexed account, address indexed creator, bytes32 uniqueAccountId)
+func (_Wallets *WalletsFilterer) FilterAccountCreated(opts *bind.FilterOpts, account []common.Address, creator []common.Address) (*WalletsAccountCreatedIterator, error) {
 
-	var walletRule []interface{}
-	for _, walletItem := range wallet {
-		walletRule = append(walletRule, walletItem)
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
 	}
 	var creatorRule []interface{}
 	for _, creatorItem := range creator {
 		creatorRule = append(creatorRule, creatorItem)
 	}
 
-	logs, sub, err := _Wallets.contract.FilterLogs(opts, "WalletCreated", walletRule, creatorRule)
+	logs, sub, err := _Wallets.contract.FilterLogs(opts, "AccountCreated", accountRule, creatorRule)
 	if err != nil {
 		return nil, err
 	}
-	return &WalletsWalletCreatedIterator{contract: _Wallets.contract, event: "WalletCreated", logs: logs, sub: sub}, nil
+	return &WalletsAccountCreatedIterator{contract: _Wallets.contract, event: "AccountCreated", logs: logs, sub: sub}, nil
 }
 
-// WatchWalletCreated is a free log subscription operation binding the contract event 0xbdbcb584581e4f688b28038d847fa0c73130b688da678029bcb98e32fec769a2.
+// WatchAccountCreated is a free log subscription operation binding the contract event 0xf66707ae2820569ece31cb5ac7cfcdd4d076c3f31ed9e28bf94394bedc0f329d.
 //
-// Solidity: event WalletCreated(address indexed wallet, address indexed creator, bytes32 uniqueWalletId)
-func (_Wallets *WalletsFilterer) WatchWalletCreated(opts *bind.WatchOpts, sink chan<- *WalletsWalletCreated, wallet []common.Address, creator []common.Address) (event.Subscription, error) {
+// Solidity: event AccountCreated(address indexed account, address indexed creator, bytes32 uniqueAccountId)
+func (_Wallets *WalletsFilterer) WatchAccountCreated(opts *bind.WatchOpts, sink chan<- *WalletsAccountCreated, account []common.Address, creator []common.Address) (event.Subscription, error) {
 
-	var walletRule []interface{}
-	for _, walletItem := range wallet {
-		walletRule = append(walletRule, walletItem)
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
 	}
 	var creatorRule []interface{}
 	for _, creatorItem := range creator {
 		creatorRule = append(creatorRule, creatorItem)
 	}
 
-	logs, sub, err := _Wallets.contract.WatchLogs(opts, "WalletCreated", walletRule, creatorRule)
+	logs, sub, err := _Wallets.contract.WatchLogs(opts, "AccountCreated", accountRule, creatorRule)
 	if err != nil {
 		return nil, err
 	}
@@ -383,8 +383,8 @@ func (_Wallets *WalletsFilterer) WatchWalletCreated(opts *bind.WatchOpts, sink c
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(WalletsWalletCreated)
-				if err := _Wallets.contract.UnpackLog(event, "WalletCreated", log); err != nil {
+				event := new(WalletsAccountCreated)
+				if err := _Wallets.contract.UnpackLog(event, "AccountCreated", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -405,12 +405,12 @@ func (_Wallets *WalletsFilterer) WatchWalletCreated(opts *bind.WatchOpts, sink c
 	}), nil
 }
 
-// ParseWalletCreated is a log parse operation binding the contract event 0xbdbcb584581e4f688b28038d847fa0c73130b688da678029bcb98e32fec769a2.
+// ParseAccountCreated is a log parse operation binding the contract event 0xf66707ae2820569ece31cb5ac7cfcdd4d076c3f31ed9e28bf94394bedc0f329d.
 //
-// Solidity: event WalletCreated(address indexed wallet, address indexed creator, bytes32 uniqueWalletId)
-func (_Wallets *WalletsFilterer) ParseWalletCreated(log types.Log) (*WalletsWalletCreated, error) {
-	event := new(WalletsWalletCreated)
-	if err := _Wallets.contract.UnpackLog(event, "WalletCreated", log); err != nil {
+// Solidity: event AccountCreated(address indexed account, address indexed creator, bytes32 uniqueAccountId)
+func (_Wallets *WalletsFilterer) ParseAccountCreated(log types.Log) (*WalletsAccountCreated, error) {
+	event := new(WalletsAccountCreated)
+	if err := _Wallets.contract.UnpackLog(event, "AccountCreated", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
