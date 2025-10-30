@@ -2,7 +2,7 @@ openapi: 3.0.4
 info:
   title: Chainlink Verifiable Network Tenant API
   version: 0.1.0
-  description: Tenant API for managing accounts, channels, watchers, and operations
+  description: Tenant API for managing wallets, channels, watchers, and operations
 
 paths:
   /health-check:
@@ -16,22 +16,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthCheck"
 
-  /accounts:
+  /wallets:
     post:
-      summary: Creates a new account.
+      summary: Creates a new wallet.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateAccount"
+              $ref: "#/components/schemas/CreateWallet"
       responses:
         "201":
-          description: Account created successfully
+          description: Wallet created successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Account"
+                $ref: "#/components/schemas/Wallet"
         "400":
           description: Invalid request data
           content:
@@ -45,21 +45,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     get:
-      summary: Retrieves accounts for the organization.
+      summary: Retrieves wallets for the organization.
       parameters:
         - in: query
           name: name
-          description: Filter accounts by name
+          description: Filter wallets by name
           schema:
             type: string
         - in: query
           name: chain_id
-          description: Filter accounts by chain ID
+          description: Filter wallets by chain ID
           schema:
             type: string
         - in: query
           name: limit
-          description: Maximum number of accounts to return
+          description: Maximum number of wallets to return
           schema:
             type: integer
             minimum: 1
@@ -67,7 +67,7 @@ paths:
             default: 50
         - in: query
           name: offset
-          description: Number of accounts to skip for pagination
+          description: Number of wallets to skip for pagination
           schema:
             type: integer
             minimum: 0
@@ -78,32 +78,32 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AccountList"
+                $ref: "#/components/schemas/WalletList"
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-  /accounts/{account_id}:
+  /wallets/{wallet_id}:
     get:
-      summary: Retrieves a specific account by ID.
+      summary: Retrieves a specific wallet by ID.
       parameters:
         - in: path
-          name: account_id
+          name: wallet_id
           required: true
           schema:
             type: string
             format: uuid
       responses:
         "200":
-          description: Account found
+          description: Wallet found
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Account"
+                $ref: "#/components/schemas/Wallet"
         "404":
-          description: Account not found
+          description: Wallet not found
           content:
             application/json:
               schema:
@@ -115,10 +115,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     patch:
-      summary: Updates an account name.
+      summary: Updates a wallet name.
       parameters:
         - in: path
-          name: account_id
+          name: wallet_id
           required: true
           schema:
             type: string
@@ -128,14 +128,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateAccount"
+              $ref: "#/components/schemas/UpdateWallet"
       responses:
         "200":
-          description: Account updated successfully
+          description: Wallet updated successfully
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Account"
+                $ref: "#/components/schemas/Wallet"
         "400":
           description: Invalid request data
           content:
@@ -143,7 +143,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
         "404":
-          description: Account not found
+          description: Wallet not found
           content:
             application/json:
               schema:
@@ -535,7 +535,7 @@ paths:
             type: string
         - in: query
           name: address
-          description: Filter operations by account address
+          description: Filter operations by wallet address
           schema:
             type: string
       responses:
@@ -687,60 +687,60 @@ components:
           example: "ok"
       required:
         - status
-    CreateAccount:
+    CreateWallet:
       type: object
       properties:
         name:
           type: string
-          description: Name of the account
+          description: Name of the wallet
         address:
           type: string
-          description: EVM account address (42-character hex string starting with 0x)
+          description: EVM wallet address (42-character hex string starting with 0x)
           pattern: "^0x[a-fA-F0-9]{40}$"
         chain_id:
           type: string
-          description: The id that identifies the chain where the account exists
+          description: The id that identifies the chain where the wallet exists
       required:
         - address
         - chain_id
-    UpdateAccount:
+    UpdateWallet:
       type: object
       properties:
         name:
           type: string
-          description: New name for the account
+          description: New name for the wallet
       required:
         - name
-    Account:
+    Wallet:
       type: object
       properties:
-        account_id:
+        wallet_id:
           type: string
           format: uuid
-          description: Unique identifier for the account
+          description: Unique identifier for the wallet
         name:
           type: string
-          description: Name of the account
+          description: Name of the wallet
         address:
           type: string
-          description: EVM account address
+          description: EVM wallet address
         chain_id:
           type: string
-          description: The id that identifies the chain where the account exists
+          description: The id that identifies the chain where the wallet exists
       required:
-        - account_id
+        - wallet_id
         - address
         - chain_id
-    AccountList:
+    WalletList:
       type: object
       properties:
         data:
           type: array
           items:
-            $ref: "#/components/schemas/Account"
+            $ref: "#/components/schemas/Wallet"
         has_more:
           type: boolean
-          description: True if there are more accounts to fetch
+          description: True if there are more wallets to fetch
       required:
         - data
         - has_more
@@ -1020,7 +1020,7 @@ components:
           description: The ID that identifies the chain where the operation will be executed
         address:
           type: string
-          description: Account address performing the operation
+          description: Wallet address performing the operation
         wallet_operation_id:
           type: string
           description: Unique wallet operation identifier
@@ -1057,7 +1057,7 @@ components:
           description: The ID that identifies the chain where the operation is executed
         address:
           type: string
-          description: Account address performing the operation
+          description: Wallet address performing the operation
         wallet_operation_id:
           type: string
           description: Unique wallet operation identifier
@@ -1180,10 +1180,10 @@ components:
           description: Chain identifier
         address:
           type: string
-          description: Account address
-        account_operation_id:
+          description: Wallet address
+        wallet_operation_id:
           type: string
-          description: Account operation identifier
+          description: Wallet operation identifier
         transaction:
           $ref: "#/components/schemas/EventTransaction"
       required:
@@ -1193,7 +1193,7 @@ components:
         - chain_family
         - chain_id
         - address
-        - account_operation_id
+        - wallet_operation_id
     WatcherStatusPayload:
       type: object
       properties:

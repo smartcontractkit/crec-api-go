@@ -74,29 +74,6 @@ const (
 	GetChannelsChannelIdEventsParamsTypeWatcherStatus   GetChannelsChannelIdEventsParamsType = "watcher.status"
 )
 
-// Account defines model for Account.
-type Account struct {
-	// AccountId Unique identifier for the account
-	AccountId openapi_types.UUID `json:"account_id"`
-
-	// Address EVM account address
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the account exists
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the account
-	Name *string `json:"name,omitempty"`
-}
-
-// AccountList defines model for AccountList.
-type AccountList struct {
-	Data []Account `json:"data"`
-
-	// HasMore True if there are more accounts to fetch
-	HasMore bool `json:"has_more"`
-}
-
 // ApplicationError defines model for ApplicationError.
 type ApplicationError struct {
 	// Message Error message describing the issue
@@ -129,18 +106,6 @@ type ChannelList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// CreateAccount defines model for CreateAccount.
-type CreateAccount struct {
-	// Address EVM account address (42-character hex string starting with 0x)
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the account exists
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the account
-	Name *string `json:"name,omitempty"`
-}
-
 // CreateChannel defines model for CreateChannel.
 type CreateChannel struct {
 	// Name Name of the channel
@@ -149,7 +114,7 @@ type CreateChannel struct {
 
 // CreateOperation defines model for CreateOperation.
 type CreateOperation struct {
-	// Address Account address performing the operation
+	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
 	// ChainFamily The blockchain family
@@ -166,6 +131,18 @@ type CreateOperation struct {
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// CreateWallet defines model for CreateWallet.
+type CreateWallet struct {
+	// Address EVM wallet address (42-character hex string starting with 0x)
+	Address string `json:"address"`
+
+	// ChainId The id that identifies the chain where the wallet exists
+	ChainId string `json:"chain_id"`
+
+	// Name Name of the wallet
+	Name *string `json:"name,omitempty"`
 }
 
 // CreateWatcher defines model for CreateWatcher.
@@ -305,7 +282,7 @@ type OCRProof struct {
 
 // Operation defines model for Operation.
 type Operation struct {
-	// Address Account address performing the operation
+	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
 	// ChainFamily The blockchain family
@@ -349,10 +326,7 @@ type OperationResponse struct {
 
 // OperationStatusPayload defines model for OperationStatusPayload.
 type OperationStatusPayload struct {
-	// AccountOperationId Account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
-
-	// Address Account address
+	// Address Wallet address
 	Address string `json:"address"`
 
 	// ChainFamily Blockchain family (e.g., evm)
@@ -368,6 +342,9 @@ type OperationStatusPayload struct {
 	StatusReason string                     `json:"status_reason"`
 	Transaction  *EventTransaction          `json:"transaction,omitempty"`
 	Type         OperationStatusPayloadType `json:"type"`
+
+	// WalletOperationId Wallet operation identifier
+	WalletOperationId string `json:"wallet_operation_id"`
 }
 
 // OperationStatusPayloadStatus Current status of the operation
@@ -388,10 +365,33 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
-// UpdateAccount defines model for UpdateAccount.
-type UpdateAccount struct {
-	// Name New name for the account
+// UpdateWallet defines model for UpdateWallet.
+type UpdateWallet struct {
+	// Name New name for the wallet
 	Name string `json:"name"`
+}
+
+// Wallet defines model for Wallet.
+type Wallet struct {
+	// Address EVM wallet address
+	Address string `json:"address"`
+
+	// ChainId The id that identifies the chain where the wallet exists
+	ChainId string `json:"chain_id"`
+
+	// Name Name of the wallet
+	Name *string `json:"name,omitempty"`
+
+	// WalletId Unique identifier for the wallet
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+// WalletList defines model for WalletList.
+type WalletList struct {
+	Data []Wallet `json:"data"`
+
+	// HasMore True if there are more wallets to fetch
+	HasMore bool `json:"has_more"`
 }
 
 // Watcher defines model for Watcher.
@@ -511,21 +511,6 @@ type WatcherStatusPayloadStatus string
 // WatcherStatusPayloadType defines model for WatcherStatusPayload.Type.
 type WatcherStatusPayloadType string
 
-// GetAccountsParams defines parameters for GetAccounts.
-type GetAccountsParams struct {
-	// Name Filter accounts by name
-	Name *string `form:"name,omitempty" json:"name,omitempty"`
-
-	// ChainId Filter accounts by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// Limit Maximum number of accounts to return
-	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// Offset Number of accounts to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
-}
-
 // GetChannelsParams defines parameters for GetChannels.
 type GetChannelsParams struct {
 	// Name Filter channels by name
@@ -579,7 +564,7 @@ type GetChannelsChannelIdOperationsParams struct {
 	// ChainId Filter operations by chain ID
 	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
-	// Address Filter operations by account address
+	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 }
 
@@ -610,11 +595,20 @@ type GetChannelsChannelIdWatchersParams struct {
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
-// PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
-type PostAccountsJSONRequestBody = CreateAccount
+// GetWalletsParams defines parameters for GetWallets.
+type GetWalletsParams struct {
+	// Name Filter wallets by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
-// PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
-type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
+	// ChainId Filter wallets by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Limit Maximum number of wallets to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of wallets to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+}
 
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
@@ -624,6 +618,12 @@ type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+
+// PostWalletsJSONRequestBody defines body for PostWallets for application/json ContentType.
+type PostWalletsJSONRequestBody = CreateWallet
+
+// PatchWalletsWalletIdJSONRequestBody defines body for PatchWalletsWalletId for application/json ContentType.
+type PatchWalletsWalletIdJSONRequestBody = UpdateWallet
 
 // AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
 func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
@@ -870,18 +870,6 @@ func (t *EventHeaders_Proofs_Item) UnmarshalJSON(b []byte) error {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Retrieves accounts for the organization.
-	// (GET /accounts)
-	GetAccounts(w http.ResponseWriter, r *http.Request, params GetAccountsParams)
-	// Creates a new account.
-	// (POST /accounts)
-	PostAccounts(w http.ResponseWriter, r *http.Request)
-	// Retrieves a specific account by ID.
-	// (GET /accounts/{account_id})
-	GetAccountsAccountId(w http.ResponseWriter, r *http.Request, accountId openapi_types.UUID)
-	// Updates an account name.
-	// (PATCH /accounts/{account_id})
-	PatchAccountsAccountId(w http.ResponseWriter, r *http.Request, accountId openapi_types.UUID)
 	// Retrieves channels for the organization.
 	// (GET /channels)
 	GetChannels(w http.ResponseWriter, r *http.Request, params GetChannelsParams)
@@ -921,6 +909,18 @@ type ServerInterface interface {
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(w http.ResponseWriter, r *http.Request)
+	// Retrieves wallets for the organization.
+	// (GET /wallets)
+	GetWallets(w http.ResponseWriter, r *http.Request, params GetWalletsParams)
+	// Creates a new wallet.
+	// (POST /wallets)
+	PostWallets(w http.ResponseWriter, r *http.Request)
+	// Retrieves a specific wallet by ID.
+	// (GET /wallets/{wallet_id})
+	GetWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
+	// Updates a wallet name.
+	// (PATCH /wallets/{wallet_id})
+	PatchWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -931,145 +931,6 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
-
-// GetAccounts operation middleware
-func (siw *ServerInterfaceWrapper) GetAccounts(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetAccountsParams
-
-	// ------------- Optional query parameter "name" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "chain_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "chain_id", r.URL.Query(), &params.ChainId)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_id", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "offset" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetAccounts(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// PostAccounts operation middleware
-func (siw *ServerInterfaceWrapper) PostAccounts(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostAccounts(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetAccountsAccountId operation middleware
-func (siw *ServerInterfaceWrapper) GetAccountsAccountId(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "account_id" -------------
-	var accountId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "account_id", r.PathValue("account_id"), &accountId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "account_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetAccountsAccountId(w, r, accountId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// PatchAccountsAccountId operation middleware
-func (siw *ServerInterfaceWrapper) PatchAccountsAccountId(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "account_id" -------------
-	var accountId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "account_id", r.PathValue("account_id"), &accountId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "account_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PatchAccountsAccountId(w, r, accountId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
 
 // GetChannels operation middleware
 func (siw *ServerInterfaceWrapper) GetChannels(w http.ResponseWriter, r *http.Request) {
@@ -1666,6 +1527,145 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// GetWallets operation middleware
+func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetWalletsParams
+
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_id", r.URL.Query(), &params.ChainId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_id", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWallets(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PostWallets operation middleware
+func (siw *ServerInterfaceWrapper) PostWallets(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostWallets(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWalletsWalletId operation middleware
+func (siw *ServerInterfaceWrapper) GetWalletsWalletId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWalletsWalletId(w, r, walletId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PatchWalletsWalletId operation middleware
+func (siw *ServerInterfaceWrapper) PatchWalletsWalletId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchWalletsWalletId(w, r, walletId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -1786,10 +1786,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	m.HandleFunc("GET "+options.BaseURL+"/accounts", wrapper.GetAccounts)
-	m.HandleFunc("POST "+options.BaseURL+"/accounts", wrapper.PostAccounts)
-	m.HandleFunc("GET "+options.BaseURL+"/accounts/{account_id}", wrapper.GetAccountsAccountId)
-	m.HandleFunc("PATCH "+options.BaseURL+"/accounts/{account_id}", wrapper.PatchAccountsAccountId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels", wrapper.GetChannels)
 	m.HandleFunc("POST "+options.BaseURL+"/channels", wrapper.PostChannels)
 	m.HandleFunc("DELETE "+options.BaseURL+"/channels/{channel_id}", wrapper.DeleteChannelsChannelId)
@@ -1803,6 +1799,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("DELETE "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.DeleteChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.GetWallets)
+	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.PostWallets)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}", wrapper.GetWalletsWalletId)
+	m.HandleFunc("PATCH "+options.BaseURL+"/wallets/{wallet_id}", wrapper.PatchWalletsWalletId)
 
 	return m
 }

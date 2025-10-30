@@ -76,29 +76,6 @@ const (
 	GetChannelsChannelIdEventsParamsTypeWatcherStatus   GetChannelsChannelIdEventsParamsType = "watcher.status"
 )
 
-// Account defines model for Account.
-type Account struct {
-	// AccountId Unique identifier for the account
-	AccountId openapi_types.UUID `json:"account_id"`
-
-	// Address EVM account address
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the account exists
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the account
-	Name *string `json:"name,omitempty"`
-}
-
-// AccountList defines model for AccountList.
-type AccountList struct {
-	Data []Account `json:"data"`
-
-	// HasMore True if there are more accounts to fetch
-	HasMore bool `json:"has_more"`
-}
-
 // ApplicationError defines model for ApplicationError.
 type ApplicationError struct {
 	// Message Error message describing the issue
@@ -131,18 +108,6 @@ type ChannelList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// CreateAccount defines model for CreateAccount.
-type CreateAccount struct {
-	// Address EVM account address (42-character hex string starting with 0x)
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the account exists
-	ChainId string `json:"chain_id"`
-
-	// Name Name of the account
-	Name *string `json:"name,omitempty"`
-}
-
 // CreateChannel defines model for CreateChannel.
 type CreateChannel struct {
 	// Name Name of the channel
@@ -151,7 +116,7 @@ type CreateChannel struct {
 
 // CreateOperation defines model for CreateOperation.
 type CreateOperation struct {
-	// Address Account address performing the operation
+	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
 	// ChainFamily The blockchain family
@@ -168,6 +133,18 @@ type CreateOperation struct {
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// CreateWallet defines model for CreateWallet.
+type CreateWallet struct {
+	// Address EVM wallet address (42-character hex string starting with 0x)
+	Address string `json:"address"`
+
+	// ChainId The id that identifies the chain where the wallet exists
+	ChainId string `json:"chain_id"`
+
+	// Name Name of the wallet
+	Name *string `json:"name,omitempty"`
 }
 
 // CreateWatcher defines model for CreateWatcher.
@@ -307,7 +284,7 @@ type OCRProof struct {
 
 // Operation defines model for Operation.
 type Operation struct {
-	// Address Account address performing the operation
+	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
 	// ChainFamily The blockchain family
@@ -351,10 +328,7 @@ type OperationResponse struct {
 
 // OperationStatusPayload defines model for OperationStatusPayload.
 type OperationStatusPayload struct {
-	// AccountOperationId Account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
-
-	// Address Account address
+	// Address Wallet address
 	Address string `json:"address"`
 
 	// ChainFamily Blockchain family (e.g., evm)
@@ -370,6 +344,9 @@ type OperationStatusPayload struct {
 	StatusReason string                     `json:"status_reason"`
 	Transaction  *EventTransaction          `json:"transaction,omitempty"`
 	Type         OperationStatusPayloadType `json:"type"`
+
+	// WalletOperationId Wallet operation identifier
+	WalletOperationId string `json:"wallet_operation_id"`
 }
 
 // OperationStatusPayloadStatus Current status of the operation
@@ -390,10 +367,33 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
-// UpdateAccount defines model for UpdateAccount.
-type UpdateAccount struct {
-	// Name New name for the account
+// UpdateWallet defines model for UpdateWallet.
+type UpdateWallet struct {
+	// Name New name for the wallet
 	Name string `json:"name"`
+}
+
+// Wallet defines model for Wallet.
+type Wallet struct {
+	// Address EVM wallet address
+	Address string `json:"address"`
+
+	// ChainId The id that identifies the chain where the wallet exists
+	ChainId string `json:"chain_id"`
+
+	// Name Name of the wallet
+	Name *string `json:"name,omitempty"`
+
+	// WalletId Unique identifier for the wallet
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+// WalletList defines model for WalletList.
+type WalletList struct {
+	Data []Wallet `json:"data"`
+
+	// HasMore True if there are more wallets to fetch
+	HasMore bool `json:"has_more"`
 }
 
 // Watcher defines model for Watcher.
@@ -513,21 +513,6 @@ type WatcherStatusPayloadStatus string
 // WatcherStatusPayloadType defines model for WatcherStatusPayload.Type.
 type WatcherStatusPayloadType string
 
-// GetAccountsParams defines parameters for GetAccounts.
-type GetAccountsParams struct {
-	// Name Filter accounts by name
-	Name *string `form:"name,omitempty" json:"name,omitempty"`
-
-	// ChainId Filter accounts by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
-
-	// Limit Maximum number of accounts to return
-	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// Offset Number of accounts to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
-}
-
 // GetChannelsParams defines parameters for GetChannels.
 type GetChannelsParams struct {
 	// Name Filter channels by name
@@ -581,7 +566,7 @@ type GetChannelsChannelIdOperationsParams struct {
 	// ChainId Filter operations by chain ID
 	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
 
-	// Address Filter operations by account address
+	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 }
 
@@ -612,11 +597,20 @@ type GetChannelsChannelIdWatchersParams struct {
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
-// PostAccountsJSONRequestBody defines body for PostAccounts for application/json ContentType.
-type PostAccountsJSONRequestBody = CreateAccount
+// GetWalletsParams defines parameters for GetWallets.
+type GetWalletsParams struct {
+	// Name Filter wallets by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
-// PatchAccountsAccountIdJSONRequestBody defines body for PatchAccountsAccountId for application/json ContentType.
-type PatchAccountsAccountIdJSONRequestBody = UpdateAccount
+	// ChainId Filter wallets by chain ID
+	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+
+	// Limit Maximum number of wallets to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of wallets to skip for pagination
+	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+}
 
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
@@ -626,6 +620,12 @@ type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+
+// PostWalletsJSONRequestBody defines body for PostWallets for application/json ContentType.
+type PostWalletsJSONRequestBody = CreateWallet
+
+// PatchWalletsWalletIdJSONRequestBody defines body for PatchWalletsWalletId for application/json ContentType.
+type PatchWalletsWalletIdJSONRequestBody = UpdateWallet
 
 // AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
 func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
@@ -943,22 +943,6 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetAccounts request
-	GetAccounts(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// PostAccountsWithBody request with any body
-	PostAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PostAccounts(ctx context.Context, body PostAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// GetAccountsAccountId request
-	GetAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// PatchAccountsAccountIdWithBody request with any body
-	PatchAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PatchAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetChannels request
 	GetChannels(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1003,78 +987,22 @@ type ClientInterface interface {
 
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
 
-func (c *Client) GetAccounts(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAccountsRequest(c.Server, params)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
+	// GetWallets request
+	GetWallets(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-func (c *Client) PostAccountsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostAccountsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
+	// PostWalletsWithBody request with any body
+	PostWalletsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-func (c *Client) PostAccounts(ctx context.Context, body PostAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostAccountsRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
+	PostWallets(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-func (c *Client) GetAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetAccountsAccountIdRequest(c.Server, accountId)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
+	// GetWalletsWalletId request
+	GetWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-func (c *Client) PatchAccountsAccountIdWithBody(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchAccountsAccountIdRequestWithBody(c.Server, accountId, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
+	// PatchWalletsWalletIdWithBody request with any body
+	PatchWalletsWalletIdWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-func (c *Client) PatchAccountsAccountId(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchAccountsAccountIdRequest(c.Server, accountId, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
+	PatchWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetChannels(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1269,222 +1197,76 @@ func (c *Client) GetHealthCheck(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
-// NewGetAccountsRequest generates requests for GetAccounts
-func NewGetAccountsRequest(server string, params *GetAccountsParams) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
+func (c *Client) GetWallets(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWalletsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
-
-	operationPath := fmt.Sprintf("/accounts")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-
-	if params != nil {
-		queryValues := queryURL.Query()
-
-		if params.Name != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.ChainId != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Limit != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.Offset != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		queryURL.RawQuery = queryValues.Encode()
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
+	return c.Client.Do(req)
 }
 
-// NewPostAccountsRequest calls the generic PostAccounts builder with application/json body
-func NewPostAccountsRequest(server string, body PostAccountsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
+func (c *Client) PostWalletsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostWalletsRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostAccountsRequestWithBody(server, "application/json", bodyReader)
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
-// NewPostAccountsRequestWithBody generates requests for PostAccounts with any type of body
-func NewPostAccountsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
+func (c *Client) PostWallets(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPostWalletsRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
-
-	operationPath := fmt.Sprintf("/accounts")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
+	return c.Client.Do(req)
 }
 
-// NewGetAccountsAccountIdRequest generates requests for GetAccountsAccountId
-func NewGetAccountsAccountIdRequest(server string, accountId openapi_types.UUID) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "account_id", runtime.ParamLocationPath, accountId)
+func (c *Client) GetWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWalletsWalletIdRequest(c.Server, walletId)
 	if err != nil {
 		return nil, err
 	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-
-	operationPath := fmt.Sprintf("/accounts/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
+	return c.Client.Do(req)
 }
 
-// NewPatchAccountsAccountIdRequest calls the generic PatchAccountsAccountId builder with application/json body
-func NewPatchAccountsAccountIdRequest(server string, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
+func (c *Client) PatchWalletsWalletIdWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchWalletsWalletIdRequestWithBody(c.Server, walletId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPatchAccountsAccountIdRequestWithBody(server, accountId, "application/json", bodyReader)
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
 }
 
-// NewPatchAccountsAccountIdRequestWithBody generates requests for PatchAccountsAccountId with any type of body
-func NewPatchAccountsAccountIdRequestWithBody(server string, accountId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	var pathParam0 string
-
-	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "account_id", runtime.ParamLocationPath, accountId)
+func (c *Client) PatchWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchWalletsWalletIdRequest(c.Server, walletId, body)
 	if err != nil {
 		return nil, err
 	}
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
 		return nil, err
 	}
-
-	operationPath := fmt.Sprintf("/accounts/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PATCH", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
+	return c.Client.Do(req)
 }
 
 // NewGetChannelsRequest generates requests for GetChannels
@@ -2360,6 +2142,224 @@ func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewGetWalletsRequest generates requests for GetWallets
+func NewGetWalletsRequest(server string, params *GetWalletsParams) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Name != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_id", runtime.ParamLocationQuery, *params.ChainId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPostWalletsRequest calls the generic PostWallets builder with application/json body
+func NewPostWalletsRequest(server string, body PostWalletsJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPostWalletsRequestWithBody(server, "application/json", bodyReader)
+}
+
+// NewPostWalletsRequestWithBody generates requests for PostWallets with any type of body
+func NewPostWalletsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetWalletsWalletIdRequest generates requests for GetWalletsWalletId
+func NewGetWalletsWalletIdRequest(server string, walletId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewPatchWalletsWalletIdRequest calls the generic PatchWalletsWalletId builder with application/json body
+func NewPatchWalletsWalletIdRequest(server string, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchWalletsWalletIdRequestWithBody(server, walletId, "application/json", bodyReader)
+}
+
+// NewPatchWalletsWalletIdRequestWithBody generates requests for PatchWalletsWalletId with any type of body
+func NewPatchWalletsWalletIdRequestWithBody(server string, walletId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -2403,22 +2403,6 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetAccountsWithResponse request
-	GetAccountsWithResponse(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*GetAccountsResponse, error)
-
-	// PostAccountsWithBodyWithResponse request with any body
-	PostAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostAccountsResponse, error)
-
-	PostAccountsWithResponse(ctx context.Context, body PostAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostAccountsResponse, error)
-
-	// GetAccountsAccountIdWithResponse request
-	GetAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetAccountsAccountIdResponse, error)
-
-	// PatchAccountsAccountIdWithBodyWithResponse request with any body
-	PatchAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error)
-
-	PatchAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error)
-
 	// GetChannelsWithResponse request
 	GetChannelsWithResponse(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*GetChannelsResponse, error)
 
@@ -2463,102 +2447,22 @@ type ClientWithResponsesInterface interface {
 
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
-}
 
-type GetAccountsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *AccountList
-	JSON500      *ApplicationError
-}
+	// GetWalletsWithResponse request
+	GetWalletsWithResponse(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*GetWalletsResponse, error)
 
-// Status returns HTTPResponse.Status
-func (r GetAccountsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
+	// PostWalletsWithBodyWithResponse request with any body
+	PostWalletsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error)
 
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetAccountsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
+	PostWalletsWithResponse(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error)
 
-type PostAccountsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *Account
-	JSON400      *ApplicationError
-	JSON500      *ApplicationError
-}
+	// GetWalletsWalletIdWithResponse request
+	GetWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletsWalletIdResponse, error)
 
-// Status returns HTTPResponse.Status
-func (r PostAccountsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
+	// PatchWalletsWalletIdWithBodyWithResponse request with any body
+	PatchWalletsWalletIdWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error)
 
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostAccountsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type GetAccountsAccountIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Account
-	JSON404      *ApplicationError
-	JSON500      *ApplicationError
-}
-
-// Status returns HTTPResponse.Status
-func (r GetAccountsAccountIdResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetAccountsAccountIdResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PatchAccountsAccountIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *Account
-	JSON400      *ApplicationError
-	JSON404      *ApplicationError
-	JSON500      *ApplicationError
-}
-
-// Status returns HTTPResponse.Status
-func (r PatchAccountsAccountIdResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PatchAccountsAccountIdResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
+	PatchWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error)
 }
 
 type GetChannelsResponse struct {
@@ -2871,56 +2775,100 @@ func (r GetHealthCheckResponse) StatusCode() int {
 	return 0
 }
 
-// GetAccountsWithResponse request returning *GetAccountsResponse
-func (c *ClientWithResponses) GetAccountsWithResponse(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*GetAccountsResponse, error) {
-	rsp, err := c.GetAccounts(ctx, params, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetAccountsResponse(rsp)
+type GetWalletsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WalletList
+	JSON500      *ApplicationError
 }
 
-// PostAccountsWithBodyWithResponse request with arbitrary body returning *PostAccountsResponse
-func (c *ClientWithResponses) PostAccountsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostAccountsResponse, error) {
-	rsp, err := c.PostAccountsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
+// Status returns HTTPResponse.Status
+func (r GetWalletsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
 	}
-	return ParsePostAccountsResponse(rsp)
+	return http.StatusText(0)
 }
 
-func (c *ClientWithResponses) PostAccountsWithResponse(ctx context.Context, body PostAccountsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostAccountsResponse, error) {
-	rsp, err := c.PostAccounts(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWalletsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
 	}
-	return ParsePostAccountsResponse(rsp)
+	return 0
 }
 
-// GetAccountsAccountIdWithResponse request returning *GetAccountsAccountIdResponse
-func (c *ClientWithResponses) GetAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetAccountsAccountIdResponse, error) {
-	rsp, err := c.GetAccountsAccountId(ctx, accountId, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetAccountsAccountIdResponse(rsp)
+type PostWalletsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON201      *Wallet
+	JSON400      *ApplicationError
+	JSON500      *ApplicationError
 }
 
-// PatchAccountsAccountIdWithBodyWithResponse request with arbitrary body returning *PatchAccountsAccountIdResponse
-func (c *ClientWithResponses) PatchAccountsAccountIdWithBodyWithResponse(ctx context.Context, accountId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error) {
-	rsp, err := c.PatchAccountsAccountIdWithBody(ctx, accountId, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
+// Status returns HTTPResponse.Status
+func (r PostWalletsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
 	}
-	return ParsePatchAccountsAccountIdResponse(rsp)
+	return http.StatusText(0)
 }
 
-func (c *ClientWithResponses) PatchAccountsAccountIdWithResponse(ctx context.Context, accountId openapi_types.UUID, body PatchAccountsAccountIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchAccountsAccountIdResponse, error) {
-	rsp, err := c.PatchAccountsAccountId(ctx, accountId, body, reqEditors...)
-	if err != nil {
-		return nil, err
+// StatusCode returns HTTPResponse.StatusCode
+func (r PostWalletsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
 	}
-	return ParsePatchAccountsAccountIdResponse(rsp)
+	return 0
+}
+
+type GetWalletsWalletIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Wallet
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWalletsWalletIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWalletsWalletIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PatchWalletsWalletIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Wallet
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchWalletsWalletIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchWalletsWalletIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
 }
 
 // GetChannelsWithResponse request returning *GetChannelsResponse
@@ -3064,164 +3012,56 @@ func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, re
 	return ParseGetHealthCheckResponse(rsp)
 }
 
-// ParseGetAccountsResponse parses an HTTP response from a GetAccountsWithResponse call
-func ParseGetAccountsResponse(rsp *http.Response) (*GetAccountsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
+// GetWalletsWithResponse request returning *GetWalletsResponse
+func (c *ClientWithResponses) GetWalletsWithResponse(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*GetWalletsResponse, error) {
+	rsp, err := c.GetWallets(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-
-	response := &GetAccountsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest AccountList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
+	return ParseGetWalletsResponse(rsp)
 }
 
-// ParsePostAccountsResponse parses an HTTP response from a PostAccountsWithResponse call
-func ParsePostAccountsResponse(rsp *http.Response) (*PostAccountsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
+// PostWalletsWithBodyWithResponse request with arbitrary body returning *PostWalletsResponse
+func (c *ClientWithResponses) PostWalletsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error) {
+	rsp, err := c.PostWalletsWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-
-	response := &PostAccountsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest Account
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
+	return ParsePostWalletsResponse(rsp)
 }
 
-// ParseGetAccountsAccountIdResponse parses an HTTP response from a GetAccountsAccountIdWithResponse call
-func ParseGetAccountsAccountIdResponse(rsp *http.Response) (*GetAccountsAccountIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
+func (c *ClientWithResponses) PostWalletsWithResponse(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error) {
+	rsp, err := c.PostWallets(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-
-	response := &GetAccountsAccountIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Account
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
+	return ParsePostWalletsResponse(rsp)
 }
 
-// ParsePatchAccountsAccountIdResponse parses an HTTP response from a PatchAccountsAccountIdWithResponse call
-func ParsePatchAccountsAccountIdResponse(rsp *http.Response) (*PatchAccountsAccountIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
+// GetWalletsWalletIdWithResponse request returning *GetWalletsWalletIdResponse
+func (c *ClientWithResponses) GetWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletsWalletIdResponse, error) {
+	rsp, err := c.GetWalletsWalletId(ctx, walletId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
+	return ParseGetWalletsWalletIdResponse(rsp)
+}
 
-	response := &PatchAccountsAccountIdResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
+// PatchWalletsWalletIdWithBodyWithResponse request with arbitrary body returning *PatchWalletsWalletIdResponse
+func (c *ClientWithResponses) PatchWalletsWalletIdWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error) {
+	rsp, err := c.PatchWalletsWalletIdWithBody(ctx, walletId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
 	}
+	return ParsePatchWalletsWalletIdResponse(rsp)
+}
 
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest Account
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
+func (c *ClientWithResponses) PatchWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error) {
+	rsp, err := c.PatchWalletsWalletId(ctx, walletId, body, reqEditors...)
+	if err != nil {
+		return nil, err
 	}
-
-	return response, nil
+	return ParsePatchWalletsWalletIdResponse(rsp)
 }
 
 // ParseGetChannelsResponse parses an HTTP response from a GetChannelsWithResponse call
@@ -3724,6 +3564,166 @@ func ParseGetHealthCheckResponse(rsp *http.Response) (*GetHealthCheckResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWalletsResponse parses an HTTP response from a GetWalletsWithResponse call
+func ParseGetWalletsResponse(rsp *http.Response) (*GetWalletsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWalletsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WalletList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePostWalletsResponse parses an HTTP response from a PostWalletsWithResponse call
+func ParsePostWalletsResponse(rsp *http.Response) (*PostWalletsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PostWalletsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
+		var dest Wallet
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON201 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWalletsWalletIdResponse parses an HTTP response from a GetWalletsWalletIdWithResponse call
+func ParseGetWalletsWalletIdResponse(rsp *http.Response) (*GetWalletsWalletIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWalletsWalletIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Wallet
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchWalletsWalletIdResponse parses an HTTP response from a PatchWalletsWalletIdWithResponse call
+func ParsePatchWalletsWalletIdResponse(rsp *http.Response) (*PatchWalletsWalletIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchWalletsWalletIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Wallet
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
