@@ -363,24 +363,6 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
-// UpdateOperationStatus defines model for UpdateOperationStatus.
-type UpdateOperationStatus struct {
-	// ChainId The id that identifies the chain where the wallet performing the operation lives
-	ChainId string `json:"chain_id"`
-
-	// TransactionHash Onchain transaction hash which included the operation
-	TransactionHash string `json:"transaction_hash"`
-
-	// TransactionTimestamp Timestamp of onchain transaction which included the operation
-	TransactionTimestamp int `json:"transaction_timestamp"`
-
-	// WalletAddress Onchain wallet address performing the operation
-	WalletAddress string `json:"wallet_address"`
-
-	// WalletOperationId Unique wallet operation identifier
-	WalletOperationId string `json:"wallet_operation_id"`
-}
-
 // UpdateWallet defines model for UpdateWallet.
 type UpdateWallet struct {
 	// Name New name for the wallet
@@ -443,43 +425,6 @@ type Watcher struct {
 	Status string `json:"status"`
 
 	// WatcherId Unique identifier for the watcher
-	WatcherId openapi_types.UUID `json:"watcher_id"`
-}
-
-// WatcherDetectedEvent defines model for WatcherDetectedEvent.
-type WatcherDetectedEvent struct {
-	// Address The address of the smart contract from which the event was emitted
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the event happened
-	ChainId string `json:"chain_id"`
-
-	// CreatedAt Timestamp of when the event was created
-	CreatedAt int64 `json:"created_at"`
-
-	// Domain Domain namespace for the event
-	Domain string `json:"domain"`
-
-	// EventHash Deterministic event hash - keccak256(domain.name.base64payload)
-	EventHash string `json:"event_hash"`
-
-	// EventId Unique identifier for the event
-	EventId openapi_types.UUID `json:"event_id"`
-
-	// Name Name of the event
-	Name string `json:"name"`
-
-	// OcrContext OCR context for the event
-	OcrContext string `json:"ocr_context"`
-
-	// OcrReport OCR report for the event
-	OcrReport  string   `json:"ocr_report"`
-	Signatures []string `json:"signatures"`
-
-	// VerifiableEvent Base64 encoded verifiable event
-	VerifiableEvent string `json:"verifiable_event"`
-
-	// WatcherId Watcher UUID that detected the event
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
 
@@ -671,12 +616,6 @@ type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
-
-// PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
-type PostEventsJSONRequestBody = WatcherDetectedEvent
-
-// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
-type PostOperationStatusJSONRequestBody = UpdateOperationStatus
 
 // PostWalletsJSONRequestBody defines body for PostWallets for application/json ContentType.
 type PostWalletsJSONRequestBody = CreateWallet
@@ -965,15 +904,9 @@ type ServerInterface interface {
 	// Retrieves a specific watcher by ID.
 	// (GET /channels/{channel_id}/watchers/{watcher_id})
 	GetChannelsChannelIdWatchersWatcherId(c *gin.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID)
-	// Creates a new event.
-	// (POST /events)
-	PostEvents(c *gin.Context)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(c *gin.Context)
-	// Updates the status of an operation.
-	// (POST /operation_status)
-	PostOperationStatus(c *gin.Context)
 	// Retrieves wallets for the organization.
 	// (GET /wallets)
 	GetWallets(c *gin.Context, params GetWalletsParams)
@@ -1512,21 +1445,6 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchersWatcherId(c *gin.
 	siw.Handler.GetChannelsChannelIdWatchersWatcherId(c, channelId, watcherId)
 }
 
-// PostEvents operation middleware
-func (siw *ServerInterfaceWrapper) PostEvents(c *gin.Context) {
-
-	c.Set(ApiKeyAuthScopes, []string{})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostEvents(c)
-}
-
 // GetHealthCheck operation middleware
 func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
 
@@ -1540,21 +1458,6 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
 	}
 
 	siw.Handler.GetHealthCheck(c)
-}
-
-// PostOperationStatus operation middleware
-func (siw *ServerInterfaceWrapper) PostOperationStatus(c *gin.Context) {
-
-	c.Set(ApiKeyAuthScopes, []string{})
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-		if c.IsAborted() {
-			return
-		}
-	}
-
-	siw.Handler.PostOperationStatus(c)
 }
 
 // GetWallets operation middleware
@@ -1715,9 +1618,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/channels/:channel_id/watchers", wrapper.PostChannelsChannelIdWatchers)
 	router.DELETE(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.DeleteChannelsChannelIdWatchersWatcherId)
 	router.GET(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.GetChannelsChannelIdWatchersWatcherId)
-	router.POST(options.BaseURL+"/events", wrapper.PostEvents)
 	router.GET(options.BaseURL+"/health-check", wrapper.GetHealthCheck)
-	router.POST(options.BaseURL+"/operation_status", wrapper.PostOperationStatus)
 	router.GET(options.BaseURL+"/wallets", wrapper.GetWallets)
 	router.POST(options.BaseURL+"/wallets", wrapper.PostWallets)
 	router.GET(options.BaseURL+"/wallets/:wallet_id", wrapper.GetWalletsWalletId)
