@@ -1,7 +1,8 @@
 openapi: 3.0.4
 info:
-  title: Chainlink Verifiable Network API
+  title: Chainlink Verifiable Network Tenant API
   version: 0.1.0
+  description: Tenant API for managing accounts, channels, watchers, and operations
 
 paths:
   /health-check:
@@ -14,30 +15,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthCheck"
-
-  /events:
-    post:
-      summary: Creates a new event.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WatcherDetectedEvent"
-      responses:
-        "201":
-          description: Event created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  event_id:
-                    type: string
-                    format: uuid
-                    description: Unique identifier for the created event
-                required:
-                  - event_id
 
   /accounts:
     post:
@@ -616,19 +593,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
 
-  /operation_status:
-    post:
-      summary: Updates the status of an operation.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateOperationStatus"
-      responses:
-        "202":
-          description: Operation status recorded successfully
-
   /channels/{channel_id}/events:
     get:
       summary: Retrieves events from a channel.
@@ -781,88 +745,6 @@ components:
         - data
         - has_more
 
-    WatcherDetectedEvent:
-      type: object
-      properties:
-        event_id:
-          type: string
-          format: uuid
-          description: Unique identifier for the event
-        created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the event was created
-        watcher_id:
-          type: string
-          format: uuid
-          description: Watcher UUID that detected the event
-        domain:
-          type: string
-          description: Domain namespace for the event
-        name:
-          type: string
-          description: Name of the event
-        chain_id:
-          type: string
-          description: The id that identifies the chain where the event happened
-        address:
-          type: string
-          description: The address of the smart contract from which the event was emitted
-        ocr_report:
-          type: string
-          description: OCR report for the event
-        ocr_context:
-          type: string
-          description: OCR context for the event
-        verifiable_event:
-          type: string
-          description: Base64 encoded verifiable event
-        signatures:
-          type: array
-          items:
-            type: string
-            description: Signature of the event
-        event_hash:
-          type: string
-          description: Deterministic event hash - keccak256(domain.name.base64payload)
-      required:
-        - event_id
-        - created_at
-        - watcher_id
-        - domain
-        - name
-        - chain_id
-        - address
-        - ocr_report
-        - ocr_context
-        - verifiable_event
-        - signatures
-        - event_hash
-
-    UpdateOperationStatus:
-      type: object
-      properties:
-        account_operation_id:
-          type: string
-          description: Unique account operation identifier
-        account_address:
-          type: string
-          description: Onchain account address performing the operation
-        chain_id:
-          type: string
-          description: The id that identifies the chain where the account performing the operation lives
-        transaction_hash:
-          type: string
-          description: Onchain transaction hash which included the operation
-        transaction_timestamp:
-          type: integer
-          description: Timestamp of onchain transaction which included the operation
-      required:
-        - account_operation_id
-        - account_address
-        - chain_id
-        - transaction_hash
-        - transaction_timestamp
     TransactionRequest:
       type: object
       properties:

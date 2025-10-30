@@ -396,24 +396,6 @@ type UpdateAccount struct {
 	Name string `json:"name"`
 }
 
-// UpdateOperationStatus defines model for UpdateOperationStatus.
-type UpdateOperationStatus struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
-
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
-
-	// ChainId The id that identifies the chain where the account performing the operation lives
-	ChainId string `json:"chain_id"`
-
-	// TransactionHash Onchain transaction hash which included the operation
-	TransactionHash string `json:"transaction_hash"`
-
-	// TransactionTimestamp Timestamp of onchain transaction which included the operation
-	TransactionTimestamp int `json:"transaction_timestamp"`
-}
-
 // Watcher defines model for Watcher.
 type Watcher struct {
 	// Abi ABI definitions for the events (if not using domain-based events)
@@ -447,43 +429,6 @@ type Watcher struct {
 	Status string `json:"status"`
 
 	// WatcherId Unique identifier for the watcher
-	WatcherId openapi_types.UUID `json:"watcher_id"`
-}
-
-// WatcherDetectedEvent defines model for WatcherDetectedEvent.
-type WatcherDetectedEvent struct {
-	// Address The address of the smart contract from which the event was emitted
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the event happened
-	ChainId string `json:"chain_id"`
-
-	// CreatedAt Timestamp of when the event was created
-	CreatedAt int64 `json:"created_at"`
-
-	// Domain Domain namespace for the event
-	Domain string `json:"domain"`
-
-	// EventHash Deterministic event hash - keccak256(domain.name.base64payload)
-	EventHash string `json:"event_hash"`
-
-	// EventId Unique identifier for the event
-	EventId openapi_types.UUID `json:"event_id"`
-
-	// Name Name of the event
-	Name string `json:"name"`
-
-	// OcrContext OCR context for the event
-	OcrContext string `json:"ocr_context"`
-
-	// OcrReport OCR report for the event
-	OcrReport  string   `json:"ocr_report"`
-	Signatures []string `json:"signatures"`
-
-	// VerifiableEvent Base64 encoded verifiable event
-	VerifiableEvent string `json:"verifiable_event"`
-
-	// WatcherId Watcher UUID that detected the event
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
 
@@ -681,12 +626,6 @@ type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
-
-// PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
-type PostEventsJSONRequestBody = WatcherDetectedEvent
-
-// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
-type PostOperationStatusJSONRequestBody = UpdateOperationStatus
 
 // AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
 func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
@@ -1062,18 +1001,8 @@ type ClientInterface interface {
 	// GetChannelsChannelIdWatchersWatcherId request
 	GetChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostEventsWithBody request with any body
-	PostEventsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PostEvents(ctx context.Context, body PostEventsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	// PostOperationStatusWithBody request with any body
-	PostOperationStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	PostOperationStatus(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAccounts(ctx context.Context, params *GetAccountsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -1328,56 +1257,8 @@ func (c *Client) GetChannelsChannelIdWatchersWatcherId(ctx context.Context, chan
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostEventsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostEventsRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostEvents(ctx context.Context, body PostEventsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostEventsRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
 func (c *Client) GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetHealthCheckRequest(c.Server)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOperationStatusWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOperationStatusRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) PostOperationStatus(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostOperationStatusRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2452,46 +2333,6 @@ func NewGetChannelsChannelIdWatchersWatcherIdRequest(server string, channelId op
 	return req, nil
 }
 
-// NewPostEventsRequest calls the generic PostEvents builder with application/json body
-func NewPostEventsRequest(server string, body PostEventsJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostEventsRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewPostEventsRequestWithBody generates requests for PostEvents with any type of body
-func NewPostEventsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/events")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewGetHealthCheckRequest generates requests for GetHealthCheck
 func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	var err error
@@ -2515,46 +2356,6 @@ func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return req, nil
-}
-
-// NewPostOperationStatusRequest calls the generic PostOperationStatus builder with application/json body
-func NewPostOperationStatusRequest(server string, body PostOperationStatusJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewPostOperationStatusRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewPostOperationStatusRequestWithBody generates requests for PostOperationStatus with any type of body
-func NewPostOperationStatusRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/operation_status")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2660,18 +2461,8 @@ type ClientWithResponsesInterface interface {
 	// GetChannelsChannelIdWatchersWatcherIdWithResponse request
 	GetChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersWatcherIdResponse, error)
 
-	// PostEventsWithBodyWithResponse request with any body
-	PostEventsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostEventsResponse, error)
-
-	PostEventsWithResponse(ctx context.Context, body PostEventsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostEventsResponse, error)
-
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
-
-	// PostOperationStatusWithBodyWithResponse request with any body
-	PostOperationStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error)
-
-	PostOperationStatusWithResponse(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error)
 }
 
 type GetAccountsResponse struct {
@@ -3058,31 +2849,6 @@ func (r GetChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
 	return 0
 }
 
-type PostEventsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON201      *struct {
-		// EventId Unique identifier for the created event
-		EventId openapi_types.UUID `json:"event_id"`
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r PostEventsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostEventsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type GetHealthCheckResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3099,27 +2865,6 @@ func (r GetHealthCheckResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetHealthCheckResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
-type PostOperationStatusResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-}
-
-// Status returns HTTPResponse.Status
-func (r PostOperationStatusResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r PostOperationStatusResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3310,23 +3055,6 @@ func (c *ClientWithResponses) GetChannelsChannelIdWatchersWatcherIdWithResponse(
 	return ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp)
 }
 
-// PostEventsWithBodyWithResponse request with arbitrary body returning *PostEventsResponse
-func (c *ClientWithResponses) PostEventsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostEventsResponse, error) {
-	rsp, err := c.PostEventsWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostEventsResponse(rsp)
-}
-
-func (c *ClientWithResponses) PostEventsWithResponse(ctx context.Context, body PostEventsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostEventsResponse, error) {
-	rsp, err := c.PostEvents(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostEventsResponse(rsp)
-}
-
 // GetHealthCheckWithResponse request returning *GetHealthCheckResponse
 func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error) {
 	rsp, err := c.GetHealthCheck(ctx, reqEditors...)
@@ -3334,23 +3062,6 @@ func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseGetHealthCheckResponse(rsp)
-}
-
-// PostOperationStatusWithBodyWithResponse request with arbitrary body returning *PostOperationStatusResponse
-func (c *ClientWithResponses) PostOperationStatusWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error) {
-	rsp, err := c.PostOperationStatusWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOperationStatusResponse(rsp)
-}
-
-func (c *ClientWithResponses) PostOperationStatusWithResponse(ctx context.Context, body PostOperationStatusJSONRequestBody, reqEditors ...RequestEditorFn) (*PostOperationStatusResponse, error) {
-	rsp, err := c.PostOperationStatus(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParsePostOperationStatusResponse(rsp)
 }
 
 // ParseGetAccountsResponse parses an HTTP response from a GetAccountsWithResponse call
@@ -3993,35 +3704,6 @@ func ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*Ge
 	return response, nil
 }
 
-// ParsePostEventsResponse parses an HTTP response from a PostEventsWithResponse call
-func ParsePostEventsResponse(rsp *http.Response) (*PostEventsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostEventsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
-		var dest struct {
-			// EventId Unique identifier for the created event
-			EventId openapi_types.UUID `json:"event_id"`
-		}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON201 = &dest
-
-	}
-
-	return response, nil
-}
-
 // ParseGetHealthCheckResponse parses an HTTP response from a GetHealthCheckWithResponse call
 func ParseGetHealthCheckResponse(rsp *http.Response) (*GetHealthCheckResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -4043,22 +3725,6 @@ func ParseGetHealthCheckResponse(rsp *http.Response) (*GetHealthCheckResponse, e
 		}
 		response.JSON200 = &dest
 
-	}
-
-	return response, nil
-}
-
-// ParsePostOperationStatusResponse parses an HTTP response from a PostOperationStatusWithResponse call
-func ParsePostOperationStatusResponse(rsp *http.Response) (*PostOperationStatusResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &PostOperationStatusResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
 	}
 
 	return response, nil

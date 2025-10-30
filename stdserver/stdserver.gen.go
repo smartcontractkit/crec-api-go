@@ -394,24 +394,6 @@ type UpdateAccount struct {
 	Name string `json:"name"`
 }
 
-// UpdateOperationStatus defines model for UpdateOperationStatus.
-type UpdateOperationStatus struct {
-	// AccountAddress Onchain account address performing the operation
-	AccountAddress string `json:"account_address"`
-
-	// AccountOperationId Unique account operation identifier
-	AccountOperationId string `json:"account_operation_id"`
-
-	// ChainId The id that identifies the chain where the account performing the operation lives
-	ChainId string `json:"chain_id"`
-
-	// TransactionHash Onchain transaction hash which included the operation
-	TransactionHash string `json:"transaction_hash"`
-
-	// TransactionTimestamp Timestamp of onchain transaction which included the operation
-	TransactionTimestamp int `json:"transaction_timestamp"`
-}
-
 // Watcher defines model for Watcher.
 type Watcher struct {
 	// Abi ABI definitions for the events (if not using domain-based events)
@@ -445,43 +427,6 @@ type Watcher struct {
 	Status string `json:"status"`
 
 	// WatcherId Unique identifier for the watcher
-	WatcherId openapi_types.UUID `json:"watcher_id"`
-}
-
-// WatcherDetectedEvent defines model for WatcherDetectedEvent.
-type WatcherDetectedEvent struct {
-	// Address The address of the smart contract from which the event was emitted
-	Address string `json:"address"`
-
-	// ChainId The id that identifies the chain where the event happened
-	ChainId string `json:"chain_id"`
-
-	// CreatedAt Timestamp of when the event was created
-	CreatedAt int64 `json:"created_at"`
-
-	// Domain Domain namespace for the event
-	Domain string `json:"domain"`
-
-	// EventHash Deterministic event hash - keccak256(domain.name.base64payload)
-	EventHash string `json:"event_hash"`
-
-	// EventId Unique identifier for the event
-	EventId openapi_types.UUID `json:"event_id"`
-
-	// Name Name of the event
-	Name string `json:"name"`
-
-	// OcrContext OCR context for the event
-	OcrContext string `json:"ocr_context"`
-
-	// OcrReport OCR report for the event
-	OcrReport  string   `json:"ocr_report"`
-	Signatures []string `json:"signatures"`
-
-	// VerifiableEvent Base64 encoded verifiable event
-	VerifiableEvent string `json:"verifiable_event"`
-
-	// WatcherId Watcher UUID that detected the event
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
 
@@ -679,12 +624,6 @@ type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
-
-// PostEventsJSONRequestBody defines body for PostEvents for application/json ContentType.
-type PostEventsJSONRequestBody = WatcherDetectedEvent
-
-// PostOperationStatusJSONRequestBody defines body for PostOperationStatus for application/json ContentType.
-type PostOperationStatusJSONRequestBody = UpdateOperationStatus
 
 // AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
 func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
@@ -979,15 +918,9 @@ type ServerInterface interface {
 	// Retrieves a specific watcher by ID.
 	// (GET /channels/{channel_id}/watchers/{watcher_id})
 	GetChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
-	// Creates a new event.
-	// (POST /events)
-	PostEvents(w http.ResponseWriter, r *http.Request)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(w http.ResponseWriter, r *http.Request)
-	// Updates the status of an operation.
-	// (POST /operation_status)
-	PostOperationStatus(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -1713,26 +1646,6 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchersWatcherId(w http.
 	handler.ServeHTTP(w, r)
 }
 
-// PostEvents operation middleware
-func (siw *ServerInterfaceWrapper) PostEvents(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostEvents(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // GetHealthCheck operation middleware
 func (siw *ServerInterfaceWrapper) GetHealthCheck(w http.ResponseWriter, r *http.Request) {
 
@@ -1744,26 +1657,6 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(w http.ResponseWriter, r *http
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetHealthCheck(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// PostOperationStatus operation middleware
-func (siw *ServerInterfaceWrapper) PostOperationStatus(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostOperationStatus(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1909,9 +1802,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.PostChannelsChannelIdWatchers)
 	m.HandleFunc("DELETE "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.DeleteChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
-	m.HandleFunc("POST "+options.BaseURL+"/events", wrapper.PostEvents)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
-	m.HandleFunc("POST "+options.BaseURL+"/operation_status", wrapper.PostOperationStatus)
 
 	return m
 }
