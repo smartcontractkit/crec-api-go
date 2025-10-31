@@ -115,11 +115,8 @@ type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
-	// ChainFamily The blockchain family
-	ChainFamily *string `json:"chain_family,omitempty"`
-
-	// ChainId The ID that identifies the chain where the operation will be executed
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the operation will be executed
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// Signature EIP-712 signature of the operation
 	Signature string `json:"signature"`
@@ -136,8 +133,8 @@ type CreateWallet struct {
 	// Address EVM wallet address (42-character hex string starting with 0x)
 	Address string `json:"address"`
 
-	// ChainId The id that identifies the chain where the wallet exists
-	ChainId string `json:"chain_id"`
+	// ChainSelector The id that identifies the chain where the wallet exists
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name *string `json:"name,omitempty"`
@@ -156,11 +153,8 @@ type CreateWatcherWithABI struct {
 	// Address Smart contract address to watch for events
 	Address string `json:"address"`
 
-	// ChainFamily The blockchain family
-	ChainFamily *string `json:"chain_family,omitempty"`
-
-	// ChainId The ID that identifies the chain where the watcher will run
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the watcher will run
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// Events List of event names to watch for
 	Events []string `json:"events"`
@@ -174,11 +168,8 @@ type CreateWatcherWithDomain struct {
 	// Address Smart contract address to watch for events
 	Address string `json:"address"`
 
-	// ChainFamily The blockchain family
-	ChainFamily *string `json:"chain_family,omitempty"`
-
-	// ChainId The ID that identifies the chain where the watcher will run
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the watcher will run
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// Domain Service domain namespace (e.g., "dvp", "dta")
 	Domain string `json:"domain"`
@@ -283,11 +274,8 @@ type Operation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
-	// ChainFamily The blockchain family
-	ChainFamily string `json:"chain_family"`
-
-	// ChainId The ID that identifies the chain where the operation is executed
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the operation is executed
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// CreatedAt Timestamp of when the operation was created
 	CreatedAt int64 `json:"created_at"`
@@ -327,11 +315,8 @@ type OperationStatusPayload struct {
 	// Address Wallet address
 	Address string `json:"address"`
 
-	// ChainFamily Blockchain family (e.g., evm)
-	ChainFamily string `json:"chain_family"`
-
-	// ChainId Chain identifier
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the operation will be executed
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// Status Current status of the operation
 	Status OperationStatusPayloadStatus `json:"status"`
@@ -374,8 +359,8 @@ type Wallet struct {
 	// Address EVM wallet address
 	Address string `json:"address"`
 
-	// ChainId The id that identifies the chain where the wallet exists
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the wallet exists
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name *string `json:"name,omitempty"`
@@ -400,11 +385,8 @@ type Watcher struct {
 	// Address Smart contract address being watched
 	Address string `json:"address"`
 
-	// ChainFamily The blockchain family
-	ChainFamily string `json:"chain_family"`
-
-	// ChainId The ID that identifies the chain where the watcher runs
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the watcher will run
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
@@ -457,14 +439,11 @@ type WatcherEventPayload struct {
 	// Address Contract address that emitted the event
 	Address string `json:"address"`
 
-	// ChainFamily Blockchain family (e.g., evm)
-	ChainFamily string `json:"chain_family"`
-
-	// ChainId Chain identifier
-	ChainId     string                  `json:"chain_id"`
-	Event       WatcherEvent            `json:"event"`
-	Transaction EventTransaction        `json:"transaction"`
-	Type        WatcherEventPayloadType `json:"type"`
+	// ChainSelector The chain selector to identify the chain where the watcher will run
+	ChainSelector uint64                  `json:"chain_selector"`
+	Event         WatcherEvent            `json:"event"`
+	Transaction   EventTransaction        `json:"transaction"`
+	Type          WatcherEventPayloadType `json:"type"`
 
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
@@ -483,11 +462,8 @@ type WatcherList struct {
 
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
-	// ChainFamily Blockchain family (e.g., evm)
-	ChainFamily string `json:"chain_family"`
-
-	// ChainId Chain identifier
-	ChainId string `json:"chain_id"`
+	// ChainSelector The chain selector to identify the chain where the watcher will run
+	ChainSelector uint64 `json:"chain_selector"`
 
 	// Status Current status of the watcher
 	Status WatcherStatusPayloadStatus `json:"status"`
@@ -556,11 +532,8 @@ type GetChannelsChannelIdOperationsParams struct {
 	// Status Filter operations by status
 	Status *string `form:"status,omitempty" json:"status,omitempty"`
 
-	// ChainFamily Filter operations by blockchain family
-	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
-
-	// ChainId Filter operations by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+	// ChainSelector Filter operations by chain selector
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -577,11 +550,8 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Status Filter watchers by status
 	Status *string `form:"status,omitempty" json:"status,omitempty"`
 
-	// ChainFamily Filter watchers by blockchain family
-	ChainFamily *string `form:"chain_family,omitempty" json:"chain_family,omitempty"`
-
-	// ChainId Filter watchers by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+	// ChainSelector Filter watchers by chain selector
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -598,8 +568,8 @@ type GetWalletsParams struct {
 	// Name Filter wallets by name
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
-	// ChainId Filter wallets by chain ID
-	ChainId *string `form:"chain_id,omitempty" json:"chain_id,omitempty"`
+	// ChainSelector Filter wallets by chain selector
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -1161,19 +1131,11 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperations(c *gin.Context
 		return
 	}
 
-	// ------------- Optional query parameter "chain_family" -------------
+	// ------------- Optional query parameter "chain_selector" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "chain_family", c.Request.URL.Query(), &params.ChainFamily)
+	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_family: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "chain_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -1299,19 +1261,11 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(c *gin.Context) 
 		return
 	}
 
-	// ------------- Optional query parameter "chain_family" -------------
+	// ------------- Optional query parameter "chain_selector" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "chain_family", c.Request.URL.Query(), &params.ChainFamily)
+	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_family: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "chain_id" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -1478,11 +1432,11 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "chain_id" -------------
+	// ------------- Optional query parameter "chain_selector" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "chain_id", c.Request.URL.Query(), &params.ChainId)
+	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_id: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
 		return
 	}
 

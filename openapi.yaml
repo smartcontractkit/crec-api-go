@@ -53,8 +53,8 @@ paths:
           schema:
             type: string
         - in: query
-          name: chain_id
-          description: Filter wallets by chain ID
+          name: chain_selector
+          description: Filter wallets by chain selector
           schema:
             type: string
         - in: query
@@ -344,13 +344,8 @@ paths:
           schema:
             type: string
         - in: query
-          name: chain_family
-          description: Filter watchers by blockchain family
-          schema:
-            type: string
-        - in: query
-          name: chain_id
-          description: Filter watchers by chain ID
+          name: chain_selector
+          description: Filter watchers by chain selector
           schema:
             type: string
         - in: query
@@ -524,13 +519,8 @@ paths:
           schema:
             type: string
         - in: query
-          name: chain_family
-          description: Filter operations by blockchain family
-          schema:
-            type: string
-        - in: query
-          name: chain_id
-          description: Filter operations by chain ID
+          name: chain_selector
+          description: Filter operations by chain selector
           schema:
             type: string
         - in: query
@@ -697,12 +687,13 @@ components:
           type: string
           description: EVM wallet address (42-character hex string starting with 0x)
           pattern: "^0x[a-fA-F0-9]{40}$"
-        chain_id:
+        chain_selector:
           type: string
           description: The id that identifies the chain where the wallet exists
+          x-go-type: "uint64"
       required:
         - address
-        - chain_id
+        - chain_selector
     UpdateWallet:
       type: object
       properties:
@@ -724,13 +715,14 @@ components:
         address:
           type: string
           description: EVM wallet address
-        chain_id:
+        chain_selector:
           type: string
-          description: The id that identifies the chain where the wallet exists
+          description: The chain selector to identify the chain where the wallet exists
+          x-go-type: "uint64"
       required:
         - wallet_id
         - address
-        - chain_id
+        - chain_selector
     WalletList:
       type: object
       properties:
@@ -843,13 +835,10 @@ components:
         name:
           type: string
           description: Name for the watcher to help identify it
-        chain_family:
+        chain_selector:
           type: string
-          description: The blockchain family
-          default: "evm"
-        chain_id:
-          type: string
-          description: The ID that identifies the chain where the watcher will run
+          description: The chain selector to identify the chain where the watcher will run
+          x-go-type: "uint64"
         address:
           type: string
           description: Smart contract address to watch for events
@@ -863,7 +852,7 @@ components:
           description: List of event names to watch for within the domain
           minItems: 1
       required:
-        - chain_id
+        - chain_selector
         - address
         - domain
         - events
@@ -873,13 +862,10 @@ components:
         name:
           type: string
           description: Name for the watcher to help identify it
-        chain_family:
+        chain_selector:
           type: string
-          description: The blockchain family
-          default: "evm"
-        chain_id:
-          type: string
-          description: The ID that identifies the chain where the watcher will run
+          description: The chain selector to identify the chain where the watcher will run
+          x-go-type: "uint64"
         address:
           type: string
           description: Smart contract address to watch for events
@@ -896,7 +882,7 @@ components:
           description: ABI definitions for the events to watch
           minItems: 1
       required:
-        - chain_id
+        - chain_selector
         - address
         - events
         - abi
@@ -964,12 +950,10 @@ components:
         status:
           type: string
           description: Current status of the watcher
-        chain_family:
+        chain_selector:
           type: string
-          description: The blockchain family
-        chain_id:
-          type: string
-          description: The ID that identifies the chain where the watcher runs
+          description: The chain selector to identify the chain where the watcher will run
+          x-go-type: "uint64"
         address:
           type: string
           description: Smart contract address being watched
@@ -991,8 +975,7 @@ components:
         - channel_id
         - created_at
         - status
-        - chain_family
-        - chain_id
+        - chain_selector
         - address
         - events
     WatcherList:
@@ -1011,13 +994,10 @@ components:
     CreateOperation:
       type: object
       properties:
-        chain_family:
+        chain_selector:
           type: string
-          description: The blockchain family
-          default: "evm"
-        chain_id:
-          type: string
-          description: The ID that identifies the chain where the operation will be executed
+          description: The chain selector to identify the chain where the operation will be executed
+          x-go-type: "uint64"
         address:
           type: string
           description: Wallet address performing the operation
@@ -1034,7 +1014,7 @@ components:
           type: string
           description: EIP-712 signature of the operation
       required:
-        - chain_id
+        - chain_selector
         - address
         - wallet_operation_id
         - transactions
@@ -1049,12 +1029,10 @@ components:
         status:
           type: string
           description: Current status of the operation
-        chain_family:
+        chain_selector:
           type: string
-          description: The blockchain family
-        chain_id:
-          type: string
-          description: The ID that identifies the chain where the operation is executed
+          description: The chain selector to identify the chain where the operation is executed
+          x-go-type: "uint64"
         address:
           type: string
           description: Wallet address performing the operation
@@ -1076,8 +1054,7 @@ components:
       required:
         - operation_id
         - status
-        - chain_family
-        - chain_id
+        - chain_selector
         - address
         - wallet_operation_id
         - transactions
@@ -1172,12 +1149,10 @@ components:
         status_reason:
           type: string
           description: Reason for the status
-        chain_family:
+        chain_selector:
           type: string
-          description: Blockchain family (e.g., evm)
-        chain_id:
-          type: string
-          description: Chain identifier
+          description: The chain selector to identify the chain where the operation will be executed
+          x-go-type: "uint64"
         address:
           type: string
           description: Wallet address
@@ -1190,8 +1165,7 @@ components:
         - type
         - status
         - status_reason
-        - chain_family
-        - chain_id
+        - chain_selector
         - address
         - wallet_operation_id
     WatcherStatusPayload:
@@ -1213,20 +1187,17 @@ components:
         status_reason:
           type: string
           description: Reason for the status
-        chain_family:
+        chain_selector:
           type: string
-          description: Blockchain family (e.g., evm)
-        chain_id:
-          type: string
-          description: Chain identifier
+          description: The chain selector to identify the chain where the watcher will run
+          x-go-type: "uint64"
       required:
         - type
         - watcher_id
         - status
         - status_code
         - status_reason
-        - chain_family
-        - chain_id
+        - chain_selector
     WatcherEventPayload:
       type: object
       properties:
@@ -1236,12 +1207,10 @@ components:
         watcher_id:
           type: string
           description: Unique watcher identifier
-        chain_family:
+        chain_selector:
           type: string
-          description: Blockchain family (e.g., evm)
-        chain_id:
-          type: string
-          description: Chain identifier
+          description: The chain selector to identify the chain where the watcher will run
+          x-go-type: "uint64"
         address:
           type: string
           description: Contract address that emitted the event
@@ -1252,8 +1221,7 @@ components:
       required:
         - type
         - watcher_id
-        - chain_family
-        - chain_id
+        - chain_selector
         - address
         - transaction
         - event
