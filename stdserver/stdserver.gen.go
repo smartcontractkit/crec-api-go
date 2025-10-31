@@ -539,6 +539,9 @@ type GetChannelsChannelIdOperationsParams struct {
 
 	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// WalletId Filter operations by wallet ID
+	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
 }
 
 // GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
@@ -1175,6 +1178,14 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperations(w http.Respons
 	err = runtime.BindQueryParameter("form", true, false, "address", r.URL.Query(), &params.Address)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "address", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "wallet_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "wallet_id", r.URL.Query(), &params.WalletId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
 		return
 	}
 
