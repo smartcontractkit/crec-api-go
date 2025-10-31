@@ -538,6 +538,12 @@ paths:
           description: Filter operations by wallet address
           schema:
             type: string
+        - in: query
+          name: wallet_id
+          description: Filter operations by wallet ID
+          schema:
+            type: string
+            format: uuid
       responses:
         "200":
           description: Successful operation
