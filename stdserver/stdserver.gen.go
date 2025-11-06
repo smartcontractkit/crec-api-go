@@ -356,6 +356,12 @@ type UpdateWallet struct {
 	Name string `json:"name"`
 }
 
+// UpdateWatcher defines model for UpdateWatcher.
+type UpdateWatcher struct {
+	// Name New name for the watcher
+	Name string `json:"name"`
+}
+
 // Wallet defines model for Wallet.
 type Wallet struct {
 	// Address EVM wallet address
@@ -552,6 +558,9 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Offset Number of watchers to skip for pagination
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
+	// Name Filter watchers by name
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
 	// Status Filter watchers by status
 	Status *string `form:"status,omitempty" json:"status,omitempty"`
 
@@ -591,6 +600,9 @@ type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+
+// PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody defines body for PatchChannelsChannelIdWatchersWatcherId for application/json ContentType.
+type PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody = UpdateWatcher
 
 // PostWalletsJSONRequestBody defines body for PostWallets for application/json ContentType.
 type PostWalletsJSONRequestBody = CreateWallet
@@ -879,6 +891,9 @@ type ServerInterface interface {
 	// Retrieves a specific watcher by ID.
 	// (GET /channels/{channel_id}/watchers/{watcher_id})
 	GetChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
+	// Updates a watcher name.
+	// (PATCH /channels/{channel_id}/watchers/{watcher_id})
+	PatchChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(w http.ResponseWriter, r *http.Request)
@@ -1310,6 +1325,14 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(w http.ResponseW
 		return
 	}
 
+	// ------------- Optional query parameter "name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
+		return
+	}
+
 	// ------------- Optional query parameter "status" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
@@ -1463,6 +1486,46 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchersWatcherId(w http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetChannelsChannelIdWatchersWatcherId(w, r, channelId, watcherId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PatchChannelsChannelIdWatchersWatcherId operation middleware
+func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "watcher_id" -------------
+	var watcherId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "watcher_id", r.PathValue("watcher_id"), &watcherId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "watcher_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchChannelsChannelIdWatchersWatcherId(w, r, channelId, watcherId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1763,6 +1826,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.PostChannelsChannelIdWatchers)
 	m.HandleFunc("DELETE "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.DeleteChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
+	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.PatchChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.GetWallets)
 	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.PostWallets)

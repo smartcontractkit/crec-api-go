@@ -339,6 +339,11 @@ paths:
             minimum: 0
             default: 0
         - in: query
+          name: name
+          description: Filter watchers by name
+          schema:
+            type: string
+        - in: query
           name: status
           description: Filter watchers by status
           schema:
@@ -435,6 +440,52 @@ paths:
       responses:
         "202":
           description: Delete request accepted.
+        "404":
+          description: Channel or watcher not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    patch:
+      summary: Updates a watcher name.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: watcher_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateWatcher"
+      responses:
+        "200":
+          description: Watcher updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watcher"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
         "404":
           description: Channel or watcher not found
           content:
@@ -706,6 +757,14 @@ components:
         name:
           type: string
           description: New name for the wallet
+      required:
+        - name
+    UpdateWatcher:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New name for the watcher
       required:
         - name
     Wallet:
