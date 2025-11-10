@@ -358,6 +358,12 @@ type UpdateWallet struct {
 	Name string `json:"name"`
 }
 
+// UpdateWatcher defines model for UpdateWatcher.
+type UpdateWatcher struct {
+	// Name New name for the watcher
+	Name string `json:"name"`
+}
+
 // Wallet defines model for Wallet.
 type Wallet struct {
 	// Address EVM wallet address
@@ -491,7 +497,7 @@ type WatcherStatusPayloadType string
 
 // GetChannelsParams defines parameters for GetChannels.
 type GetChannelsParams struct {
-	// Name Filter channels by name
+	// Name Filter channels by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// Limit Maximum number of channels to return
@@ -554,6 +560,9 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Offset Number of watchers to skip for pagination
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
+	// Name Filter watchers by name (case-insensitive partial match)
+	Name *string `form:"name,omitempty" json:"name,omitempty"`
+
 	// Status Filter watchers by status
 	Status *string `form:"status,omitempty" json:"status,omitempty"`
 
@@ -572,7 +581,7 @@ type GetChannelsChannelIdWatchersParams struct {
 
 // GetWalletsParams defines parameters for GetWallets.
 type GetWalletsParams struct {
-	// Name Filter wallets by name
+	// Name Filter wallets by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// ChainSelector Filter wallets by chain selector
@@ -593,6 +602,9 @@ type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+
+// PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody defines body for PatchChannelsChannelIdWatchersWatcherId for application/json ContentType.
+type PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody = UpdateWatcher
 
 // PostWalletsJSONRequestBody defines body for PostWallets for application/json ContentType.
 type PostWalletsJSONRequestBody = CreateWallet
@@ -958,6 +970,11 @@ type ClientInterface interface {
 	// GetChannelsChannelIdWatchersWatcherId request
 	GetChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PatchChannelsChannelIdWatchersWatcherIdWithBody request with any body
+	PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1148,6 +1165,30 @@ func (c *Client) DeleteChannelsChannelIdWatchersWatcherId(ctx context.Context, c
 
 func (c *Client) GetChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetChannelsChannelIdWatchersWatcherIdRequest(c.Server, channelId, watcherId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody(c.Server, channelId, watcherId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchChannelsChannelIdWatchersWatcherIdRequest(c.Server, channelId, watcherId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1852,6 +1893,22 @@ func NewGetChannelsChannelIdWatchersRequest(server string, channelId openapi_typ
 
 		}
 
+		if params.Name != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "name", runtime.ParamLocationQuery, *params.Name); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		if params.Status != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
@@ -2068,6 +2125,60 @@ func NewGetChannelsChannelIdWatchersWatcherIdRequest(server string, channelId op
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewPatchChannelsChannelIdWatchersWatcherIdRequest calls the generic PatchChannelsChannelIdWatchersWatcherId builder with application/json body
+func NewPatchChannelsChannelIdWatchersWatcherIdRequest(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody(server, channelId, watcherId, "application/json", bodyReader)
+}
+
+// NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody generates requests for PatchChannelsChannelIdWatchersWatcherId with any type of body
+func NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "watcher_id", runtime.ParamLocationPath, watcherId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/watchers/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2402,6 +2513,11 @@ type ClientWithResponsesInterface interface {
 	// GetChannelsChannelIdWatchersWatcherIdWithResponse request
 	GetChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersWatcherIdResponse, error)
 
+	// PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse request with any body
+	PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error)
+
+	PatchChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error)
+
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
 
@@ -2710,6 +2826,31 @@ func (r GetChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
 	return 0
 }
 
+type PatchChannelsChannelIdWatchersWatcherIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Watcher
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchChannelsChannelIdWatchersWatcherIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetHealthCheckResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -2958,6 +3099,23 @@ func (c *ClientWithResponses) GetChannelsChannelIdWatchersWatcherIdWithResponse(
 		return nil, err
 	}
 	return ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp)
+}
+
+// PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse request with arbitrary body returning *PatchChannelsChannelIdWatchersWatcherIdResponse
+func (c *ClientWithResponses) PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error) {
+	rsp, err := c.PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx, channelId, watcherId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PatchChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error) {
+	rsp, err := c.PatchChannelsChannelIdWatchersWatcherId(ctx, channelId, watcherId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp)
 }
 
 // GetHealthCheckWithResponse request returning *GetHealthCheckResponse
@@ -3481,6 +3639,53 @@ func ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*Ge
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchChannelsChannelIdWatchersWatcherIdResponse parses an HTTP response from a PatchChannelsChannelIdWatchersWatcherIdWithResponse call
+func ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchChannelsChannelIdWatchersWatcherIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Watcher
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
