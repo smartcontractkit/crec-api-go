@@ -495,7 +495,7 @@ type WatcherStatusPayloadType string
 
 // GetChannelsParams defines parameters for GetChannels.
 type GetChannelsParams struct {
-	// Name Filter channels by name
+	// Name Filter channels by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// Limit Maximum number of channels to return
@@ -558,7 +558,7 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Offset Number of watchers to skip for pagination
 	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// Name Filter watchers by name
+	// Name Filter watchers by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// Status Filter watchers by status
@@ -579,7 +579,7 @@ type GetChannelsChannelIdWatchersParams struct {
 
 // GetWalletsParams defines parameters for GetWallets.
 type GetWalletsParams struct {
-	// Name Filter wallets by name
+	// Name Filter wallets by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// ChainSelector Filter wallets by chain selector

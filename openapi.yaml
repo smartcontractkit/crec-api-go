@@ -49,7 +49,7 @@ paths:
       parameters:
         - in: query
           name: name
-          description: Filter wallets by name
+          description: Filter wallets by name (case-insensitive partial match)
           schema:
             type: string
         - in: query
@@ -188,7 +188,7 @@ paths:
       parameters:
         - in: query
           name: name
-          description: Filter channels by name
+          description: Filter channels by name (case-insensitive partial match)
           schema:
             type: string
         - in: query
@@ -340,7 +340,7 @@ paths:
             default: 0
         - in: query
           name: name
-          description: Filter watchers by name
+          description: Filter watchers by name (case-insensitive partial match)
           schema:
             type: string
         - in: query
@@ -757,6 +757,9 @@ components:
         name:
           type: string
           description: New name for the wallet
+          minLength: 1
+          maxLength: 255
+          pattern: '^(?!\s*$).+'
       required:
         - name
     UpdateWatcher:
@@ -765,6 +768,9 @@ components:
         name:
           type: string
           description: New name for the watcher
+          minLength: 1
+          maxLength: 255
+          pattern: '^(?!\s*$).+'
       required:
         - name
     Wallet:
