@@ -751,11 +751,23 @@ components:
               e:
                 type: string
                 description: RSA public exponent of allowed signer
-                pattern: "^0x[a-fA-F0-9]{64}$"
+                ## For the public exponent (e), the common and recommended values
+                ## result in an exact size of 3 or 4 bytes in encoded form.
+                ## Max 17 bytes. in rare or custom implementations, it could be a
+                ## large number up to the size of the modulus itself, i.e., hundreds
+                ## of bytes (e.g., 256 bytes for a 2048-bit key). However, this is
+                ## avoided in modern practice because it makes public key operations
+                ## (encryption/signature verification) much slower without improving
+                ## security
+                ## bytes*2 for hex representation.
+                pattern: "^0x[a-fA-F0-9]{2,34}$"
               n:
                 type: string
                 description: RSA modulus of allowed signer
-                pattern: "^0x[a-fA-F0-9]{64}$"
+                ## 1024 bit keys are less secure. Only 2048 bit keys or 4096 bit RSA
+                ## keys are supported. Modulus = (number_of_bits / 8) bytes =
+                ## bytes*2 for hex representation.
+                pattern: "^0x[a-fA-F0-9]{512,}$"
             required:
               - e
               - n
