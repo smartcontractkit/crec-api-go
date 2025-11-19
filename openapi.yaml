@@ -734,23 +734,86 @@ components:
           example: "ok"
       required:
         - status
-    CreateWallet:
+    RSAWalletType:
+      type: object
+      description: RSA Wallet type and allowed signers
+      properties:
+        wallet_type:
+          type: string
+          description: RSA Type of the wallet
+          enum:
+            - "rsa"
+        allowed_rsa_signers:
+          type: array
+          items:
+            type: object
+            properties:
+              e:
+                type: string
+                description: RSA public exponent of allowed signer
+                pattern: "^0x[a-fA-F0-9]{64}$"
+              n:
+                type: string
+                description: RSA modulus of allowed signer
+                pattern: "^0x[a-fA-F0-9]{64}$"
+            required:
+              - e
+              - n
+          description: Allowed RSA public signing keys for the wallet
+          minItems: 0
+          maxItems: 10
+          uniqueItems: true
+      required:
+        - wallet_type
+        - allowed_rsa_signers
+    ECDSAWalletType:
+      type: object
+      description: ECDSA Wallet type and allowed signers
+      properties:
+        wallet_type:
+          type: string
+          description: ECDSA Type of the wallet
+          enum:
+            - "ecdsa"
+        allowed_ecdsa_signers:
+          type: array
+          items:
+            type: string
+            description: ECDSA public key of allowed signer
+            pattern: "^0x[a-fA-F0-9]{40}$"
+          description: Allowed ECDSA public signing keys for the wallet
+          minItems: 0
+          maxItems: 10
+          uniqueItems: true
+      required:
+        - wallet_type
+        - allowed_ecdsa_signers
+    WalletTypes:
+      oneOf:
+        - $ref: '#/components/schemas/RSAWalletType'
+        - $ref: '#/components/schemas/ECDSAWalletType'
+    CreateWalletBase:
       type: object
       properties:
         name:
           type: string
           description: Name of the wallet
-        address:
+        wallet_owner_address:
           type: string
-          description: EVM wallet address (42-character hex string starting with 0x)
+          description: Wallet Contract Owner Address (42-character hex string starting with 0x)
           pattern: "^0x[a-fA-F0-9]{40}$"
         chain_selector:
           type: string
           description: The id that identifies the chain where the wallet exists
           x-go-type: "uint64"
       required:
-        - address
+        - name
+        - wallet_owner_address
         - chain_selector
+    CreateWallet:
+      allOf:
+        - $ref: '#/components/schemas/CreateWalletBase'
+        - $ref: '#/components/schemas/WalletTypes'
     UpdateWallet:
       type: object
       properties:
