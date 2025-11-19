@@ -732,23 +732,100 @@ components:
           example: "ok"
       required:
         - status
-    CreateWallet:
+    RSAWalletInput:
+      type: object
+      description: RSA Wallet type and allowed signers
+      properties:
+        wallet_type:
+          type: string
+          description: RSA Type of the wallet
+          enum:
+            - "rsa"
+        allowed_rsa_signers:
+          type: array
+          items:
+            type: object
+            properties:
+              e:
+                type: string
+                description: RSA public exponent of allowed signer
+                ## For the public exponent (e), the common and recommended values
+                ## result in an exact size of 3 or 4 bytes in encoded form.
+                ## Max 17 bytes. in rare or custom implementations, it could be a
+                ## large number up to the size of the modulus itself, i.e., hundreds
+                ## of bytes (e.g., 256 bytes for a 2048-bit key). However, this is
+                ## avoided in modern practice because it makes public key operations
+                ## (encryption/signature verification) much slower without improving
+                ## security
+                ## bytes*2 for hex representation.
+                pattern: "^0x[a-fA-F0-9]{2,34}$"
+              n:
+                type: string
+                description: RSA modulus of allowed signer
+                ## 1024 bit keys are less secure. Only 2048 bit keys or 4096 bit RSA
+                ## keys are supported. Modulus = (number_of_bits / 8) bytes =
+                ## bytes*2 for hex representation.
+                pattern: "^0x[a-fA-F0-9]{512,}$"
+            required:
+              - e
+              - n
+          description: Allowed RSA public signing keys for the wallet
+          minItems: 0
+          maxItems: 10
+          uniqueItems: true
+      required:
+        - wallet_type
+        - allowed_rsa_signers
+    ECDSAWalletInput:
+      type: object
+      description: ECDSA Wallet type and allowed signers
+      properties:
+        wallet_type:
+          type: string
+          description: ECDSA Type of the wallet
+          enum:
+            - "ecdsa"
+        allowed_ecdsa_signers:
+          type: array
+          items:
+            type: string
+            description: ECDSA public key of allowed signer
+            pattern: "^0x[a-fA-F0-9]{40}$"
+          description: Allowed ECDSA public signing keys for the wallet
+          minItems: 0
+          maxItems: 10
+          uniqueItems: true
+      required:
+        - wallet_type
+        - allowed_ecdsa_signers
+    WalletInput:
+      oneOf:
+        - $ref: '#/components/schemas/RSAWalletInput'
+        - $ref: '#/components/schemas/ECDSAWalletInput'
+      discriminator:
+        propertyName: wallet_type
+    CreateWalletBase:
       type: object
       properties:
         name:
           type: string
           description: Name of the wallet
-        address:
+        wallet_owner_address:
           type: string
-          description: EVM wallet address (42-character hex string starting with 0x)
+          description: Wallet Contract Owner Address (42-character hex string starting with 0x)
           pattern: "^0x[a-fA-F0-9]{40}$"
         chain_selector:
           type: string
           description: The id that identifies the chain where the wallet exists
           x-go-type: "uint64"
       required:
-        - address
+        - name
+        - wallet_owner_address
         - chain_selector
+    CreateWallet:
+      allOf:
+        - $ref: '#/components/schemas/CreateWalletBase'
+        - $ref: '#/components/schemas/WalletInput'
     UpdateWallet:
       type: object
       properties:
