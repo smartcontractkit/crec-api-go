@@ -244,6 +244,14 @@ type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
 }
 
+// EventList defines model for EventList.
+type EventList struct {
+	Events []Event `json:"events"`
+
+	// HasMore True if there are more events to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // EventTransaction defines model for EventTransaction.
 type EventTransaction struct {
 	// Hash Transaction hash
@@ -2635,7 +2643,7 @@ func (r GetChannelsChannelIdResponse) StatusCode() int {
 type GetChannelsChannelIdEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]Event
+	JSON200      *EventList
 	JSON400      *ApplicationError
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
@@ -3340,7 +3348,7 @@ func ParseGetChannelsChannelIdEventsResponse(rsp *http.Response) (*GetChannelsCh
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []Event
+		var dest EventList
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

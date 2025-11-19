@@ -242,6 +242,14 @@ type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
 }
 
+// EventList defines model for EventList.
+type EventList struct {
+	Events []Event `json:"events"`
+
+	// HasMore True if there are more events to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // EventTransaction defines model for EventTransaction.
 type EventTransaction struct {
 	// Hash Transaction hash
