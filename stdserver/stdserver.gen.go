@@ -128,7 +128,7 @@ type CreateOperation struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the operation will be executed
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Signature EIP-712 signature of the operation
 	Signature string `json:"signature"`
@@ -143,7 +143,7 @@ type CreateOperation struct {
 // CreateWallet defines model for CreateWallet.
 type CreateWallet struct {
 	// ChainSelector The id that identifies the chain where the wallet exists
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name string `json:"name"`
@@ -156,7 +156,7 @@ type CreateWallet struct {
 // CreateWalletBase defines model for CreateWalletBase.
 type CreateWalletBase struct {
 	// ChainSelector The id that identifies the chain where the wallet exists
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name string `json:"name"`
@@ -179,7 +179,7 @@ type CreateWatcherWithABI struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Events List of event names to watch for
 	Events []string `json:"events"`
@@ -194,7 +194,7 @@ type CreateWatcherWithDomain struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Domain Service domain namespace (e.g., "dvp", "dta")
 	Domain string `json:"domain"`
@@ -312,7 +312,7 @@ type Operation struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the operation is executed
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// CreatedAt Timestamp of when the operation was created
 	CreatedAt int64 `json:"created_at"`
@@ -353,7 +353,7 @@ type OperationStatusPayload struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the operation will be executed
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Status Current status of the operation
 	Status OperationStatusPayloadStatus `json:"status"`
@@ -421,7 +421,7 @@ type Wallet struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the wallet exists
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name *string `json:"name,omitempty"`
@@ -452,7 +452,7 @@ type Watcher struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
@@ -506,7 +506,7 @@ type WatcherEventPayload struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64                  `json:"chain_selector"`
+	ChainSelector string                  `json:"chain_selector"`
 	Event         WatcherEvent            `json:"event"`
 	Transaction   EventTransaction        `json:"transaction"`
 	Type          WatcherEventPayloadType `json:"type"`
@@ -529,7 +529,7 @@ type WatcherList struct {
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Status Current status of the watcher
 	Status WatcherStatusPayloadStatus `json:"status"`

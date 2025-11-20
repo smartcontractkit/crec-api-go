@@ -819,7 +819,6 @@ components:
         chain_selector:
           type: string
           description: The id that identifies the chain where the wallet exists
-          x-go-type: "uint64"
       required:
         - name
         - wallet_owner_address
@@ -866,7 +865,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the wallet exists
-          x-go-type: "uint64"
       required:
         - wallet_id
         - address
@@ -986,7 +984,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
-          x-go-type: "uint64"
         address:
           type: string
           description: Smart contract address to watch for events
@@ -1013,7 +1010,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
-          x-go-type: "uint64"
         address:
           type: string
           description: Smart contract address to watch for events
@@ -1101,7 +1097,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
-          x-go-type: "uint64"
         address:
           type: string
           description: Smart contract address being watched
@@ -1145,7 +1140,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the operation will be executed
-          x-go-type: "uint64"
         address:
           type: string
           description: Wallet address performing the operation
@@ -1180,7 +1174,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the operation is executed
-          x-go-type: "uint64"
         address:
           type: string
           description: Wallet address performing the operation
@@ -1300,7 +1293,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the operation will be executed
-          x-go-type: "uint64"
         address:
           type: string
           description: Wallet address
@@ -1338,7 +1330,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
-          x-go-type: "uint64"
       required:
         - type
         - watcher_id
@@ -1358,7 +1349,6 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
-          x-go-type: "uint64"
         address:
           type: string
           description: Contract address that emitted the event
