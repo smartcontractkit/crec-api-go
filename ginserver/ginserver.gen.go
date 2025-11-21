@@ -27,9 +27,9 @@ const (
 	NotFound      ApplicationErrorType = "Not found"
 )
 
-// Defines values for ECDSAWalletTypeWalletType.
+// Defines values for ECDSAWalletInputWalletType.
 const (
-	Ecdsa ECDSAWalletTypeWalletType = "ecdsa"
+	Ecdsa ECDSAWalletInputWalletType = "ecdsa"
 )
 
 // Defines values for EventABIType.
@@ -50,9 +50,9 @@ const (
 	OperationStatusPayloadTypeOperationStatus OperationStatusPayloadType = "operation.status"
 )
 
-// Defines values for RSAWalletTypeWalletType.
+// Defines values for RSAWalletInputWalletType.
 const (
-	Rsa RSAWalletTypeWalletType = "rsa"
+	Rsa RSAWalletInputWalletType = "rsa"
 )
 
 // Defines values for WatcherEventPayloadType.
@@ -126,7 +126,7 @@ type CreateOperation struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the operation will be executed
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Signature EIP-712 signature of the operation
 	Signature string `json:"signature"`
@@ -141,7 +141,7 @@ type CreateOperation struct {
 // CreateWallet defines model for CreateWallet.
 type CreateWallet struct {
 	// ChainSelector The id that identifies the chain where the wallet exists
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name string `json:"name"`
@@ -154,7 +154,7 @@ type CreateWallet struct {
 // CreateWalletBase defines model for CreateWalletBase.
 type CreateWalletBase struct {
 	// ChainSelector The id that identifies the chain where the wallet exists
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name string `json:"name"`
@@ -177,7 +177,7 @@ type CreateWatcherWithABI struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Events List of event names to watch for
 	Events []string `json:"events"`
@@ -192,7 +192,7 @@ type CreateWatcherWithDomain struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Domain Service domain namespace (e.g., "dvp", "dta")
 	Domain string `json:"domain"`
@@ -204,17 +204,17 @@ type CreateWatcherWithDomain struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// ECDSAWalletType ECDSA Wallet type and allowed signers
-type ECDSAWalletType struct {
+// ECDSAWalletInput ECDSA Wallet type and allowed signers
+type ECDSAWalletInput struct {
 	// AllowedEcdsaSigners Allowed ECDSA public signing keys for the wallet
 	AllowedEcdsaSigners []string `json:"allowed_ecdsa_signers"`
 
 	// WalletType ECDSA Type of the wallet
-	WalletType ECDSAWalletTypeWalletType `json:"wallet_type"`
+	WalletType ECDSAWalletInputWalletType `json:"wallet_type"`
 }
 
-// ECDSAWalletTypeWalletType ECDSA Type of the wallet
-type ECDSAWalletTypeWalletType string
+// ECDSAWalletInputWalletType ECDSA Type of the wallet
+type ECDSAWalletInputWalletType string
 
 // Event defines model for Event.
 type Event struct {
@@ -318,7 +318,7 @@ type Operation struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the operation is executed
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// CreatedAt Timestamp of when the operation was created
 	CreatedAt int64 `json:"created_at"`
@@ -359,7 +359,7 @@ type OperationStatusPayload struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the operation will be executed
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Status Current status of the operation
 	Status OperationStatusPayloadStatus `json:"status"`
@@ -379,8 +379,8 @@ type OperationStatusPayloadStatus string
 // OperationStatusPayloadType defines model for OperationStatusPayload.Type.
 type OperationStatusPayloadType string
 
-// RSAWalletType RSA Wallet type and allowed signers
-type RSAWalletType struct {
+// RSAWalletInput RSA Wallet type and allowed signers
+type RSAWalletInput struct {
 	// AllowedRsaSigners Allowed RSA public signing keys for the wallet
 	AllowedRsaSigners []struct {
 		// E RSA public exponent of allowed signer
@@ -391,11 +391,11 @@ type RSAWalletType struct {
 	} `json:"allowed_rsa_signers"`
 
 	// WalletType RSA Type of the wallet
-	WalletType RSAWalletTypeWalletType `json:"wallet_type"`
+	WalletType RSAWalletInputWalletType `json:"wallet_type"`
 }
 
-// RSAWalletTypeWalletType RSA Type of the wallet
-type RSAWalletTypeWalletType string
+// RSAWalletInputWalletType RSA Type of the wallet
+type RSAWalletInputWalletType string
 
 // TransactionRequest defines model for TransactionRequest.
 type TransactionRequest struct {
@@ -427,7 +427,7 @@ type Wallet struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the wallet exists
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name *string `json:"name,omitempty"`
@@ -436,17 +436,17 @@ type Wallet struct {
 	WalletId openapi_types.UUID `json:"wallet_id"`
 }
 
+// WalletInput defines model for WalletInput.
+type WalletInput struct {
+	union json.RawMessage
+}
+
 // WalletList defines model for WalletList.
 type WalletList struct {
 	Data []Wallet `json:"data"`
 
 	// HasMore True if there are more wallets to fetch
 	HasMore bool `json:"has_more"`
-}
-
-// WalletTypes defines model for WalletTypes.
-type WalletTypes struct {
-	union json.RawMessage
 }
 
 // Watcher defines model for Watcher.
@@ -458,7 +458,7 @@ type Watcher struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
@@ -512,7 +512,7 @@ type WatcherEventPayload struct {
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64                  `json:"chain_selector"`
+	ChainSelector string                  `json:"chain_selector"`
 	Event         WatcherEvent            `json:"event"`
 	Transaction   EventTransaction        `json:"transaction"`
 	Type          WatcherEventPayloadType `json:"type"`
@@ -535,7 +535,7 @@ type WatcherList struct {
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector uint64 `json:"chain_selector"`
+	ChainSelector string `json:"chain_selector"`
 
 	// Status Current status of the watcher
 	Status WatcherStatusPayloadStatus `json:"status"`
@@ -674,22 +674,22 @@ type PostWalletsJSONRequestBody = CreateWallet
 // PatchWalletsWalletIdJSONRequestBody defines body for PatchWalletsWalletId for application/json ContentType.
 type PatchWalletsWalletIdJSONRequestBody = UpdateWallet
 
-// AsRSAWalletType returns the union data inside the CreateWallet as a RSAWalletType
-func (t CreateWallet) AsRSAWalletType() (RSAWalletType, error) {
-	var body RSAWalletType
+// AsRSAWalletInput returns the union data inside the CreateWallet as a RSAWalletInput
+func (t CreateWallet) AsRSAWalletInput() (RSAWalletInput, error) {
+	var body RSAWalletInput
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromRSAWalletType overwrites any union data inside the CreateWallet as the provided RSAWalletType
-func (t *CreateWallet) FromRSAWalletType(v RSAWalletType) error {
+// FromRSAWalletInput overwrites any union data inside the CreateWallet as the provided RSAWalletInput
+func (t *CreateWallet) FromRSAWalletInput(v RSAWalletInput) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeRSAWalletType performs a merge with any union data inside the CreateWallet, using the provided RSAWalletType
-func (t *CreateWallet) MergeRSAWalletType(v RSAWalletType) error {
+// MergeRSAWalletInput performs a merge with any union data inside the CreateWallet, using the provided RSAWalletInput
+func (t *CreateWallet) MergeRSAWalletInput(v RSAWalletInput) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -700,22 +700,22 @@ func (t *CreateWallet) MergeRSAWalletType(v RSAWalletType) error {
 	return err
 }
 
-// AsECDSAWalletType returns the union data inside the CreateWallet as a ECDSAWalletType
-func (t CreateWallet) AsECDSAWalletType() (ECDSAWalletType, error) {
-	var body ECDSAWalletType
+// AsECDSAWalletInput returns the union data inside the CreateWallet as a ECDSAWalletInput
+func (t CreateWallet) AsECDSAWalletInput() (ECDSAWalletInput, error) {
+	var body ECDSAWalletInput
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromECDSAWalletType overwrites any union data inside the CreateWallet as the provided ECDSAWalletType
-func (t *CreateWallet) FromECDSAWalletType(v ECDSAWalletType) error {
+// FromECDSAWalletInput overwrites any union data inside the CreateWallet as the provided ECDSAWalletInput
+func (t *CreateWallet) FromECDSAWalletInput(v ECDSAWalletInput) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeECDSAWalletType performs a merge with any union data inside the CreateWallet, using the provided ECDSAWalletType
-func (t *CreateWallet) MergeECDSAWalletType(v ECDSAWalletType) error {
+// MergeECDSAWalletInput performs a merge with any union data inside the CreateWallet, using the provided ECDSAWalletInput
+func (t *CreateWallet) MergeECDSAWalletInput(v ECDSAWalletInput) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1036,22 +1036,24 @@ func (t *EventHeaders_Proofs_Item) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsRSAWalletType returns the union data inside the WalletTypes as a RSAWalletType
-func (t WalletTypes) AsRSAWalletType() (RSAWalletType, error) {
-	var body RSAWalletType
+// AsRSAWalletInput returns the union data inside the WalletInput as a RSAWalletInput
+func (t WalletInput) AsRSAWalletInput() (RSAWalletInput, error) {
+	var body RSAWalletInput
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromRSAWalletType overwrites any union data inside the WalletTypes as the provided RSAWalletType
-func (t *WalletTypes) FromRSAWalletType(v RSAWalletType) error {
+// FromRSAWalletInput overwrites any union data inside the WalletInput as the provided RSAWalletInput
+func (t *WalletInput) FromRSAWalletInput(v RSAWalletInput) error {
+	v.WalletType = "RSAWalletInput"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeRSAWalletType performs a merge with any union data inside the WalletTypes, using the provided RSAWalletType
-func (t *WalletTypes) MergeRSAWalletType(v RSAWalletType) error {
+// MergeRSAWalletInput performs a merge with any union data inside the WalletInput, using the provided RSAWalletInput
+func (t *WalletInput) MergeRSAWalletInput(v RSAWalletInput) error {
+	v.WalletType = "RSAWalletInput"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1062,22 +1064,24 @@ func (t *WalletTypes) MergeRSAWalletType(v RSAWalletType) error {
 	return err
 }
 
-// AsECDSAWalletType returns the union data inside the WalletTypes as a ECDSAWalletType
-func (t WalletTypes) AsECDSAWalletType() (ECDSAWalletType, error) {
-	var body ECDSAWalletType
+// AsECDSAWalletInput returns the union data inside the WalletInput as a ECDSAWalletInput
+func (t WalletInput) AsECDSAWalletInput() (ECDSAWalletInput, error) {
+	var body ECDSAWalletInput
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromECDSAWalletType overwrites any union data inside the WalletTypes as the provided ECDSAWalletType
-func (t *WalletTypes) FromECDSAWalletType(v ECDSAWalletType) error {
+// FromECDSAWalletInput overwrites any union data inside the WalletInput as the provided ECDSAWalletInput
+func (t *WalletInput) FromECDSAWalletInput(v ECDSAWalletInput) error {
+	v.WalletType = "ECDSAWalletInput"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeECDSAWalletType performs a merge with any union data inside the WalletTypes, using the provided ECDSAWalletType
-func (t *WalletTypes) MergeECDSAWalletType(v ECDSAWalletType) error {
+// MergeECDSAWalletInput performs a merge with any union data inside the WalletInput, using the provided ECDSAWalletInput
+func (t *WalletInput) MergeECDSAWalletInput(v ECDSAWalletInput) error {
+	v.WalletType = "ECDSAWalletInput"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1088,12 +1092,35 @@ func (t *WalletTypes) MergeECDSAWalletType(v ECDSAWalletType) error {
 	return err
 }
 
-func (t WalletTypes) MarshalJSON() ([]byte, error) {
+func (t WalletInput) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"wallet_type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t WalletInput) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "ECDSAWalletInput":
+		return t.AsECDSAWalletInput()
+	case "RSAWalletInput":
+		return t.AsRSAWalletInput()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t WalletInput) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *WalletTypes) UnmarshalJSON(b []byte) error {
+func (t *WalletInput) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
