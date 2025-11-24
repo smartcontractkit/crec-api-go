@@ -579,7 +579,7 @@ type GetChannelsChannelIdEventsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Offset for message-oriented pagination
-	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset int64 `form:"offset" json:"offset"`
 
 	// Type Filter events by type
 	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
@@ -1791,20 +1791,16 @@ func NewGetChannelsChannelIdEventsRequest(server string, channelId openapi_types
 
 		}
 
-		if params.Offset != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, params.Offset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
 				}
 			}
-
 		}
 
 		if params.Type != nil {
