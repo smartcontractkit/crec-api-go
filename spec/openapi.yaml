@@ -70,6 +70,7 @@ paths:
           description: Number of wallets to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
       responses:
@@ -204,6 +205,7 @@ paths:
           description: Number of channels to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
       responses:
@@ -336,6 +338,7 @@ paths:
           description: Number of watchers to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
         - in: query
@@ -562,6 +565,7 @@ paths:
           description: Number of operations to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
         - in: query
@@ -662,7 +666,8 @@ paths:
           name: offset
           description: Offset for message-oriented pagination
           schema:
-            type: string
+            type: integer
+            format: int64
         - in: query
           name: type
           description: Filter events by type
@@ -1253,7 +1258,8 @@ components:
       type: object
       properties:
         offset:
-          type: string
+          type: integer
+          format: int64
           description: Unique offset for message ordering
         proofs:
           type: array
