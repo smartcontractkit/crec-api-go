@@ -738,14 +738,24 @@ components:
           example: "ok"
       required:
         - status
-    RSAWalletInput:
+    CreateWallet:
       type: object
-      description: RSA Wallet type and allowed signers
       properties:
+        name:
+          type: string
+          description: Name of the wallet
+        wallet_owner_address:
+          type: string
+          description: Wallet Contract Owner Address (42-character hex string starting with 0x)
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        chain_selector:
+          type: string
+          description: The id that identifies the chain where the wallet exists
         wallet_type:
           type: string
-          description: RSA Type of the wallet
+          description: ECDSA Type of the wallet
           enum:
+            - "ecdsa"
             - "rsa"
         allowed_rsa_signers:
           type: array
@@ -779,18 +789,6 @@ components:
           minItems: 0
           maxItems: 10
           uniqueItems: true
-      required:
-        - wallet_type
-        - allowed_rsa_signers
-    ECDSAWalletInput:
-      type: object
-      description: ECDSA Wallet type and allowed signers
-      properties:
-        wallet_type:
-          type: string
-          description: ECDSA Type of the wallet
-          enum:
-            - "ecdsa"
         allowed_ecdsa_signers:
           type: array
           items:
@@ -802,35 +800,10 @@ components:
           maxItems: 10
           uniqueItems: true
       required:
-        - wallet_type
-        - allowed_ecdsa_signers
-    WalletInput:
-      oneOf:
-        - $ref: '#/components/schemas/RSAWalletInput'
-        - $ref: '#/components/schemas/ECDSAWalletInput'
-      discriminator:
-        propertyName: wallet_type
-    CreateWalletBase:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Name of the wallet
-        wallet_owner_address:
-          type: string
-          description: Wallet Contract Owner Address (42-character hex string starting with 0x)
-          pattern: "^0x[a-fA-F0-9]{40}$"
-        chain_selector:
-          type: string
-          description: The id that identifies the chain where the wallet exists
-      required:
         - name
         - wallet_owner_address
         - chain_selector
-    CreateWallet:
-      allOf:
-        - $ref: '#/components/schemas/CreateWalletBase'
-        - $ref: '#/components/schemas/WalletInput'
+        - wallet_type
     UpdateWallet:
       type: object
       properties:
