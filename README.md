@@ -3,7 +3,7 @@
 To regenerate the Golang bindings for the CREC API, run:
 
 ```bash
-make generate
+make tools && make generate
 ```
 
 # Adding/Updating a Service

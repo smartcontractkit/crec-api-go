@@ -254,7 +254,7 @@ type EventABIInput struct {
 // EventHeaders defines model for EventHeaders.
 type EventHeaders struct {
 	// Offset Unique offset for message ordering
-	Offset string                     `json:"offset"`
+	Offset int64                      `json:"offset"`
 	Proofs []EventHeaders_Proofs_Item `json:"proofs"`
 }
 
@@ -264,6 +264,14 @@ type EventHeadersProofs1 map[string]interface{}
 // EventHeaders_Proofs_Item defines model for EventHeaders.proofs.Item.
 type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
+}
+
+// EventList defines model for EventList.
+type EventList struct {
+	Events []Event `json:"events"`
+
+	// HasMore True if there are more events to fetch
+	HasMore bool `json:"has_more"`
 }
 
 // EventTransaction defines model for EventTransaction.
@@ -526,7 +534,7 @@ type GetChannelsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of channels to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // GetChannelsChannelIdEventsParams defines parameters for GetChannelsChannelIdEvents.
@@ -535,7 +543,7 @@ type GetChannelsChannelIdEventsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Offset for message-oriented pagination
-	Offset *string `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset int64 `form:"offset" json:"offset"`
 
 	// Type Filter events by type
 	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
@@ -559,7 +567,7 @@ type GetChannelsChannelIdOperationsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of operations to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Status Filter operations by status
 	Status *string `form:"status,omitempty" json:"status,omitempty"`
@@ -580,7 +588,7 @@ type GetChannelsChannelIdWatchersParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of watchers to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Name Filter watchers by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
@@ -613,7 +621,7 @@ type GetWalletsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of wallets to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
@@ -1106,9 +1114,16 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(w http.ResponseWri
 		return
 	}
 
-	// ------------- Optional query parameter "offset" -------------
+	// ------------- Required query parameter "offset" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if paramValue := r.URL.Query().Get("offset"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandlerFunc(w, r, &RequiredParamError{ParamName: "offset"})
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return

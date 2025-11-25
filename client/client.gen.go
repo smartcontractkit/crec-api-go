@@ -256,7 +256,7 @@ type EventABIInput struct {
 // EventHeaders defines model for EventHeaders.
 type EventHeaders struct {
 	// Offset Unique offset for message ordering
-	Offset string                     `json:"offset"`
+	Offset int64                      `json:"offset"`
 	Proofs []EventHeaders_Proofs_Item `json:"proofs"`
 }
 
@@ -266,6 +266,14 @@ type EventHeadersProofs1 map[string]interface{}
 // EventHeaders_Proofs_Item defines model for EventHeaders.proofs.Item.
 type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
+}
+
+// EventList defines model for EventList.
+type EventList struct {
+	Events []Event `json:"events"`
+
+	// HasMore True if there are more events to fetch
+	HasMore bool `json:"has_more"`
 }
 
 // EventTransaction defines model for EventTransaction.
@@ -528,7 +536,7 @@ type GetChannelsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of channels to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // GetChannelsChannelIdEventsParams defines parameters for GetChannelsChannelIdEvents.
@@ -537,7 +545,7 @@ type GetChannelsChannelIdEventsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Offset for message-oriented pagination
-	Offset *string `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset int64 `form:"offset" json:"offset"`
 
 	// Type Filter events by type
 	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
@@ -561,7 +569,7 @@ type GetChannelsChannelIdOperationsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of operations to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Status Filter operations by status
 	Status *string `form:"status,omitempty" json:"status,omitempty"`
@@ -582,7 +590,7 @@ type GetChannelsChannelIdWatchersParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of watchers to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Name Filter watchers by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
@@ -615,7 +623,7 @@ type GetWalletsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of wallets to skip for pagination
-	Offset *int `form:"offset,omitempty" json:"offset,omitempty"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
@@ -1541,20 +1549,16 @@ func NewGetChannelsChannelIdEventsRequest(server string, channelId openapi_types
 
 		}
 
-		if params.Offset != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
+		if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, params.Offset); err != nil {
+			return nil, err
+		} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+			return nil, err
+		} else {
+			for k, v := range parsed {
+				for _, v2 := range v {
+					queryValues.Add(k, v2)
 				}
 			}
-
 		}
 
 		if params.Type != nil {
@@ -2659,7 +2663,7 @@ func (r GetChannelsChannelIdResponse) StatusCode() int {
 type GetChannelsChannelIdEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *[]Event
+	JSON200      *EventList
 	JSON400      *ApplicationError
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
@@ -3364,7 +3368,7 @@ func ParseGetChannelsChannelIdEventsResponse(rsp *http.Response) (*GetChannelsCh
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest []Event
+		var dest EventList
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

@@ -70,6 +70,7 @@ paths:
           description: Number of wallets to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
       responses:
@@ -204,6 +205,7 @@ paths:
           description: Number of channels to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
       responses:
@@ -336,6 +338,7 @@ paths:
           description: Number of watchers to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
         - in: query
@@ -562,6 +565,7 @@ paths:
           description: Number of operations to skip for pagination
           schema:
             type: integer
+            format: int64
             minimum: 0
             default: 0
         - in: query
@@ -656,13 +660,16 @@ paths:
           schema:
             type: integer
             minimum: 1
-            maximum: 1000
-            default: 100
+            maximum: 200
+            default: 200
         - in: query
           name: offset
+          required: true
           description: Offset for message-oriented pagination
           schema:
-            type: string
+            type: integer
+            format: int64
+            minimum: 0
         - in: query
           name: type
           description: Filter events by type
@@ -693,9 +700,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Event"
+                $ref: "#/components/schemas/EventList"
         "400":
           description: Invalid request parameters
           content:
@@ -1196,6 +1201,19 @@ components:
       required:
         - data
         - has_more
+    EventList:
+      type: object
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/Event"
+        has_more:
+          type: boolean
+          description: True if there are more events to fetch
+      required:
+        - events
+        - has_more
     Event:
       type: object
       properties:
@@ -1215,7 +1233,8 @@ components:
       type: object
       properties:
         offset:
-          type: string
+          type: integer
+          format: int64
           description: Unique offset for message ordering
         proofs:
           type: array
