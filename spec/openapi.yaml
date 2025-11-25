@@ -669,6 +669,7 @@ paths:
           schema:
             type: integer
             format: int64
+            minimum: 0
         - in: query
           name: type
           description: Filter events by type
