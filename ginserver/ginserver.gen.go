@@ -438,6 +438,9 @@ type Watcher struct {
 	// Events List of event names being watched
 	Events []string `json:"events"`
 
+	// ExternalWatcherId Unique identifier for the external watcher
+	ExternalWatcherId *string `json:"external_watcher_id,omitempty"`
+
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
