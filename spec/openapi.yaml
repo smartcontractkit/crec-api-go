@@ -1058,9 +1058,9 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the watcher
-        external_watcher_id:
+        workflow_id:
           type: string
-          description: Unique identifier for the external watcher
+          description: Unique identifier for the workflow that created the watcher
         name:
           type: string
           description: Name of the watcher for identification
