@@ -438,9 +438,6 @@ type Watcher struct {
 	// Events List of event names being watched
 	Events []string `json:"events"`
 
-	// ExternalWatcherId Unique identifier for the external watcher
-	ExternalWatcherId *string `json:"external_watcher_id,omitempty"`
-
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
@@ -449,6 +446,9 @@ type Watcher struct {
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
+
+	// WorkflowId Unique identifier for the workflow that created the watcher
+	WorkflowId *string `json:"workflow_id,omitempty"`
 }
 
 // WatcherEvent defines model for WatcherEvent.
