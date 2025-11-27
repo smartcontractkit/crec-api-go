@@ -73,13 +73,6 @@ const (
 	WatcherStatus WatcherStatusPayloadType = "watcher.status"
 )
 
-// Defines values for GetChannelsChannelIdEventsParamsType.
-const (
-	GetChannelsChannelIdEventsParamsTypeOperationStatus GetChannelsChannelIdEventsParamsType = "operation.status"
-	GetChannelsChannelIdEventsParamsTypeWatcherEvent    GetChannelsChannelIdEventsParamsType = "watcher.event"
-	GetChannelsChannelIdEventsParamsTypeWatcherStatus   GetChannelsChannelIdEventsParamsType = "watcher.status"
-)
-
 // Defines values for GetChannelsChannelIdEventsSearchParamsType.
 const (
 	GetChannelsChannelIdEventsSearchParamsTypeOperationStatus GetChannelsChannelIdEventsSearchParamsType = "operation.status"
@@ -554,22 +547,7 @@ type GetChannelsChannelIdEventsParams struct {
 
 	// Offset Offset for message-oriented pagination
 	Offset int64 `form:"offset" json:"offset"`
-
-	// Type Filter events by type
-	Type *GetChannelsChannelIdEventsParamsType `form:"type,omitempty" json:"type,omitempty"`
-
-	// Status Filter by operation or watcher status
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
-
-	// EventName Filter by event name (for watcher.event type)
-	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
-
-	// Domain Filter by watcher domain (for watcher events)
-	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 }
-
-// GetChannelsChannelIdEventsParamsType defines parameters for GetChannelsChannelIdEvents.
-type GetChannelsChannelIdEventsParamsType string
 
 // GetChannelsChannelIdEventsSearchParams defines parameters for GetChannelsChannelIdEventsSearch.
 type GetChannelsChannelIdEventsSearchParams struct {
@@ -1166,38 +1144,6 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(w http.ResponseWri
 	err = runtime.BindQueryParameter("form", true, true, "offset", r.URL.Query(), &params.Offset)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "type" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "type", r.URL.Query(), &params.Type)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "type", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "event_name" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "event_name", r.URL.Query(), &params.EventName)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "event_name", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "domain" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "domain", r.URL.Query(), &params.Domain)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "domain", Err: err})
 		return
 	}
 

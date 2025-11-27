@@ -670,30 +670,6 @@ paths:
             type: integer
             format: int64
             minimum: 0
-        - in: query
-          name: type
-          description: Filter events by type
-          schema:
-            type: string
-            enum:
-              - operation.status
-              - watcher.status
-              - watcher.event
-        - in: query
-          name: status
-          description: Filter by operation or watcher status
-          schema:
-            type: string
-        - in: query
-          name: event_name
-          description: Filter by event name (for watcher.event type)
-          schema:
-            type: string
-        - in: query
-          name: domain
-          description: Filter by watcher domain (for watcher events)
-          schema:
-            type: string
       responses:
         "200":
           description: Events retrieved successfully
