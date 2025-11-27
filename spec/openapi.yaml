@@ -720,6 +720,91 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
 
+  /channels/{channel_id}/events/search:
+    get:
+      summary: Query and search historical events from a channel.
+      description: Retrieves events with universal filters. Use this endpoint for historical queries and searches. For real-time polling, use the /events endpoint.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          description: Maximum number of events to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+        - in: query
+          name: offset
+          description: Offset for message-oriented pagination
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+        - in: query
+          name: type
+          description: Filter events by type
+          schema:
+            type: string
+            enum:
+              - operation.status
+              - watcher.status
+              - watcher.event
+        - in: query
+          name: created.lt
+          description: Filter events created before this timestamp
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: created.lte
+          description: Filter events created at or before this timestamp
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: created.gt
+          description: Filter events created after this timestamp
+          schema:
+            type: integer
+            format: int64
+        - in: query
+          name: created.gte
+          description: Filter events created at or after this timestamp
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Events retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventList"
+        "400":
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
 security:
   - ApiKeyAuth: []
 

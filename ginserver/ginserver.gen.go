@@ -78,6 +78,13 @@ const (
 	GetChannelsChannelIdEventsParamsTypeWatcherStatus   GetChannelsChannelIdEventsParamsType = "watcher.status"
 )
 
+// Defines values for GetChannelsChannelIdEventsSearchParamsType.
+const (
+	GetChannelsChannelIdEventsSearchParamsTypeOperationStatus GetChannelsChannelIdEventsSearchParamsType = "operation.status"
+	GetChannelsChannelIdEventsSearchParamsTypeWatcherEvent    GetChannelsChannelIdEventsSearchParamsType = "watcher.event"
+	GetChannelsChannelIdEventsSearchParamsTypeWatcherStatus   GetChannelsChannelIdEventsSearchParamsType = "watcher.status"
+)
+
 // ApplicationError defines model for ApplicationError.
 type ApplicationError struct {
 	// Message Error message describing the issue
@@ -562,6 +569,33 @@ type GetChannelsChannelIdEventsParams struct {
 // GetChannelsChannelIdEventsParamsType defines parameters for GetChannelsChannelIdEvents.
 type GetChannelsChannelIdEventsParamsType string
 
+// GetChannelsChannelIdEventsSearchParams defines parameters for GetChannelsChannelIdEventsSearch.
+type GetChannelsChannelIdEventsSearchParams struct {
+	// Limit Maximum number of events to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Offset for message-oriented pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Type Filter events by type
+	Type *GetChannelsChannelIdEventsSearchParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// CreatedLt Filter events created before this timestamp
+	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
+
+	// CreatedLte Filter events created at or before this timestamp
+	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
+
+	// CreatedGt Filter events created after this timestamp
+	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
+
+	// CreatedGte Filter events created at or after this timestamp
+	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
+}
+
+// GetChannelsChannelIdEventsSearchParamsType defines parameters for GetChannelsChannelIdEventsSearch.
+type GetChannelsChannelIdEventsSearchParamsType string
+
 // GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
 type GetChannelsChannelIdOperationsParams struct {
 	// Limit Maximum number of operations to return
@@ -903,6 +937,9 @@ type ServerInterface interface {
 	// Retrieves events from a channel.
 	// (GET /channels/{channel_id}/events)
 	GetChannelsChannelIdEvents(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams)
+	// Query and search historical events from a channel.
+	// (GET /channels/{channel_id}/events/search)
+	GetChannelsChannelIdEventsSearch(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsSearchParams)
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	GetChannelsChannelIdOperations(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdOperationsParams)
@@ -1146,6 +1183,91 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(c *gin.Context) {
 	}
 
 	siw.Handler.GetChannelsChannelIdEvents(c, channelId, params)
+}
+
+// GetChannelsChannelIdEventsSearch operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetChannelsChannelIdEventsSearchParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter limit: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "type", c.Request.URL.Query(), &params.Type)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "created.lt" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "created.lt", c.Request.URL.Query(), &params.CreatedLt)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lt: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "created.lte" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "created.lte", c.Request.URL.Query(), &params.CreatedLte)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.lte: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "created.gt" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "created.gt", c.Request.URL.Query(), &params.CreatedGt)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gt: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "created.gte" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "created.gte", c.Request.URL.Query(), &params.CreatedGte)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gte: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChannelsChannelIdEventsSearch(c, channelId, params)
 }
 
 // GetChannelsChannelIdOperations operation middleware
@@ -1676,6 +1798,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/channels/:channel_id", wrapper.DeleteChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id", wrapper.GetChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id/events", wrapper.GetChannelsChannelIdEvents)
+	router.GET(options.BaseURL+"/channels/:channel_id/events/search", wrapper.GetChannelsChannelIdEventsSearch)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations", wrapper.GetChannelsChannelIdOperations)
 	router.POST(options.BaseURL+"/channels/:channel_id/operations", wrapper.PostChannelsChannelIdOperations)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations/:operation_id", wrapper.GetChannelsChannelIdOperationsOperationId)

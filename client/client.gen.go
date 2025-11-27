@@ -82,6 +82,13 @@ const (
 	GetChannelsChannelIdEventsParamsTypeWatcherStatus   GetChannelsChannelIdEventsParamsType = "watcher.status"
 )
 
+// Defines values for GetChannelsChannelIdEventsSearchParamsType.
+const (
+	GetChannelsChannelIdEventsSearchParamsTypeOperationStatus GetChannelsChannelIdEventsSearchParamsType = "operation.status"
+	GetChannelsChannelIdEventsSearchParamsTypeWatcherEvent    GetChannelsChannelIdEventsSearchParamsType = "watcher.event"
+	GetChannelsChannelIdEventsSearchParamsTypeWatcherStatus   GetChannelsChannelIdEventsSearchParamsType = "watcher.status"
+)
+
 // ApplicationError defines model for ApplicationError.
 type ApplicationError struct {
 	// Message Error message describing the issue
@@ -566,6 +573,33 @@ type GetChannelsChannelIdEventsParams struct {
 // GetChannelsChannelIdEventsParamsType defines parameters for GetChannelsChannelIdEvents.
 type GetChannelsChannelIdEventsParamsType string
 
+// GetChannelsChannelIdEventsSearchParams defines parameters for GetChannelsChannelIdEventsSearch.
+type GetChannelsChannelIdEventsSearchParams struct {
+	// Limit Maximum number of events to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Offset for message-oriented pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Type Filter events by type
+	Type *GetChannelsChannelIdEventsSearchParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// CreatedLt Filter events created before this timestamp
+	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
+
+	// CreatedLte Filter events created at or before this timestamp
+	CreatedLte *int64 `form:"created.lte,omitempty" json:"created.lte,omitempty"`
+
+	// CreatedGt Filter events created after this timestamp
+	CreatedGt *int64 `form:"created.gt,omitempty" json:"created.gt,omitempty"`
+
+	// CreatedGte Filter events created at or after this timestamp
+	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
+}
+
+// GetChannelsChannelIdEventsSearchParamsType defines parameters for GetChannelsChannelIdEventsSearch.
+type GetChannelsChannelIdEventsSearchParamsType string
+
 // GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
 type GetChannelsChannelIdOperationsParams struct {
 	// Limit Maximum number of operations to return
@@ -980,6 +1014,9 @@ type ClientInterface interface {
 	// GetChannelsChannelIdEvents request
 	GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetChannelsChannelIdEventsSearch request
+	GetChannelsChannelIdEventsSearch(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetChannelsChannelIdOperations request
 	GetChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1092,6 +1129,18 @@ func (c *Client) GetChannelsChannelId(ctx context.Context, channelId openapi_typ
 
 func (c *Client) GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetChannelsChannelIdEventsRequest(c.Server, channelId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelIdEventsSearch(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdEventsSearchRequest(c.Server, channelId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1615,6 +1664,158 @@ func NewGetChannelsChannelIdEventsRequest(server string, channelId openapi_types
 		if params.Domain != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "domain", runtime.ParamLocationQuery, *params.Domain); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdEventsSearchRequest generates requests for GetChannelsChannelIdEventsSearch
+func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/events/search", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Type != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "type", runtime.ParamLocationQuery, *params.Type); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CreatedLt != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lt", runtime.ParamLocationQuery, *params.CreatedLt); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CreatedLte != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.lte", runtime.ParamLocationQuery, *params.CreatedLte); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CreatedGt != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gt", runtime.ParamLocationQuery, *params.CreatedGt); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CreatedGte != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gte", runtime.ParamLocationQuery, *params.CreatedGte); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -2519,6 +2720,9 @@ type ClientWithResponsesInterface interface {
 	// GetChannelsChannelIdEventsWithResponse request
 	GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error)
 
+	// GetChannelsChannelIdEventsSearchWithResponse request
+	GetChannelsChannelIdEventsSearchWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchResponse, error)
+
 	// GetChannelsChannelIdOperationsWithResponse request
 	GetChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsResponse, error)
 
@@ -2682,6 +2886,31 @@ func (r GetChannelsChannelIdEventsResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetChannelsChannelIdEventsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdEventsSearchResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *EventList
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdEventsSearchResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdEventsSearchResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3053,6 +3282,15 @@ func (c *ClientWithResponses) GetChannelsChannelIdEventsWithResponse(ctx context
 	return ParseGetChannelsChannelIdEventsResponse(rsp)
 }
 
+// GetChannelsChannelIdEventsSearchWithResponse request returning *GetChannelsChannelIdEventsSearchResponse
+func (c *ClientWithResponses) GetChannelsChannelIdEventsSearchWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchResponse, error) {
+	rsp, err := c.GetChannelsChannelIdEventsSearch(ctx, channelId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdEventsSearchResponse(rsp)
+}
+
 // GetChannelsChannelIdOperationsWithResponse request returning *GetChannelsChannelIdOperationsResponse
 func (c *ClientWithResponses) GetChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsResponse, error) {
 	rsp, err := c.GetChannelsChannelIdOperations(ctx, channelId, params, reqEditors...)
@@ -3365,6 +3603,53 @@ func ParseGetChannelsChannelIdEventsResponse(rsp *http.Response) (*GetChannelsCh
 	}
 
 	response := &GetChannelsChannelIdEventsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest EventList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdEventsSearchResponse parses an HTTP response from a GetChannelsChannelIdEventsSearchWithResponse call
+func ParseGetChannelsChannelIdEventsSearchResponse(rsp *http.Response) (*GetChannelsChannelIdEventsSearchResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdEventsSearchResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
