@@ -569,6 +569,27 @@ type GetChannelsChannelIdEventsSearchParams struct {
 
 	// CreatedGte Filter events created at or after this timestamp
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
+
+	// ChainSelector Filter by chain selector (applies to all event types)
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// Status Filter by operation status (applies to operation.status) or watcher status (applies to watcher.status)
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// WatcherId Filter by watcher ID (applies to watcher.status and watcher.event types)
+	WatcherId *openapi_types.UUID `form:"watcher_id,omitempty" json:"watcher_id,omitempty"`
+
+	// Address Filter by wallet address (applies to operation.status type) or contract address (applies to watcher.event type)
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
+	WalletOperationId *string `form:"wallet_operation_id,omitempty" json:"wallet_operation_id,omitempty"`
+
+	// EventName Filter by event name (applies to watcher.event type)
+	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
+
+	// Domain Filter by watcher domain (applies to watcher.event type)
+	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 }
 
 // GetChannelsChannelIdEventsSearchParamsType defines parameters for GetChannelsChannelIdEventsSearch.
@@ -1203,6 +1224,62 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 	err = runtime.BindQueryParameter("form", true, false, "created.gte", c.Request.URL.Query(), &params.CreatedGte)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter created.gte: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_selector" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "watcher_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "watcher_id", c.Request.URL.Query(), &params.WatcherId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter watcher_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "address" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address", c.Request.URL.Query(), &params.Address)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "wallet_operation_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "wallet_operation_id", c.Request.URL.Query(), &params.WalletOperationId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter wallet_operation_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "event_name" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "event_name", c.Request.URL.Query(), &params.EventName)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "domain" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "domain", c.Request.URL.Query(), &params.Domain)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter domain: %w", err), http.StatusBadRequest)
 		return
 	}
 

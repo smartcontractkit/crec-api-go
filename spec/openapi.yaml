@@ -699,7 +699,15 @@ paths:
   /channels/{channel_id}/events/search:
     get:
       summary: Query and search historical events from a channel.
-      description: Retrieves events with universal filters. Use this endpoint for historical queries and searches. For real-time polling, use the /events endpoint.
+      description: |
+        Retrieves events with filtering capabilities. Use this endpoint for historical queries and searches. For real-time polling, use the /events endpoint.
+
+        Note: Some query parameters only apply to specific event types. Invalid parameter combinations for a given event type will result in a 400 Bad Request response:
+        - operation.status: status, chain_selector, address, wallet_operation_id
+        - watcher.status: watcher_id, status, chain_selector
+        - watcher.event: watcher_id, chain_selector, address, event_name, domain
+
+        Universal parameters (apply to all types): type, limit, offset, created.*
       parameters:
         - in: path
           name: channel_id
@@ -755,6 +763,42 @@ paths:
           schema:
             type: integer
             format: int64
+        - in: query
+          name: chain_selector
+          description: Filter by chain selector (applies to all event types)
+          schema:
+            type: string
+        - in: query
+          name: status
+          description: Filter by operation status (applies to operation.status) or watcher status (applies to watcher.status)
+          schema:
+            type: string
+        - in: query
+          name: watcher_id
+          description: Filter by watcher ID (applies to watcher.status and watcher.event types)
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: address
+          description: Filter by wallet address (applies to operation.status type) or contract address (applies to watcher.event type)
+          schema:
+            type: string
+        - in: query
+          name: wallet_operation_id
+          description: Filter by wallet operation ID (applies to operation.status type)
+          schema:
+            type: string
+        - in: query
+          name: event_name
+          description: Filter by event name (applies to watcher.event type)
+          schema:
+            type: string
+        - in: query
+          name: domain
+          description: Filter by watcher domain (applies to watcher.event type)
+          schema:
+            type: string
       responses:
         "200":
           description: Events retrieved successfully
