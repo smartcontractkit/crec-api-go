@@ -448,7 +448,7 @@ type Watcher struct {
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 
 	// WorkflowId Unique identifier for the workflow that created the watcher
-	WorkflowId *string `json:"workflow_id,omitempty"`
+	WorkflowId string `json:"workflow_id"`
 }
 
 // WatcherEvent defines model for WatcherEvent.

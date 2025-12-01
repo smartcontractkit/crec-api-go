@@ -1163,6 +1163,7 @@ components:
         - chain_selector
         - address
         - events
+        - workflow_id
     WatcherList:
       type: object
       properties:
