@@ -573,6 +573,27 @@ type GetChannelsChannelIdEventsSearchParams struct {
 
 	// CreatedGte Filter events created at or after this timestamp
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
+
+	// ChainSelector Filter by chain selector (applies to all event types)
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// Status Filter by operation status (applies to operation.status) or watcher status (applies to watcher.status)
+	Status *string `form:"status,omitempty" json:"status,omitempty"`
+
+	// WatcherId Filter by watcher ID (applies to watcher.status and watcher.event types)
+	WatcherId *openapi_types.UUID `form:"watcher_id,omitempty" json:"watcher_id,omitempty"`
+
+	// Address Filter by wallet address (applies to operation.status type) or contract address (applies to watcher.event type)
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
+	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
+	WalletOperationId *string `form:"wallet_operation_id,omitempty" json:"wallet_operation_id,omitempty"`
+
+	// EventName Filter by event name (applies to watcher.event type)
+	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
+
+	// Domain Filter by watcher domain (applies to watcher.event type)
+	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 }
 
 // GetChannelsChannelIdEventsSearchParamsType defines parameters for GetChannelsChannelIdEventsSearch.
@@ -1730,6 +1751,118 @@ func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi
 		if params.CreatedGte != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "created.gte", runtime.ParamLocationQuery, *params.CreatedGte); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ChainSelector != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_selector", runtime.ParamLocationQuery, *params.ChainSelector); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.WatcherId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "watcher_id", runtime.ParamLocationQuery, *params.WatcherId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Address != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, *params.Address); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.WalletOperationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "wallet_operation_id", runtime.ParamLocationQuery, *params.WalletOperationId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EventName != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "event_name", runtime.ParamLocationQuery, *params.EventName); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Domain != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "domain", runtime.ParamLocationQuery, *params.Domain); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
