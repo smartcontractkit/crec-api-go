@@ -4,6 +4,7 @@
 package ginserver
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/oapi-codegen/runtime"
+	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
@@ -367,6 +369,18 @@ type OperationStatusPayloadStatus string
 
 // OperationStatusPayloadType defines model for OperationStatusPayload.Type.
 type OperationStatusPayloadType string
+
+// Transaction defines model for Transaction.
+type Transaction struct {
+	// Data Hex-encoded calldata for the transaction
+	Data string `json:"data"`
+
+	// To Address receiving the transaction
+	To string `json:"to"`
+
+	// Value Amount of native token value being sent in the transaction
+	Value string `json:"value"`
+}
 
 // TransactionRequest defines model for TransactionRequest.
 type TransactionRequest struct {
@@ -1828,4 +1842,1332 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/wallets", wrapper.PostWallets)
 	router.GET(options.BaseURL+"/wallets/:wallet_id", wrapper.GetWalletsWalletId)
 	router.PATCH(options.BaseURL+"/wallets/:wallet_id", wrapper.PatchWalletsWalletId)
+}
+
+type GetChannelsRequestObject struct {
+	Params GetChannelsParams
+}
+
+type GetChannelsResponseObject interface {
+	VisitGetChannelsResponse(w http.ResponseWriter) error
+}
+
+type GetChannels200JSONResponse ChannelList
+
+func (response GetChannels200JSONResponse) VisitGetChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannels500JSONResponse ApplicationError
+
+func (response GetChannels500JSONResponse) VisitGetChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsRequestObject struct {
+	Body *PostChannelsJSONRequestBody
+}
+
+type PostChannelsResponseObject interface {
+	VisitPostChannelsResponse(w http.ResponseWriter) error
+}
+
+type PostChannels201JSONResponse Channel
+
+func (response PostChannels201JSONResponse) VisitPostChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannels400JSONResponse ApplicationError
+
+func (response PostChannels400JSONResponse) VisitPostChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannels500JSONResponse ApplicationError
+
+func (response PostChannels500JSONResponse) VisitPostChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChannelsChannelIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+}
+
+type DeleteChannelsChannelIdResponseObject interface {
+	VisitDeleteChannelsChannelIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChannelsChannelId202Response struct {
+}
+
+func (response DeleteChannelsChannelId202Response) VisitDeleteChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(202)
+	return nil
+}
+
+type DeleteChannelsChannelId404JSONResponse ApplicationError
+
+func (response DeleteChannelsChannelId404JSONResponse) VisitDeleteChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChannelsChannelId500JSONResponse ApplicationError
+
+func (response DeleteChannelsChannelId500JSONResponse) VisitDeleteChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+}
+
+type GetChannelsChannelIdResponseObject interface {
+	VisitGetChannelsChannelIdResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelId200JSONResponse Channel
+
+func (response GetChannelsChannelId200JSONResponse) VisitGetChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelId404JSONResponse ApplicationError
+
+func (response GetChannelsChannelId404JSONResponse) VisitGetChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelId500JSONResponse ApplicationError
+
+func (response GetChannelsChannelId500JSONResponse) VisitGetChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	Params    GetChannelsChannelIdEventsParams
+}
+
+type GetChannelsChannelIdEventsResponseObject interface {
+	VisitGetChannelsChannelIdEventsResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdEvents200JSONResponse EventList
+
+func (response GetChannelsChannelIdEvents200JSONResponse) VisitGetChannelsChannelIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEvents400JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEvents400JSONResponse) VisitGetChannelsChannelIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEvents404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEvents404JSONResponse) VisitGetChannelsChannelIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEvents500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEvents500JSONResponse) VisitGetChannelsChannelIdEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearchRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	Params    GetChannelsChannelIdEventsSearchParams
+}
+
+type GetChannelsChannelIdEventsSearchResponseObject interface {
+	VisitGetChannelsChannelIdEventsSearchResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdEventsSearch200JSONResponse EventList
+
+func (response GetChannelsChannelIdEventsSearch200JSONResponse) VisitGetChannelsChannelIdEventsSearchResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearch400JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEventsSearch400JSONResponse) VisitGetChannelsChannelIdEventsSearchResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearch404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEventsSearch404JSONResponse) VisitGetChannelsChannelIdEventsSearchResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearch500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEventsSearch500JSONResponse) VisitGetChannelsChannelIdEventsSearchResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdOperationsRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	Params    GetChannelsChannelIdOperationsParams
+}
+
+type GetChannelsChannelIdOperationsResponseObject interface {
+	VisitGetChannelsChannelIdOperationsResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdOperations200JSONResponse OperationList
+
+func (response GetChannelsChannelIdOperations200JSONResponse) VisitGetChannelsChannelIdOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdOperations404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdOperations404JSONResponse) VisitGetChannelsChannelIdOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdOperations500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdOperations500JSONResponse) VisitGetChannelsChannelIdOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdOperationsRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	Body      *PostChannelsChannelIdOperationsJSONRequestBody
+}
+
+type PostChannelsChannelIdOperationsResponseObject interface {
+	VisitPostChannelsChannelIdOperationsResponse(w http.ResponseWriter) error
+}
+
+type PostChannelsChannelIdOperations201JSONResponse OperationResponse
+
+func (response PostChannelsChannelIdOperations201JSONResponse) VisitPostChannelsChannelIdOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdOperations400JSONResponse ApplicationError
+
+func (response PostChannelsChannelIdOperations400JSONResponse) VisitPostChannelsChannelIdOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdOperations404JSONResponse ApplicationError
+
+func (response PostChannelsChannelIdOperations404JSONResponse) VisitPostChannelsChannelIdOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdOperations500JSONResponse ApplicationError
+
+func (response PostChannelsChannelIdOperations500JSONResponse) VisitPostChannelsChannelIdOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdOperationsOperationIdRequestObject struct {
+	ChannelId   openapi_types.UUID `json:"channel_id"`
+	OperationId openapi_types.UUID `json:"operation_id"`
+}
+
+type GetChannelsChannelIdOperationsOperationIdResponseObject interface {
+	VisitGetChannelsChannelIdOperationsOperationIdResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdOperationsOperationId200JSONResponse Operation
+
+func (response GetChannelsChannelIdOperationsOperationId200JSONResponse) VisitGetChannelsChannelIdOperationsOperationIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdOperationsOperationId404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdOperationsOperationId404JSONResponse) VisitGetChannelsChannelIdOperationsOperationIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdOperationsOperationId500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdOperationsOperationId500JSONResponse) VisitGetChannelsChannelIdOperationsOperationIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdWatchersRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	Params    GetChannelsChannelIdWatchersParams
+}
+
+type GetChannelsChannelIdWatchersResponseObject interface {
+	VisitGetChannelsChannelIdWatchersResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdWatchers200JSONResponse WatcherList
+
+func (response GetChannelsChannelIdWatchers200JSONResponse) VisitGetChannelsChannelIdWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdWatchers404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdWatchers404JSONResponse) VisitGetChannelsChannelIdWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdWatchers500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdWatchers500JSONResponse) VisitGetChannelsChannelIdWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdWatchersRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	Body      *PostChannelsChannelIdWatchersJSONRequestBody
+}
+
+type PostChannelsChannelIdWatchersResponseObject interface {
+	VisitPostChannelsChannelIdWatchersResponse(w http.ResponseWriter) error
+}
+
+type PostChannelsChannelIdWatchers201JSONResponse Watcher
+
+func (response PostChannelsChannelIdWatchers201JSONResponse) VisitPostChannelsChannelIdWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdWatchers400JSONResponse ApplicationError
+
+func (response PostChannelsChannelIdWatchers400JSONResponse) VisitPostChannelsChannelIdWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdWatchers404JSONResponse ApplicationError
+
+func (response PostChannelsChannelIdWatchers404JSONResponse) VisitPostChannelsChannelIdWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostChannelsChannelIdWatchers500JSONResponse ApplicationError
+
+func (response PostChannelsChannelIdWatchers500JSONResponse) VisitPostChannelsChannelIdWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChannelsChannelIdWatchersWatcherIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	WatcherId openapi_types.UUID `json:"watcher_id"`
+}
+
+type DeleteChannelsChannelIdWatchersWatcherIdResponseObject interface {
+	VisitDeleteChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteChannelsChannelIdWatchersWatcherId202Response struct {
+}
+
+func (response DeleteChannelsChannelIdWatchersWatcherId202Response) VisitDeleteChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(202)
+	return nil
+}
+
+type DeleteChannelsChannelIdWatchersWatcherId404JSONResponse ApplicationError
+
+func (response DeleteChannelsChannelIdWatchersWatcherId404JSONResponse) VisitDeleteChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteChannelsChannelIdWatchersWatcherId500JSONResponse ApplicationError
+
+func (response DeleteChannelsChannelIdWatchersWatcherId500JSONResponse) VisitDeleteChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdWatchersWatcherIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	WatcherId openapi_types.UUID `json:"watcher_id"`
+}
+
+type GetChannelsChannelIdWatchersWatcherIdResponseObject interface {
+	VisitGetChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdWatchersWatcherId200JSONResponse Watcher
+
+func (response GetChannelsChannelIdWatchersWatcherId200JSONResponse) VisitGetChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdWatchersWatcherId404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdWatchersWatcherId404JSONResponse) VisitGetChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdWatchersWatcherId500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdWatchersWatcherId500JSONResponse) VisitGetChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchChannelsChannelIdWatchersWatcherIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	WatcherId openapi_types.UUID `json:"watcher_id"`
+	Body      *PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody
+}
+
+type PatchChannelsChannelIdWatchersWatcherIdResponseObject interface {
+	VisitPatchChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error
+}
+
+type PatchChannelsChannelIdWatchersWatcherId200JSONResponse Watcher
+
+func (response PatchChannelsChannelIdWatchersWatcherId200JSONResponse) VisitPatchChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchChannelsChannelIdWatchersWatcherId400JSONResponse ApplicationError
+
+func (response PatchChannelsChannelIdWatchersWatcherId400JSONResponse) VisitPatchChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchChannelsChannelIdWatchersWatcherId404JSONResponse ApplicationError
+
+func (response PatchChannelsChannelIdWatchersWatcherId404JSONResponse) VisitPatchChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchChannelsChannelIdWatchersWatcherId500JSONResponse ApplicationError
+
+func (response PatchChannelsChannelIdWatchersWatcherId500JSONResponse) VisitPatchChannelsChannelIdWatchersWatcherIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetHealthCheckRequestObject struct {
+}
+
+type GetHealthCheckResponseObject interface {
+	VisitGetHealthCheckResponse(w http.ResponseWriter) error
+}
+
+type GetHealthCheck200JSONResponse HealthCheck
+
+func (response GetHealthCheck200JSONResponse) VisitGetHealthCheckResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWalletsRequestObject struct {
+	Params GetWalletsParams
+}
+
+type GetWalletsResponseObject interface {
+	VisitGetWalletsResponse(w http.ResponseWriter) error
+}
+
+type GetWallets200JSONResponse WalletList
+
+func (response GetWallets200JSONResponse) VisitGetWalletsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWallets500JSONResponse ApplicationError
+
+func (response GetWallets500JSONResponse) VisitGetWalletsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWalletsRequestObject struct {
+	Body *PostWalletsJSONRequestBody
+}
+
+type PostWalletsResponseObject interface {
+	VisitPostWalletsResponse(w http.ResponseWriter) error
+}
+
+type PostWallets201JSONResponse Wallet
+
+func (response PostWallets201JSONResponse) VisitPostWalletsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(201)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWallets400JSONResponse ApplicationError
+
+func (response PostWallets400JSONResponse) VisitPostWalletsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostWallets500JSONResponse ApplicationError
+
+func (response PostWallets500JSONResponse) VisitPostWalletsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWalletsWalletIdRequestObject struct {
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+type GetWalletsWalletIdResponseObject interface {
+	VisitGetWalletsWalletIdResponse(w http.ResponseWriter) error
+}
+
+type GetWalletsWalletId200JSONResponse Wallet
+
+func (response GetWalletsWalletId200JSONResponse) VisitGetWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWalletsWalletId404JSONResponse ApplicationError
+
+func (response GetWalletsWalletId404JSONResponse) VisitGetWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWalletsWalletId500JSONResponse ApplicationError
+
+func (response GetWalletsWalletId500JSONResponse) VisitGetWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchWalletsWalletIdRequestObject struct {
+	WalletId openapi_types.UUID `json:"wallet_id"`
+	Body     *PatchWalletsWalletIdJSONRequestBody
+}
+
+type PatchWalletsWalletIdResponseObject interface {
+	VisitPatchWalletsWalletIdResponse(w http.ResponseWriter) error
+}
+
+type PatchWalletsWalletId200JSONResponse Wallet
+
+func (response PatchWalletsWalletId200JSONResponse) VisitPatchWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchWalletsWalletId400JSONResponse ApplicationError
+
+func (response PatchWalletsWalletId400JSONResponse) VisitPatchWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchWalletsWalletId404JSONResponse ApplicationError
+
+func (response PatchWalletsWalletId404JSONResponse) VisitPatchWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PatchWalletsWalletId500JSONResponse ApplicationError
+
+func (response PatchWalletsWalletId500JSONResponse) VisitPatchWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+// StrictServerInterface represents all server handlers.
+type StrictServerInterface interface {
+	// Retrieves channels for the organization.
+	// (GET /channels)
+	GetChannels(ctx context.Context, request GetChannelsRequestObject) (GetChannelsResponseObject, error)
+	// Creates a new channel.
+	// (POST /channels)
+	PostChannels(ctx context.Context, request PostChannelsRequestObject) (PostChannelsResponseObject, error)
+	// Deletes a channel.
+	// (DELETE /channels/{channel_id})
+	DeleteChannelsChannelId(ctx context.Context, request DeleteChannelsChannelIdRequestObject) (DeleteChannelsChannelIdResponseObject, error)
+	// Retrieves a specific channel by ID.
+	// (GET /channels/{channel_id})
+	GetChannelsChannelId(ctx context.Context, request GetChannelsChannelIdRequestObject) (GetChannelsChannelIdResponseObject, error)
+	// Retrieves events from a channel.
+	// (GET /channels/{channel_id}/events)
+	GetChannelsChannelIdEvents(ctx context.Context, request GetChannelsChannelIdEventsRequestObject) (GetChannelsChannelIdEventsResponseObject, error)
+	// Query and search historical events from a channel.
+	// (GET /channels/{channel_id}/events/search)
+	GetChannelsChannelIdEventsSearch(ctx context.Context, request GetChannelsChannelIdEventsSearchRequestObject) (GetChannelsChannelIdEventsSearchResponseObject, error)
+	// Retrieves operations for a channel.
+	// (GET /channels/{channel_id}/operations)
+	GetChannelsChannelIdOperations(ctx context.Context, request GetChannelsChannelIdOperationsRequestObject) (GetChannelsChannelIdOperationsResponseObject, error)
+	// Sends a CreateOperation request to a channel.
+	// (POST /channels/{channel_id}/operations)
+	PostChannelsChannelIdOperations(ctx context.Context, request PostChannelsChannelIdOperationsRequestObject) (PostChannelsChannelIdOperationsResponseObject, error)
+	// Gets Operation record for a specific operation.
+	// (GET /channels/{channel_id}/operations/{operation_id})
+	GetChannelsChannelIdOperationsOperationId(ctx context.Context, request GetChannelsChannelIdOperationsOperationIdRequestObject) (GetChannelsChannelIdOperationsOperationIdResponseObject, error)
+	// Retrieves watchers for a channel.
+	// (GET /channels/{channel_id}/watchers)
+	GetChannelsChannelIdWatchers(ctx context.Context, request GetChannelsChannelIdWatchersRequestObject) (GetChannelsChannelIdWatchersResponseObject, error)
+	// Creates a watcher in a channel.
+	// (POST /channels/{channel_id}/watchers)
+	PostChannelsChannelIdWatchers(ctx context.Context, request PostChannelsChannelIdWatchersRequestObject) (PostChannelsChannelIdWatchersResponseObject, error)
+	// Deletes a watcher.
+	// (DELETE /channels/{channel_id}/watchers/{watcher_id})
+	DeleteChannelsChannelIdWatchersWatcherId(ctx context.Context, request DeleteChannelsChannelIdWatchersWatcherIdRequestObject) (DeleteChannelsChannelIdWatchersWatcherIdResponseObject, error)
+	// Retrieves a specific watcher by ID.
+	// (GET /channels/{channel_id}/watchers/{watcher_id})
+	GetChannelsChannelIdWatchersWatcherId(ctx context.Context, request GetChannelsChannelIdWatchersWatcherIdRequestObject) (GetChannelsChannelIdWatchersWatcherIdResponseObject, error)
+	// Updates a watcher name.
+	// (PATCH /channels/{channel_id}/watchers/{watcher_id})
+	PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, request PatchChannelsChannelIdWatchersWatcherIdRequestObject) (PatchChannelsChannelIdWatchersWatcherIdResponseObject, error)
+	// Health check endpoint
+	// (GET /health-check)
+	GetHealthCheck(ctx context.Context, request GetHealthCheckRequestObject) (GetHealthCheckResponseObject, error)
+	// Retrieves wallets for the organization.
+	// (GET /wallets)
+	GetWallets(ctx context.Context, request GetWalletsRequestObject) (GetWalletsResponseObject, error)
+	// Creates a new wallet.
+	// (POST /wallets)
+	PostWallets(ctx context.Context, request PostWalletsRequestObject) (PostWalletsResponseObject, error)
+	// Retrieves a specific wallet by ID.
+	// (GET /wallets/{wallet_id})
+	GetWalletsWalletId(ctx context.Context, request GetWalletsWalletIdRequestObject) (GetWalletsWalletIdResponseObject, error)
+	// Updates a wallet name.
+	// (PATCH /wallets/{wallet_id})
+	PatchWalletsWalletId(ctx context.Context, request PatchWalletsWalletIdRequestObject) (PatchWalletsWalletIdResponseObject, error)
+}
+
+type StrictHandlerFunc = strictgin.StrictGinHandlerFunc
+type StrictMiddlewareFunc = strictgin.StrictGinMiddlewareFunc
+
+func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareFunc) ServerInterface {
+	return &strictHandler{ssi: ssi, middlewares: middlewares}
+}
+
+type strictHandler struct {
+	ssi         StrictServerInterface
+	middlewares []StrictMiddlewareFunc
+}
+
+// GetChannels operation middleware
+func (sh *strictHandler) GetChannels(ctx *gin.Context, params GetChannelsParams) {
+	var request GetChannelsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannels(ctx, request.(GetChannelsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannels")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsResponseObject); ok {
+		if err := validResponse.VisitGetChannelsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChannels operation middleware
+func (sh *strictHandler) PostChannels(ctx *gin.Context) {
+	var request PostChannelsRequestObject
+
+	var body PostChannelsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChannels(ctx, request.(PostChannelsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChannels")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChannelsResponseObject); ok {
+		if err := validResponse.VisitPostChannelsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChannelsChannelId operation middleware
+func (sh *strictHandler) DeleteChannelsChannelId(ctx *gin.Context, channelId openapi_types.UUID) {
+	var request DeleteChannelsChannelIdRequestObject
+
+	request.ChannelId = channelId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChannelsChannelId(ctx, request.(DeleteChannelsChannelIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChannelsChannelId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChannelsChannelIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChannelsChannelIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelId operation middleware
+func (sh *strictHandler) GetChannelsChannelId(ctx *gin.Context, channelId openapi_types.UUID) {
+	var request GetChannelsChannelIdRequestObject
+
+	request.ChannelId = channelId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelId(ctx, request.(GetChannelsChannelIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdEvents operation middleware
+func (sh *strictHandler) GetChannelsChannelIdEvents(ctx *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams) {
+	var request GetChannelsChannelIdEventsRequestObject
+
+	request.ChannelId = channelId
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdEvents(ctx, request.(GetChannelsChannelIdEventsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdEvents")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdEventsResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdEventsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdEventsSearch operation middleware
+func (sh *strictHandler) GetChannelsChannelIdEventsSearch(ctx *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsSearchParams) {
+	var request GetChannelsChannelIdEventsSearchRequestObject
+
+	request.ChannelId = channelId
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdEventsSearch(ctx, request.(GetChannelsChannelIdEventsSearchRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdEventsSearch")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdEventsSearchResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdEventsSearchResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdOperations operation middleware
+func (sh *strictHandler) GetChannelsChannelIdOperations(ctx *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdOperationsParams) {
+	var request GetChannelsChannelIdOperationsRequestObject
+
+	request.ChannelId = channelId
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdOperations(ctx, request.(GetChannelsChannelIdOperationsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdOperations")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdOperationsResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdOperationsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChannelsChannelIdOperations operation middleware
+func (sh *strictHandler) PostChannelsChannelIdOperations(ctx *gin.Context, channelId openapi_types.UUID) {
+	var request PostChannelsChannelIdOperationsRequestObject
+
+	request.ChannelId = channelId
+
+	var body PostChannelsChannelIdOperationsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChannelsChannelIdOperations(ctx, request.(PostChannelsChannelIdOperationsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChannelsChannelIdOperations")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChannelsChannelIdOperationsResponseObject); ok {
+		if err := validResponse.VisitPostChannelsChannelIdOperationsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdOperationsOperationId operation middleware
+func (sh *strictHandler) GetChannelsChannelIdOperationsOperationId(ctx *gin.Context, channelId openapi_types.UUID, operationId openapi_types.UUID) {
+	var request GetChannelsChannelIdOperationsOperationIdRequestObject
+
+	request.ChannelId = channelId
+	request.OperationId = operationId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdOperationsOperationId(ctx, request.(GetChannelsChannelIdOperationsOperationIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdOperationsOperationId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdOperationsOperationIdResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdOperationsOperationIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdWatchers operation middleware
+func (sh *strictHandler) GetChannelsChannelIdWatchers(ctx *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdWatchersParams) {
+	var request GetChannelsChannelIdWatchersRequestObject
+
+	request.ChannelId = channelId
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdWatchers(ctx, request.(GetChannelsChannelIdWatchersRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdWatchers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdWatchersResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdWatchersResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostChannelsChannelIdWatchers operation middleware
+func (sh *strictHandler) PostChannelsChannelIdWatchers(ctx *gin.Context, channelId openapi_types.UUID) {
+	var request PostChannelsChannelIdWatchersRequestObject
+
+	request.ChannelId = channelId
+
+	var body PostChannelsChannelIdWatchersJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostChannelsChannelIdWatchers(ctx, request.(PostChannelsChannelIdWatchersRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostChannelsChannelIdWatchers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostChannelsChannelIdWatchersResponseObject); ok {
+		if err := validResponse.VisitPostChannelsChannelIdWatchersResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteChannelsChannelIdWatchersWatcherId operation middleware
+func (sh *strictHandler) DeleteChannelsChannelIdWatchersWatcherId(ctx *gin.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID) {
+	var request DeleteChannelsChannelIdWatchersWatcherIdRequestObject
+
+	request.ChannelId = channelId
+	request.WatcherId = watcherId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteChannelsChannelIdWatchersWatcherId(ctx, request.(DeleteChannelsChannelIdWatchersWatcherIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteChannelsChannelIdWatchersWatcherId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteChannelsChannelIdWatchersWatcherIdResponseObject); ok {
+		if err := validResponse.VisitDeleteChannelsChannelIdWatchersWatcherIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdWatchersWatcherId operation middleware
+func (sh *strictHandler) GetChannelsChannelIdWatchersWatcherId(ctx *gin.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID) {
+	var request GetChannelsChannelIdWatchersWatcherIdRequestObject
+
+	request.ChannelId = channelId
+	request.WatcherId = watcherId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdWatchersWatcherId(ctx, request.(GetChannelsChannelIdWatchersWatcherIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdWatchersWatcherId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdWatchersWatcherIdResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdWatchersWatcherIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PatchChannelsChannelIdWatchersWatcherId operation middleware
+func (sh *strictHandler) PatchChannelsChannelIdWatchersWatcherId(ctx *gin.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID) {
+	var request PatchChannelsChannelIdWatchersWatcherIdRequestObject
+
+	request.ChannelId = channelId
+	request.WatcherId = watcherId
+
+	var body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PatchChannelsChannelIdWatchersWatcherId(ctx, request.(PatchChannelsChannelIdWatchersWatcherIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PatchChannelsChannelIdWatchersWatcherId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PatchChannelsChannelIdWatchersWatcherIdResponseObject); ok {
+		if err := validResponse.VisitPatchChannelsChannelIdWatchersWatcherIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetHealthCheck operation middleware
+func (sh *strictHandler) GetHealthCheck(ctx *gin.Context) {
+	var request GetHealthCheckRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetHealthCheck(ctx, request.(GetHealthCheckRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetHealthCheck")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetHealthCheckResponseObject); ok {
+		if err := validResponse.VisitGetHealthCheckResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWallets operation middleware
+func (sh *strictHandler) GetWallets(ctx *gin.Context, params GetWalletsParams) {
+	var request GetWalletsRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWallets(ctx, request.(GetWalletsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWallets")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWalletsResponseObject); ok {
+		if err := validResponse.VisitGetWalletsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PostWallets operation middleware
+func (sh *strictHandler) PostWallets(ctx *gin.Context) {
+	var request PostWalletsRequestObject
+
+	var body PostWalletsJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostWallets(ctx, request.(PostWalletsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostWallets")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PostWalletsResponseObject); ok {
+		if err := validResponse.VisitPostWalletsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetWalletsWalletId operation middleware
+func (sh *strictHandler) GetWalletsWalletId(ctx *gin.Context, walletId openapi_types.UUID) {
+	var request GetWalletsWalletIdRequestObject
+
+	request.WalletId = walletId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetWalletsWalletId(ctx, request.(GetWalletsWalletIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetWalletsWalletId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetWalletsWalletIdResponseObject); ok {
+		if err := validResponse.VisitGetWalletsWalletIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PatchWalletsWalletId operation middleware
+func (sh *strictHandler) PatchWalletsWalletId(ctx *gin.Context, walletId openapi_types.UUID) {
+	var request PatchWalletsWalletIdRequestObject
+
+	request.WalletId = walletId
+
+	var body PatchWalletsWalletIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PatchWalletsWalletId(ctx, request.(PatchWalletsWalletIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PatchWalletsWalletId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PatchWalletsWalletIdResponseObject); ok {
+		if err := validResponse.VisitPatchWalletsWalletIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
 }
