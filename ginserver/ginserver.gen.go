@@ -544,7 +544,7 @@ type GetChannelsChannelIdEventsParams struct {
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Offset for message-oriented pagination
-	Offset int64 `form:"offset" json:"offset"`
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
 // GetChannelsChannelIdEventsSearchParams defines parameters for GetChannelsChannelIdEventsSearch.
@@ -1127,16 +1127,9 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(c *gin.Context) {
 		return
 	}
 
-	// ------------- Required query parameter "offset" -------------
+	// ------------- Optional query parameter "offset" -------------
 
-	if paramValue := c.Query("offset"); paramValue != "" {
-
-	} else {
-		siw.ErrorHandler(c, fmt.Errorf("Query argument offset is required, but not found"), http.StatusBadRequest)
-		return
-	}
-
-	err = runtime.BindQueryParameter("form", true, true, "offset", c.Request.URL.Query(), &params.Offset)
+	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
 		return

@@ -664,7 +664,6 @@ paths:
             default: 200
         - in: query
           name: offset
-          required: true
           description: Offset for message-oriented pagination
           schema:
             type: integer
