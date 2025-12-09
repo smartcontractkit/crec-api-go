@@ -545,7 +545,7 @@ type GetChannelsChannelIdEventsParams struct {
 	// Limit Maximum number of events to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
-	// Offset Offset for message-oriented pagination
+	// Offset Offset for message-oriented pagination. If not provided, the API returns the latest limit events ordered by descending offset.
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 

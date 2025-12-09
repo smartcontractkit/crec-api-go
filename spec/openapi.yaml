@@ -664,7 +664,7 @@ paths:
             default: 200
         - in: query
           name: offset
-          description: Offset for message-oriented pagination
+          description: Offset for message-oriented pagination. If not provided, the API returns the latest limit events ordered by descending offset.
           schema:
             type: integer
             format: int64
