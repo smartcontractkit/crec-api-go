@@ -33,8 +33,8 @@ const (
 
 // Defines values for CreateWalletWalletType.
 const (
-	Ecdsa CreateWalletWalletType = "ecdsa"
-	Rsa   CreateWalletWalletType = "rsa"
+	CreateWalletWalletTypeEcdsa CreateWalletWalletType = "ecdsa"
+	CreateWalletWalletTypeRsa   CreateWalletWalletType = "rsa"
 )
 
 // Defines values for EventABIType.
@@ -55,6 +55,20 @@ const (
 	OperationStatusPayloadTypeOperationStatus OperationStatusPayloadType = "operation.status"
 )
 
+// Defines values for WalletStatus.
+const (
+	WalletStatusDeployed  WalletStatus = "deployed"
+	WalletStatusDeploying WalletStatus = "deploying"
+	WalletStatusFailed    WalletStatus = "failed"
+	WalletStatusPending   WalletStatus = "pending"
+)
+
+// Defines values for WalletWalletType.
+const (
+	WalletWalletTypeEcdsa WalletWalletType = "ecdsa"
+	WalletWalletTypeRsa   WalletWalletType = "rsa"
+)
+
 // Defines values for WatcherEventPayloadType.
 const (
 	WatcherEventPayloadTypeWatcherEvent WatcherEventPayloadType = "watcher.event"
@@ -62,12 +76,12 @@ const (
 
 // Defines values for WatcherStatusPayloadStatus.
 const (
-	WatcherStatusPayloadStatusDeleted   WatcherStatusPayloadStatus = "deleted"
-	WatcherStatusPayloadStatusDeleting  WatcherStatusPayloadStatus = "deleting"
-	WatcherStatusPayloadStatusDeploying WatcherStatusPayloadStatus = "deploying"
-	WatcherStatusPayloadStatusFailed    WatcherStatusPayloadStatus = "failed"
-	WatcherStatusPayloadStatusPending   WatcherStatusPayloadStatus = "pending"
-	WatcherStatusPayloadStatusRemoved   WatcherStatusPayloadStatus = "removed"
+	Deleted   WatcherStatusPayloadStatus = "deleted"
+	Deleting  WatcherStatusPayloadStatus = "deleting"
+	Deploying WatcherStatusPayloadStatus = "deploying"
+	Failed    WatcherStatusPayloadStatus = "failed"
+	Pending   WatcherStatusPayloadStatus = "pending"
+	Removed   WatcherStatusPayloadStatus = "removed"
 )
 
 // Defines values for WatcherStatusPayloadType.
@@ -161,11 +175,11 @@ type CreateWallet struct {
 	// WalletOwnerAddress Wallet Contract Owner Address (42-character hex string starting with 0x)
 	WalletOwnerAddress string `json:"wallet_owner_address"`
 
-	// WalletType ECDSA Type of the wallet
+	// WalletType Type of the wallet
 	WalletType CreateWalletWalletType `json:"wallet_type"`
 }
 
-// CreateWalletWalletType ECDSA Type of the wallet
+// CreateWalletWalletType Type of the wallet
 type CreateWalletWalletType string
 
 // CreateWatcher defines model for CreateWatcher.
@@ -405,11 +419,19 @@ type Wallet struct {
 	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
-	Name *string `json:"name,omitempty"`
+	Name   *string      `json:"name,omitempty"`
+	Status WalletStatus `json:"status"`
 
 	// WalletId Unique identifier for the wallet
-	WalletId openapi_types.UUID `json:"wallet_id"`
+	WalletId   openapi_types.UUID `json:"wallet_id"`
+	WalletType WalletWalletType   `json:"wallet_type"`
 }
+
+// WalletStatus defines model for Wallet.Status.
+type WalletStatus string
+
+// WalletWalletType defines model for Wallet.WalletType.
+type WalletWalletType string
 
 // WalletList defines model for WalletList.
 type WalletList struct {
