@@ -858,7 +858,7 @@ components:
           description: The id that identifies the chain where the wallet exists
         wallet_type:
           type: string
-          description: ECDSA Type of the wallet
+          description: Type of the wallet
           enum:
             - "ecdsa"
             - "rsa"
@@ -947,10 +947,18 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the wallet exists
+        wallet_type:
+          type: string
+          enum: [ecdsa, rsa]
+        status:
+          type: string
+          enum: [pending, sent, confirmed, failed]
       required:
         - wallet_id
         - address
         - chain_selector
+        - wallet_type
+        - status
     WalletList:
       type: object
       properties:
