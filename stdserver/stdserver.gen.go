@@ -771,7 +771,7 @@ func (t Event_Payload) AsOperationStatusPayload() (OperationStatusPayload, error
 
 // FromOperationStatusPayload overwrites any union data inside the Event_Payload as the provided OperationStatusPayload
 func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) error {
-	v.Type = "OperationStatusPayload"
+	v.Type = "operation.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -779,7 +779,7 @@ func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) err
 
 // MergeOperationStatusPayload performs a merge with any union data inside the Event_Payload, using the provided OperationStatusPayload
 func (t *Event_Payload) MergeOperationStatusPayload(v OperationStatusPayload) error {
-	v.Type = "OperationStatusPayload"
+	v.Type = "operation.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -799,7 +799,7 @@ func (t Event_Payload) AsWatcherStatusPayload() (WatcherStatusPayload, error) {
 
 // FromWatcherStatusPayload overwrites any union data inside the Event_Payload as the provided WatcherStatusPayload
 func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
-	v.Type = "WatcherStatusPayload"
+	v.Type = "watcher.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -807,7 +807,7 @@ func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
 
 // MergeWatcherStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherStatusPayload
 func (t *Event_Payload) MergeWatcherStatusPayload(v WatcherStatusPayload) error {
-	v.Type = "WatcherStatusPayload"
+	v.Type = "watcher.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -827,7 +827,7 @@ func (t Event_Payload) AsWatcherEventPayload() (WatcherEventPayload, error) {
 
 // FromWatcherEventPayload overwrites any union data inside the Event_Payload as the provided WatcherEventPayload
 func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
-	v.Type = "WatcherEventPayload"
+	v.Type = "watcher.event"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -835,7 +835,7 @@ func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
 
 // MergeWatcherEventPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherEventPayload
 func (t *Event_Payload) MergeWatcherEventPayload(v WatcherEventPayload) error {
-	v.Type = "WatcherEventPayload"
+	v.Type = "watcher.event"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -860,11 +860,11 @@ func (t Event_Payload) ValueByDiscriminator() (interface{}, error) {
 		return nil, err
 	}
 	switch discriminator {
-	case "OperationStatusPayload":
+	case "operation.status":
 		return t.AsOperationStatusPayload()
-	case "WatcherEventPayload":
+	case "watcher.event":
 		return t.AsWatcherEventPayload()
-	case "WatcherStatusPayload":
+	case "watcher.status":
 		return t.AsWatcherStatusPayload()
 	default:
 		return nil, errors.New("unknown discriminator value: " + discriminator)

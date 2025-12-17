@@ -1340,6 +1340,10 @@ components:
             - $ref: "#/components/schemas/WatcherEventPayload"
           discriminator:
             propertyName: type
+            mapping:
+              operation.status: "#/components/schemas/OperationStatusPayload"
+              watcher.status: "#/components/schemas/WatcherStatusPayload"
+              watcher.event: "#/components/schemas/WatcherEventPayload"
         headers:
           $ref: "#/components/schemas/EventHeaders"
       required:
