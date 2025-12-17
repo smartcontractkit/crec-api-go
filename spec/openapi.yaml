@@ -952,7 +952,7 @@ components:
           enum: [ecdsa, rsa]
         status:
           type: string
-          enum: [pending, sent, confirmed, failed]
+          enum: [pending, deploying, deployed, failed]
       required:
         - wallet_id
         - address
