@@ -2,6 +2,7 @@
 tools:
 	go install github.com/atombender/go-jsonschema@latest
 	go install github.com/ethereum/go-ethereum/cmd/abigen@latest
+	go install github.com/daveshanley/vacuum@latest
 
 .PHONY: generate
 generate:
@@ -15,4 +16,8 @@ generate:
 	abigen --abi services/dta/abi/DTARequestManagementU.abi.json --pkg dtarequestmanagement --out services/dta/gen/dtarequestmanagement/dtarequestmanagement.gen.go
 	abigen --abi services/dta/abi/DTARequestSettlement.abi.json --pkg dtarequestsettlement --out services/dta/gen/dtarequestsettlement/dtarequestsettlement.gen.go
 	abigen --abi services/accounts/abi/AccountFactory.abi.json --pkg accounts --out services/accounts/gen/accounts/accounts.gen.go
+
+.PHONY: validate-openapi
+validate-openapi:
+	vacuum lint --ruleset .vacuum.yaml ./spec/openapi.yaml
 
