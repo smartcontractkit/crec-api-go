@@ -1,0 +1,9 @@
+rules:
+  operation-operationId:
+    severity: warn
+  no-empty-servers:
+    severity: off
+  info-contact:
+    severity: off
+  oas3-unused-component:
+    severity: warn
