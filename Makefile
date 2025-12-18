@@ -17,6 +17,6 @@ generate:
 	abigen --abi services/dta/abi/DTARequestSettlement.abi.json --pkg dtarequestsettlement --out services/dta/gen/dtarequestsettlement/dtarequestsettlement.gen.go
 	abigen --abi services/accounts/abi/AccountFactory.abi.json --pkg accounts --out services/accounts/gen/accounts/accounts.gen.go
 
-.PHONY: lint
-lint:
+.PHONY: validate-openapi
+validate-openapi:
 	vacuum lint ./spec/openapi.yaml

@@ -2,17 +2,31 @@ name: pull-request-main
 
 on:
   pull_request:
+#    paths:
+#      - "spec/openapi.yaml"
     branches:
       - main
+env:
+  VACUUM_VERSION: "v0.20.5"
 jobs:
-  ci-lint:
+  validate-openapi:
       runs-on: ubuntu-latest
       permissions:
         id-token: write
         contents: read
         actions: read
       steps:
-        - name: install deps
-          run: go install github.com/daveshanley/vacuum@latest
-        - name: ci-lint
-          run: make lint
+        - name: Checkout repository
+          uses: actions/checkout@v4
+        - name: Set up Go
+          uses: actions/setup-go@v5
+          with:
+            go-version: '1.21'
+        - name: Download Vacuum
+          run: |
+            curl -L "https://github.com/daveshanley/vacuum/releases/download/v${VACUUM_VERSION}/vacuum_Linux_x86_64.tar.gz" \
+              -o vacuum.tar.gz
+            tar -xzf vacuum.tar.gz
+            sudo mv vacuum /usr/local/bin/vacuum
+        - name: Lint OpenAPI spec
+          run: make validate-openapi
