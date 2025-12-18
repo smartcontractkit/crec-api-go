@@ -24,7 +24,7 @@ jobs:
             go-version: '1.21'
         - name: Download Vacuum
           run: |
-            curl -L "https://github.com/daveshanley/vacuum/releases/download/v${VACUUM_VERSION}/vacuum_Linux_x86_64.tar.gz" \
+            curl -L "https://github.com/daveshanley/vacuum/releases/download/${VACUUM_VERSION}/vacuum_Linux_x86_64.tar.gz" \
               -o vacuum.tar.gz
             tar -xzf vacuum.tar.gz
             sudo mv vacuum /usr/local/bin/vacuum
