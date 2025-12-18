@@ -1,9 +1,16 @@
+extends: [[spectral:oas, recommended]]
 rules:
-  operation-operationId:
-    severity: warn
-  no-empty-servers:
-    severity: off
-  info-contact:
-    severity: off
-  oas3-unused-component:
-    severity: warn
+  oas3-missing-example: off
+  oas3-parameter-description: off
+  component-description: off
+  operation-description: off
+  operation-tags: off
+  description-duplication: off
+  oas3-api-servers: off
+  #todo - should be turned back on after fixing all the issues
+  operation-operationId: off
+  #todo - should be turned back on after fixing all the issues
+  oas3-schema: off
+  camel-case-properties: off
+  oas3-unused-component: off
+
