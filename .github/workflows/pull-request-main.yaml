@@ -2,12 +2,12 @@ name: pull-request-main
 
 on:
   pull_request:
-#    paths:
-#      - "spec/openapi.yaml"
+    paths:
+      - "spec/openapi.yaml"
     branches:
       - main
 env:
-  VACUUM_VERSION: "v0.20.5"
+  VACUUM_VERSION: "0.20.5"
 jobs:
   validate-openapi:
       runs-on: ubuntu-latest
@@ -25,7 +25,7 @@ jobs:
             use-go-cache: "true"
         - name: Download Vacuum
           run: |
-            curl -L "https://github.com/daveshanley/vacuum/releases/download/${VACUUM_VERSION}/vacuum_0.20.5_linux_x86_64.tar.gz" \
+            curl -L "https://github.com/daveshanley/vacuum/releases/download/v${VACUUM_VERSION}/vacuum_${VACUUM_VERSION}_linux_x86_64.tar.gz" \
               -o vacuum.tar.gz
             tar -xzf vacuum.tar.gz
             sudo mv vacuum /usr/local/bin/vacuum
@@ -55,7 +55,7 @@ jobs:
         run: |
           git diff --exit-code || (echo "Generated code is out of date. Run 'make generate' and commit the changes." && exit 1)
 
-      - name: Build
+      - name: Go build
         run: go build ./...
 
   mod-tidy:
