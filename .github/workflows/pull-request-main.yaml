@@ -16,7 +16,7 @@ jobs:
         contents: read
         actions: read
       steps:
-        - name: Checkout repository
+        - name: Checkout code
           uses: actions/checkout@v4
         - name: Setup Go
           uses: smartcontractkit/.github/actions/setup-golang@setup-golang/0.3.2
