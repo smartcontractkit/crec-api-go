@@ -415,6 +415,18 @@ type Wallet struct {
 	// Address EVM wallet address
 	Address string `json:"address"`
 
+	// AllowedEcdsaSigners Allowed ECDSA public signing keys for the wallet
+	AllowedEcdsaSigners []string `json:"allowed_ecdsa_signers"`
+
+	// AllowedRsaSigners Allowed RSA public signing keys for the wallet
+	AllowedRsaSigners []struct {
+		// E RSA public exponent of allowed signer
+		E string `json:"e"`
+
+		// N RSA modulus of allowed signer
+		N string `json:"n"`
+	} `json:"allowed_rsa_signers"`
+
 	// ChainSelector The chain selector to identify the chain where the wallet exists
 	ChainSelector string `json:"chain_selector"`
 
@@ -425,6 +437,9 @@ type Wallet struct {
 	// WalletId Unique identifier for the wallet
 	WalletId   openapi_types.UUID `json:"wallet_id"`
 	WalletType WalletWalletType   `json:"wallet_type"`
+
+	// WorkflowId Unique identifier for the workflow that created the wallet
+	WorkflowId string `json:"workflow_id"`
 }
 
 // WalletStatus defines model for Wallet.Status.
