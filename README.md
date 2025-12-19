@@ -6,6 +6,10 @@ To regenerate the Golang bindings for the CREC API, run:
 make tools && make generate
 ```
 
+
+
+
+
 # Adding/Updating a Service
 
 1. Copy ABI file into `services/{service}/abi`
