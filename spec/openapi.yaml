@@ -944,6 +944,10 @@ components:
         address:
           type: string
           description: EVM wallet address
+        wallet_owner_address:
+          type: string
+          description: Wallet Contract Owner Address
+          pattern: "^0x[a-fA-F0-9]{40}$"
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the wallet exists

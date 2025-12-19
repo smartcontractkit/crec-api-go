@@ -445,8 +445,11 @@ type Wallet struct {
 	Status WalletStatus `json:"status"`
 
 	// WalletId Unique identifier for the wallet
-	WalletId   openapi_types.UUID `json:"wallet_id"`
-	WalletType WalletWalletType   `json:"wallet_type"`
+	WalletId openapi_types.UUID `json:"wallet_id"`
+
+	// WalletOwnerAddress Wallet Contract Owner Address
+	WalletOwnerAddress *string          `json:"wallet_owner_address,omitempty"`
+	WalletType         WalletWalletType `json:"wallet_type"`
 
 	// WorkflowId Unique identifier for the workflow that created the wallet
 	WorkflowId string `json:"workflow_id"`
