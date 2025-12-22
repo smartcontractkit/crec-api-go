@@ -42,6 +42,13 @@ const (
 	EventABITypeEvent EventABIType = "event"
 )
 
+// Defines values for EventHeadersType.
+const (
+	EventHeadersTypeOperationStatus EventHeadersType = "operation.status"
+	EventHeadersTypeWatcherEvent    EventHeadersType = "watcher.event"
+	EventHeadersTypeWatcherStatus   EventHeadersType = "watcher.status"
+)
+
 // Defines values for OperationStatusPayloadStatus.
 const (
 	OperationStatusPayloadStatusConfirmed OperationStatusPayloadStatus = "confirmed"
@@ -272,6 +279,9 @@ type EventHeaders struct {
 	// Offset Unique offset for message ordering
 	Offset int64                      `json:"offset"`
 	Proofs []EventHeaders_Proofs_Item `json:"proofs"`
+
+	// Type The type of event payload contained in this event
+	Type EventHeadersType `json:"type"`
 }
 
 // EventHeadersProofs1 Generic proof object for future extensibility
@@ -281,6 +291,9 @@ type EventHeadersProofs1 map[string]interface{}
 type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
 }
+
+// EventHeadersType The type of event payload contained in this event
+type EventHeadersType string
 
 // EventList defines model for EventList.
 type EventList struct {
