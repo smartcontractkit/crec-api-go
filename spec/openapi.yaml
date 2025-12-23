@@ -1461,6 +1461,17 @@ components:
           description: Wallet operation identifier
         transaction:
           $ref: "#/components/schemas/EventTransaction"
+        event_hash:
+          type: string
+          description: Deterministic event hash for verification (only present when status is confirmed)
+        verifiable_event:
+          type: string
+          description: Base64 encoded verifiable event for verification (only present when status is confirmed)
+        signatures:
+          type: array
+          items:
+            type: string
+          description: Array of DON node signatures for verification (only present when status is confirmed)
       required:
         - type
         - status
