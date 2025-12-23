@@ -51,10 +51,11 @@ const (
 
 // Defines values for OperationStatusPayloadStatus.
 const (
-	OperationStatusPayloadStatusConfirmed OperationStatusPayloadStatus = "confirmed"
-	OperationStatusPayloadStatusFailed    OperationStatusPayloadStatus = "failed"
-	OperationStatusPayloadStatusPending   OperationStatusPayloadStatus = "pending"
-	OperationStatusPayloadStatusSent      OperationStatusPayloadStatus = "sent"
+	OperationStatusPayloadStatusBroadcasting OperationStatusPayloadStatus = "broadcasting"
+	OperationStatusPayloadStatusConfirmed    OperationStatusPayloadStatus = "confirmed"
+	OperationStatusPayloadStatusFailed       OperationStatusPayloadStatus = "failed"
+	OperationStatusPayloadStatusPending      OperationStatusPayloadStatus = "pending"
+	OperationStatusPayloadStatusSent         OperationStatusPayloadStatus = "sent"
 )
 
 // Defines values for OperationStatusPayloadType.
@@ -381,6 +382,15 @@ type OperationStatusPayload struct {
 	// ChainSelector The chain selector to identify the chain where the operation will be executed
 	ChainSelector string `json:"chain_selector"`
 
+	// EventHash Deterministic event hash for verification (only present when status is confirmed)
+	EventHash *string `json:"event_hash,omitempty"`
+
+	// OperationId Unique identifier for the operation
+	OperationId openapi_types.UUID `json:"operation_id"`
+
+	// Signatures Array of DON node signatures for verification (only present when status is confirmed)
+	Signatures *[]string `json:"signatures,omitempty"`
+
 	// Status Current status of the operation
 	Status OperationStatusPayloadStatus `json:"status"`
 
@@ -388,6 +398,9 @@ type OperationStatusPayload struct {
 	StatusReason string                     `json:"status_reason"`
 	Transaction  *EventTransaction          `json:"transaction,omitempty"`
 	Type         OperationStatusPayloadType `json:"type"`
+
+	// VerifiableEvent Base64 encoded verifiable event for verification (only present when status is confirmed)
+	VerifiableEvent *string `json:"verifiable_event,omitempty"`
 
 	// WalletOperationId Wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`

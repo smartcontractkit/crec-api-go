@@ -1445,7 +1445,7 @@ components:
           enum: [operation.status]
         status:
           type: string
-          enum: [pending, sent, confirmed, failed]
+          enum: [pending, sent, broadcasting, confirmed, failed]
           description: Current status of the operation
         status_reason:
           type: string
@@ -1456,17 +1456,33 @@ components:
         address:
           type: string
           description: Wallet address
+        operation_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the operation
         wallet_operation_id:
           type: string
           description: Wallet operation identifier
         transaction:
           $ref: "#/components/schemas/EventTransaction"
+        event_hash:
+          type: string
+          description: Deterministic event hash for verification (only present when status is confirmed)
+        verifiable_event:
+          type: string
+          description: Base64 encoded verifiable event for verification (only present when status is confirmed)
+        signatures:
+          type: array
+          items:
+            type: string
+          description: Array of DON node signatures for verification (only present when status is confirmed)
       required:
         - type
         - status
         - status_reason
         - chain_selector
         - address
+        - operation_id
         - wallet_operation_id
     WatcherStatusPayload:
       type: object
