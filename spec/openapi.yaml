@@ -1445,7 +1445,7 @@ components:
           enum: [operation.status]
         status:
           type: string
-          enum: [pending, sent, confirmed, failed]
+          enum: [pending, sent, broadcasting, confirmed, failed]
           description: Current status of the operation
         status_reason:
           type: string
@@ -1456,6 +1456,10 @@ components:
         address:
           type: string
           description: Wallet address
+        operation_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the operation
         wallet_operation_id:
           type: string
           description: Wallet operation identifier
@@ -1478,6 +1482,7 @@ components:
         - status_reason
         - chain_selector
         - address
+        - operation_id
         - wallet_operation_id
     WatcherStatusPayload:
       type: object

@@ -51,10 +51,11 @@ const (
 
 // Defines values for OperationStatusPayloadStatus.
 const (
-	OperationStatusPayloadStatusConfirmed OperationStatusPayloadStatus = "confirmed"
-	OperationStatusPayloadStatusFailed    OperationStatusPayloadStatus = "failed"
-	OperationStatusPayloadStatusPending   OperationStatusPayloadStatus = "pending"
-	OperationStatusPayloadStatusSent      OperationStatusPayloadStatus = "sent"
+	OperationStatusPayloadStatusBroadcasting OperationStatusPayloadStatus = "broadcasting"
+	OperationStatusPayloadStatusConfirmed    OperationStatusPayloadStatus = "confirmed"
+	OperationStatusPayloadStatusFailed       OperationStatusPayloadStatus = "failed"
+	OperationStatusPayloadStatusPending      OperationStatusPayloadStatus = "pending"
+	OperationStatusPayloadStatusSent         OperationStatusPayloadStatus = "sent"
 )
 
 // Defines values for OperationStatusPayloadType.
@@ -383,6 +384,9 @@ type OperationStatusPayload struct {
 
 	// EventHash Deterministic event hash for verification (only present when status is confirmed)
 	EventHash *string `json:"event_hash,omitempty"`
+
+	// OperationId Unique identifier for the operation
+	OperationId openapi_types.UUID `json:"operation_id"`
 
 	// Signatures Array of DON node signatures for verification (only present when status is confirmed)
 	Signatures *[]string `json:"signatures,omitempty"`
