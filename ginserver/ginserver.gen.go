@@ -478,7 +478,7 @@ type Wallet struct {
 	WalletType         WalletWalletType `json:"wallet_type"`
 
 	// WorkflowId Unique identifier for the workflow that created the wallet
-	WorkflowId string `json:"workflow_id"`
+	WorkflowId *string `json:"workflow_id,omitempty"`
 }
 
 // WalletStatus defines model for Wallet.Status.
