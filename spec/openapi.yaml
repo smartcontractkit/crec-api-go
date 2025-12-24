@@ -995,6 +995,7 @@ components:
         - address
         - chain_selector
         - wallet_type
+        - wallet_owner_address
         - status
         - workflow_id
         - allowed_rsa_signers
