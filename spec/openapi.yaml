@@ -997,7 +997,6 @@ components:
         - wallet_type
         - wallet_owner_address
         - status
-        - workflow_id
         - allowed_rsa_signers
         - allowed_ecdsa_signers
     WalletList:
