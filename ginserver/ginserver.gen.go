@@ -474,7 +474,7 @@ type Wallet struct {
 	WalletId openapi_types.UUID `json:"wallet_id"`
 
 	// WalletOwnerAddress Wallet Contract Owner Address
-	WalletOwnerAddress *string          `json:"wallet_owner_address,omitempty"`
+	WalletOwnerAddress string           `json:"wallet_owner_address"`
 	WalletType         WalletWalletType `json:"wallet_type"`
 
 	// WorkflowId Unique identifier for the workflow that created the wallet
