@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-	"time"
 
 	"github.com/oapi-codegen/runtime"
 	openapi_types "github.com/oapi-codegen/runtime/types"
@@ -521,40 +520,29 @@ type Watcher struct {
 	WorkflowId string `json:"workflow_id"`
 }
 
-// WatcherEvent defines model for WatcherEvent.
-type WatcherEvent struct {
-	// Data Event data - can be any structure
-	Data map[string]interface{} `json:"data"`
-
-	// Domain Domain associated with the event (optional)
-	Domain *string `json:"domain,omitempty"`
-
-	// EventName Name of the event
-	EventName string `json:"event_name"`
-
-	// LogIndex Log index in the transaction
-	LogIndex int `json:"log_index"`
-
-	// Metadata Event metadata - can be any structure
-	Metadata *map[string]interface{} `json:"metadata,omitempty"`
-
-	// Timestamp Event timestamp
-	Timestamp time.Time `json:"timestamp"`
-
-	// TopicHash Event topic hash
-	TopicHash string `json:"topic_hash"`
-}
-
 // WatcherEventPayload defines model for WatcherEventPayload.
 type WatcherEventPayload struct {
 	// Address Contract address that emitted the event
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector string                  `json:"chain_selector"`
-	Event         WatcherEvent            `json:"event"`
-	Transaction   EventTransaction        `json:"transaction"`
-	Type          WatcherEventPayloadType `json:"type"`
+	ChainSelector string `json:"chain_selector"`
+
+	// Domain Domain associated with the event (optional)
+	Domain string `json:"domain"`
+
+	// Name Name of the event
+	Name string `json:"name"`
+
+	// Signatures Array of signatures
+	Signatures []string                `json:"signatures"`
+	Type       WatcherEventPayloadType `json:"type"`
+
+	// VerifiableEvent Base64 encoded verifiable event
+	VerifiableEvent string `json:"verifiable_event"`
+
+	// WatcherEventId Unique identifier for the watcher event
+	WatcherEventId openapi_types.UUID `json:"watcher_event_id"`
 
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
