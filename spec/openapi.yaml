@@ -904,6 +904,11 @@ components:
           minItems: 0
           maxItems: 10
           uniqueItems: true
+        status_channel_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the channel where the wallet status will be published
+
       required:
         - name
         - wallet_owner_address
@@ -956,10 +961,14 @@ components:
           enum: [ecdsa, rsa]
         status:
           type: string
-          enum: [pending, deploying, deployed, failed]
+          description: Current status of the wallet
         workflow_id:
           type: string
           description: Unique identifier for the workflow that created the wallet
+        status_channel_id:
+          type: string
+          format: uuid
+          description: Channel ID where wallet status events are published
         allowed_rsa_signers:
           type: array
           items:
@@ -1378,12 +1387,14 @@ components:
             - $ref: "#/components/schemas/OperationStatusPayload"
             - $ref: "#/components/schemas/WatcherStatusPayload"
             - $ref: "#/components/schemas/WatcherEventPayload"
+            - $ref: "#/components/schemas/WalletStatusPayload"
           discriminator:
             propertyName: type
             mapping:
               operation.status: "#/components/schemas/OperationStatusPayload"
               watcher.status: "#/components/schemas/WatcherStatusPayload"
               watcher.event: "#/components/schemas/WatcherEventPayload"
+              wallet.status: "#/components/schemas/WalletStatusPayload"
         headers:
           $ref: "#/components/schemas/EventHeaders"
       required:
@@ -1399,6 +1410,7 @@ components:
             - operation.status
             - watcher.status
             - watcher.event
+            - wallet.status
         offset:
           type: integer
           format: int64
@@ -1539,6 +1551,32 @@ components:
         - address
         - transaction
         - event
+    WalletStatusPayload:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [wallet.status]
+        wallet_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the wallet
+        status:
+          type: string
+          enum: [pending, deploying, deployed, failed]
+          description: Current status of the wallet
+        chain_selector:
+          type: string
+          description: The chain selector to identify the chain where the wallet exists
+        address:
+          type: string
+          description: EVM wallet address
+      required:
+        - type
+        - wallet_id
+        - status
+        - chain_selector
+        - address
     EventTransaction:
       type: object
       properties:
