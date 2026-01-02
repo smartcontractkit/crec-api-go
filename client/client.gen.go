@@ -44,6 +44,7 @@ const (
 // Defines values for EventHeadersType.
 const (
 	EventHeadersTypeOperationStatus EventHeadersType = "operation.status"
+	EventHeadersTypeWalletStatus    EventHeadersType = "wallet.status"
 	EventHeadersTypeWatcherEvent    EventHeadersType = "watcher.event"
 	EventHeadersTypeWatcherStatus   EventHeadersType = "watcher.status"
 )
@@ -62,18 +63,23 @@ const (
 	OperationStatusPayloadTypeOperationStatus OperationStatusPayloadType = "operation.status"
 )
 
-// Defines values for WalletStatus.
-const (
-	WalletStatusDeployed  WalletStatus = "deployed"
-	WalletStatusDeploying WalletStatus = "deploying"
-	WalletStatusFailed    WalletStatus = "failed"
-	WalletStatusPending   WalletStatus = "pending"
-)
-
 // Defines values for WalletWalletType.
 const (
 	WalletWalletTypeEcdsa WalletWalletType = "ecdsa"
 	WalletWalletTypeRsa   WalletWalletType = "rsa"
+)
+
+// Defines values for WalletStatusPayloadStatus.
+const (
+	WalletStatusPayloadStatusDeployed  WalletStatusPayloadStatus = "deployed"
+	WalletStatusPayloadStatusDeploying WalletStatusPayloadStatus = "deploying"
+	WalletStatusPayloadStatusFailed    WalletStatusPayloadStatus = "failed"
+	WalletStatusPayloadStatusPending   WalletStatusPayloadStatus = "pending"
+)
+
+// Defines values for WalletStatusPayloadType.
+const (
+	WalletStatus WalletStatusPayloadType = "wallet.status"
 )
 
 // Defines values for WatcherEventPayloadType.
@@ -178,6 +184,9 @@ type CreateWallet struct {
 
 	// Name Name of the wallet
 	Name string `json:"name"`
+
+	// StatusChannelId Unique identifier for the channel where the wallet status will be published
+	StatusChannelId *openapi_types.UUID `json:"status_channel_id,omitempty"`
 
 	// WalletOwnerAddress Wallet Contract Owner Address (42-character hex string starting with 0x)
 	WalletOwnerAddress string `json:"wallet_owner_address"`
@@ -456,8 +465,13 @@ type Wallet struct {
 	ChainSelector string `json:"chain_selector"`
 
 	// Name Name of the wallet
-	Name   *string      `json:"name,omitempty"`
-	Status WalletStatus `json:"status"`
+	Name *string `json:"name,omitempty"`
+
+	// Status Current status of the wallet
+	Status string `json:"status"`
+
+	// StatusChannelId Channel ID where wallet status events are published
+	StatusChannelId *openapi_types.UUID `json:"status_channel_id,omitempty"`
 
 	// WalletId Unique identifier for the wallet
 	WalletId openapi_types.UUID `json:"wallet_id"`
@@ -470,9 +484,6 @@ type Wallet struct {
 	WorkflowId *string `json:"workflow_id,omitempty"`
 }
 
-// WalletStatus defines model for Wallet.Status.
-type WalletStatus string
-
 // WalletWalletType defines model for Wallet.WalletType.
 type WalletWalletType string
 
@@ -483,6 +494,28 @@ type WalletList struct {
 	// HasMore True if there are more wallets to fetch
 	HasMore bool `json:"has_more"`
 }
+
+// WalletStatusPayload defines model for WalletStatusPayload.
+type WalletStatusPayload struct {
+	// Address EVM wallet address
+	Address string `json:"address"`
+
+	// ChainSelector The chain selector to identify the chain where the wallet exists
+	ChainSelector string `json:"chain_selector"`
+
+	// Status Current status of the wallet
+	Status WalletStatusPayloadStatus `json:"status"`
+	Type   WalletStatusPayloadType   `json:"type"`
+
+	// WalletId Unique identifier for the wallet
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+// WalletStatusPayloadStatus Current status of the wallet
+type WalletStatusPayloadStatus string
+
+// WalletStatusPayloadType defines model for WalletStatusPayload.Type.
+type WalletStatusPayloadType string
 
 // Watcher defines model for Watcher.
 type Watcher struct {
@@ -880,6 +913,34 @@ func (t *Event_Payload) MergeWatcherEventPayload(v WatcherEventPayload) error {
 	return err
 }
 
+// AsWalletStatusPayload returns the union data inside the Event_Payload as a WalletStatusPayload
+func (t Event_Payload) AsWalletStatusPayload() (WalletStatusPayload, error) {
+	var body WalletStatusPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromWalletStatusPayload overwrites any union data inside the Event_Payload as the provided WalletStatusPayload
+func (t *Event_Payload) FromWalletStatusPayload(v WalletStatusPayload) error {
+	v.Type = "wallet.status"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeWalletStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WalletStatusPayload
+func (t *Event_Payload) MergeWalletStatusPayload(v WalletStatusPayload) error {
+	v.Type = "wallet.status"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t Event_Payload) Discriminator() (string, error) {
 	var discriminator struct {
 		Discriminator string `json:"type"`
@@ -896,6 +957,8 @@ func (t Event_Payload) ValueByDiscriminator() (interface{}, error) {
 	switch discriminator {
 	case "operation.status":
 		return t.AsOperationStatusPayload()
+	case "wallet.status":
+		return t.AsWalletStatusPayload()
 	case "watcher.event":
 		return t.AsWatcherEventPayload()
 	case "watcher.status":
