@@ -1534,23 +1534,28 @@ components:
         watcher_id:
           type: string
           description: Unique watcher identifier
+        domain:
+          type: string
+          description: Domain associated with the event (optional)
+        name:
+          type: string
+          description: Name of the event
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
         address:
           type: string
           description: Contract address that emitted the event
-        transaction:
-          $ref: "#/components/schemas/EventTransaction"
-        event:
-          $ref: "#/components/schemas/WatcherEvent"
+        verifiable_event:
+          type: string
+          description: Base64 encoded verifiable event
       required:
         - type
         - watcher_id
+        - name
         - chain_selector
         - address
-        - transaction
-        - event
+        - verifiable_event
     WalletStatusPayload:
       type: object
       properties:
@@ -1590,36 +1595,3 @@ components:
       required:
         - timestamp
         - hash
-    WatcherEvent:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-          description: Event timestamp
-        domain:
-          type: string
-          description: Domain associated with the event (optional)
-        event_name:
-          type: string
-          description: Name of the event
-        topic_hash:
-          type: string
-          description: Event topic hash
-        log_index:
-          type: integer
-          description: Log index in the transaction
-        data:
-          type: object
-          additionalProperties: true
-          description: Event data - can be any structure
-        metadata:
-          type: object
-          additionalProperties: true
-          description: Event metadata - can be any structure
-      required:
-        - timestamp
-        - event_name
-        - topic_hash
-        - log_index
-        - data
