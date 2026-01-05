@@ -1531,10 +1531,6 @@ components:
         type:
           type: string
           enum: [watcher.event]
-        watcher_event_id:
-          type: string
-          format: uuid
-          description: Unique identifier for the watcher event
         watcher_id:
           type: string
           description: Unique watcher identifier
@@ -1555,7 +1551,6 @@ components:
           description: Base64 encoded verifiable event
       required:
         - type
-        - watcher_event_id
         - watcher_id
         - name
         - chain_selector

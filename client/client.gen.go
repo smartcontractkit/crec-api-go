@@ -571,9 +571,6 @@ type WatcherEventPayload struct {
 	// VerifiableEvent Base64 encoded verifiable event
 	VerifiableEvent string `json:"verifiable_event"`
 
-	// WatcherEventId Unique identifier for the watcher event
-	WatcherEventId openapi_types.UUID `json:"watcher_event_id"`
-
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
 }
