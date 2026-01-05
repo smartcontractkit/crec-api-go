@@ -1553,21 +1553,14 @@ components:
         verifiable_event:
           type: string
           description: Base64 encoded verifiable event
-        signatures:
-          type: array
-          items:
-            type: string
-          description: Array of signatures
       required:
         - type
         - watcher_event_id
         - watcher_id
-        - domain
         - name
         - chain_selector
         - address
         - verifiable_event
-        - signatures
     WalletStatusPayload:
       type: object
       properties:

@@ -562,14 +562,11 @@ type WatcherEventPayload struct {
 	ChainSelector string `json:"chain_selector"`
 
 	// Domain Domain associated with the event (optional)
-	Domain string `json:"domain"`
+	Domain *string `json:"domain,omitempty"`
 
 	// Name Name of the event
-	Name string `json:"name"`
-
-	// Signatures Array of signatures
-	Signatures []string                `json:"signatures"`
-	Type       WatcherEventPayloadType `json:"type"`
+	Name string                  `json:"name"`
+	Type WatcherEventPayloadType `json:"type"`
 
 	// VerifiableEvent Base64 encoded verifiable event
 	VerifiableEvent string `json:"verifiable_event"`
