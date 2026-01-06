@@ -508,7 +508,7 @@ type WalletList struct {
 // WalletStatusPayload defines model for WalletStatusPayload.
 type WalletStatusPayload struct {
 	// Address EVM wallet address
-	Address string `json:"address"`
+	Address *string `json:"address,omitempty"`
 
 	// ChainSelector The chain selector to identify the chain where the wallet exists
 	ChainSelector string `json:"chain_selector"`
