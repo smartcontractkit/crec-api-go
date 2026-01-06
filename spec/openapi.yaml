@@ -1581,7 +1581,6 @@ components:
         - wallet_id
         - status
         - chain_selector
-        - address
     EventTransaction:
       type: object
       properties:
