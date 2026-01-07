@@ -87,12 +87,12 @@ const (
 
 // Defines values for WatcherStatusPayloadStatus.
 const (
-	Deleted   WatcherStatusPayloadStatus = "deleted"
-	Deleting  WatcherStatusPayloadStatus = "deleting"
-	Deploying WatcherStatusPayloadStatus = "deploying"
-	Failed    WatcherStatusPayloadStatus = "failed"
-	Pending   WatcherStatusPayloadStatus = "pending"
-	Removed   WatcherStatusPayloadStatus = "removed"
+	WatcherStatusPayloadStatusDeleted   WatcherStatusPayloadStatus = "deleted"
+	WatcherStatusPayloadStatusDeleting  WatcherStatusPayloadStatus = "deleting"
+	WatcherStatusPayloadStatusDeploying WatcherStatusPayloadStatus = "deploying"
+	WatcherStatusPayloadStatusFailed    WatcherStatusPayloadStatus = "failed"
+	WatcherStatusPayloadStatusPending   WatcherStatusPayloadStatus = "pending"
+	WatcherStatusPayloadStatusRemoved   WatcherStatusPayloadStatus = "removed"
 )
 
 // Defines values for WatcherStatusPayloadType.
@@ -106,6 +106,20 @@ const (
 	GetChannelsChannelIdEventsSearchParamsTypeWalletStatus    GetChannelsChannelIdEventsSearchParamsType = "wallet.status"
 	GetChannelsChannelIdEventsSearchParamsTypeWatcherEvent    GetChannelsChannelIdEventsSearchParamsType = "watcher.event"
 	GetChannelsChannelIdEventsSearchParamsTypeWatcherStatus   GetChannelsChannelIdEventsSearchParamsType = "watcher.status"
+)
+
+// Defines values for GetWalletsParamsType.
+const (
+	Ecdsa GetWalletsParamsType = "ecdsa"
+	Rsa   GetWalletsParamsType = "rsa"
+)
+
+// Defines values for GetWalletsParamsStatus.
+const (
+	GetWalletsParamsStatusDeployed  GetWalletsParamsStatus = "deployed"
+	GetWalletsParamsStatusDeploying GetWalletsParamsStatus = "deploying"
+	GetWalletsParamsStatusFailed    GetWalletsParamsStatus = "failed"
+	GetWalletsParamsStatusPending   GetWalletsParamsStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -750,12 +764,27 @@ type GetWalletsParams struct {
 	// ChainSelector Filter wallets by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
+	// Owner Filter wallets by owner address
+	Owner *string `form:"owner,omitempty" json:"owner,omitempty"`
+
+	// Type Filter wallets by type
+	Type *GetWalletsParamsType `form:"type,omitempty" json:"type,omitempty"`
+
+	// Status Filter wallets by status
+	Status *GetWalletsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of wallets to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
+
+// GetWalletsParamsType defines parameters for GetWallets.
+type GetWalletsParamsType string
+
+// GetWalletsParamsStatus defines parameters for GetWallets.
+type GetWalletsParamsStatus string
 
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
@@ -1823,6 +1852,30 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "owner" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "owner", c.Request.URL.Query(), &params.Owner)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter owner: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "type", c.Request.URL.Query(), &params.Type)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter type: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
 		return
 	}
 

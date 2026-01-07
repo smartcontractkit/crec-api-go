@@ -58,6 +58,30 @@ paths:
           schema:
             type: string
         - in: query
+          name: owner
+          description: Filter wallets by owner address
+          schema:
+            type: string
+            pattern: "^0x[a-fA-F0-9]{40}$"
+        - in: query
+          name: type
+          description: Filter wallets by type
+          schema:
+            type: string
+            enum:
+              - ecdsa
+              - rsa
+        - in: query
+          name: status
+          description: Filter wallets by status
+          schema:
+            type: string
+            enum:
+              - deployed
+              - deploying
+              - failed
+              - pending
+        - in: query
           name: limit
           description: Maximum number of wallets to return
           schema:
