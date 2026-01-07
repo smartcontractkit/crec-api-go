@@ -77,12 +77,12 @@ const (
 
 // Defines values for WalletStatusPayloadType.
 const (
-	WalletStatus WalletStatusPayloadType = "wallet.status"
+	WalletStatusPayloadTypeWalletStatus WalletStatusPayloadType = "wallet.status"
 )
 
 // Defines values for WatcherEventPayloadType.
 const (
-	WatcherEventPayloadTypeWatcherEvent WatcherEventPayloadType = "watcher.event"
+	WatcherEvent WatcherEventPayloadType = "watcher.event"
 )
 
 // Defines values for WatcherStatusPayloadStatus.
@@ -103,6 +103,7 @@ const (
 // Defines values for GetChannelsChannelIdEventsSearchParamsType.
 const (
 	GetChannelsChannelIdEventsSearchParamsTypeOperationStatus GetChannelsChannelIdEventsSearchParamsType = "operation.status"
+	GetChannelsChannelIdEventsSearchParamsTypeWalletStatus    GetChannelsChannelIdEventsSearchParamsType = "wallet.status"
 	GetChannelsChannelIdEventsSearchParamsTypeWatcherEvent    GetChannelsChannelIdEventsSearchParamsType = "watcher.event"
 	GetChannelsChannelIdEventsSearchParamsTypeWatcherStatus   GetChannelsChannelIdEventsSearchParamsType = "watcher.status"
 )
@@ -653,16 +654,19 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// CreatedGte Filter events created at or after this timestamp
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
 
-	// ChainSelector Filter by chain selector (applies to all event types)
+	// ChainSelector Filter by chain selector (applies to operation.status, watcher.status, watcher.event, and wallet.status types)
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Status Filter by operation status (applies to operation.status) or watcher status (applies to watcher.status)
+	// Status Filter by operation status (applies to operation.status), watcher status (applies to watcher.status), or wallet status (applies to wallet.status)
 	Status *string `form:"status,omitempty" json:"status,omitempty"`
 
 	// WatcherId Filter by watcher ID (applies to watcher.status and watcher.event types)
 	WatcherId *openapi_types.UUID `form:"watcher_id,omitempty" json:"watcher_id,omitempty"`
 
-	// Address Filter by wallet address (applies to operation.status type) or contract address (applies to watcher.event type)
+	// WalletId Filter by wallet ID (applies to wallet.status type)
+	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
+
+	// Address Filter by wallet address (applies to operation.status and wallet.status types) or contract address (applies to watcher.event type)
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 
 	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
@@ -1383,6 +1387,14 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(w http.Respo
 	err = runtime.BindQueryParameter("form", true, false, "watcher_id", r.URL.Query(), &params.WatcherId)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "watcher_id", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "wallet_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "wallet_id", r.URL.Query(), &params.WalletId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
 		return
 	}
 
