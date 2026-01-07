@@ -705,6 +705,7 @@ paths:
         - operation.status: status, chain_selector, address, wallet_operation_id
         - watcher.status: watcher_id, status, chain_selector
         - watcher.event: watcher_id, chain_selector, address, event_name, domain
+        - wallet.status: wallet_id, status, chain_selector, address
 
         Universal parameters (apply to all types): type, limit, offset, created.*
       parameters:
@@ -738,6 +739,7 @@ paths:
               - operation.status
               - watcher.status
               - watcher.event
+              - wallet.status
         - in: query
           name: created.lt
           description: Filter events created before this timestamp
@@ -764,12 +766,12 @@ paths:
             format: int64
         - in: query
           name: chain_selector
-          description: Filter by chain selector (applies to all event types)
+          description: Filter by chain selector (applies to operation.status, watcher.status, watcher.event, and wallet.status types)
           schema:
             type: string
         - in: query
           name: status
-          description: Filter by operation status (applies to operation.status) or watcher status (applies to watcher.status)
+          description: Filter by operation status (applies to operation.status), watcher status (applies to watcher.status), or wallet status (applies to wallet.status)
           schema:
             type: string
         - in: query
@@ -779,8 +781,14 @@ paths:
             type: string
             format: uuid
         - in: query
+          name: wallet_id
+          description: Filter by wallet ID (applies to wallet.status type)
+          schema:
+            type: string
+            format: uuid
+        - in: query
           name: address
-          description: Filter by wallet address (applies to operation.status type) or contract address (applies to watcher.event type)
+          description: Filter by wallet address (applies to operation.status and wallet.status types) or contract address (applies to watcher.event type)
           schema:
             type: string
         - in: query
