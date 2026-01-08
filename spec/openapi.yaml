@@ -1287,6 +1287,9 @@ components:
           items:
             $ref: "#/components/schemas/EventABI"
           description: ABI definitions for the events (if not using domain-based events)
+        don_family:
+          type: string
+          description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
       required:
         - watcher_id
         - channel_id
@@ -1296,6 +1299,7 @@ components:
         - address
         - events
         - workflow_id
+        - don_family
     WatcherList:
       type: object
       properties:

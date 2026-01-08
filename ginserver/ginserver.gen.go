@@ -562,6 +562,9 @@ type Watcher struct {
 	// Domain Service domain namespace (if using domain-based events)
 	Domain *string `json:"domain,omitempty"`
 
+	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
+	DonFamily string `json:"don_family"`
+
 	// Events List of event names being watched
 	Events []string `json:"events"`
 
