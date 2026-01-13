@@ -453,6 +453,15 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
+// UpdateChannel defines model for UpdateChannel.
+type UpdateChannel struct {
+	// Description New description for the channel
+	Description string `json:"description"`
+
+	// Name New name for the channel
+	Name string `json:"name"`
+}
+
 // UpdateWallet defines model for UpdateWallet.
 type UpdateWallet struct {
 	// Name New name for the wallet
@@ -787,6 +796,9 @@ type GetWalletsParamsStatus string
 
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
+
+// PutChannelsChannelIdJSONRequestBody defines body for PutChannelsChannelId for application/json ContentType.
+type PutChannelsChannelIdJSONRequestBody = UpdateChannel
 
 // PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
 type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
@@ -1163,6 +1175,11 @@ type ClientInterface interface {
 	// GetChannelsChannelId request
 	GetChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// PutChannelsChannelIdWithBody request with any body
+	PutChannelsChannelIdWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PutChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, body PutChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetChannelsChannelIdEvents request
 	GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1269,6 +1286,30 @@ func (c *Client) DeleteChannelsChannelId(ctx context.Context, channelId openapi_
 
 func (c *Client) GetChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetChannelsChannelIdRequest(c.Server, channelId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChannelsChannelIdWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChannelsChannelIdRequestWithBody(c.Server, channelId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PutChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, body PutChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPutChannelsChannelIdRequest(c.Server, channelId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1704,6 +1745,53 @@ func NewGetChannelsChannelIdRequest(server string, channelId openapi_types.UUID)
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewPutChannelsChannelIdRequest calls the generic PutChannelsChannelId builder with application/json body
+func NewPutChannelsChannelIdRequest(server string, channelId openapi_types.UUID, body PutChannelsChannelIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPutChannelsChannelIdRequestWithBody(server, channelId, "application/json", bodyReader)
+}
+
+// NewPutChannelsChannelIdRequestWithBody generates requests for PutChannelsChannelId with any type of body
+func NewPutChannelsChannelIdRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -2985,6 +3073,11 @@ type ClientWithResponsesInterface interface {
 	// GetChannelsChannelIdWithResponse request
 	GetChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdResponse, error)
 
+	// PutChannelsChannelIdWithBodyWithResponse request with any body
+	PutChannelsChannelIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChannelsChannelIdResponse, error)
+
+	PutChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, body PutChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChannelsChannelIdResponse, error)
+
 	// GetChannelsChannelIdEventsWithResponse request
 	GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error)
 
@@ -3129,6 +3222,31 @@ func (r GetChannelsChannelIdResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetChannelsChannelIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PutChannelsChannelIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Channel
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PutChannelsChannelIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PutChannelsChannelIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3541,6 +3659,23 @@ func (c *ClientWithResponses) GetChannelsChannelIdWithResponse(ctx context.Conte
 	return ParseGetChannelsChannelIdResponse(rsp)
 }
 
+// PutChannelsChannelIdWithBodyWithResponse request with arbitrary body returning *PutChannelsChannelIdResponse
+func (c *ClientWithResponses) PutChannelsChannelIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PutChannelsChannelIdResponse, error) {
+	rsp, err := c.PutChannelsChannelIdWithBody(ctx, channelId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChannelsChannelIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PutChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, body PutChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PutChannelsChannelIdResponse, error) {
+	rsp, err := c.PutChannelsChannelId(ctx, channelId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePutChannelsChannelIdResponse(rsp)
+}
+
 // GetChannelsChannelIdEventsWithResponse request returning *GetChannelsChannelIdEventsResponse
 func (c *ClientWithResponses) GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error) {
 	rsp, err := c.GetChannelsChannelIdEvents(ctx, channelId, params, reqEditors...)
@@ -3842,6 +3977,53 @@ func ParseGetChannelsChannelIdResponse(rsp *http.Response) (*GetChannelsChannelI
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePutChannelsChannelIdResponse parses an HTTP response from a PutChannelsChannelIdWithResponse call
+func ParsePutChannelsChannelIdResponse(rsp *http.Response) (*PutChannelsChannelIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PutChannelsChannelIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Channel
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError

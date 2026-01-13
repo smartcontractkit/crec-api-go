@@ -463,6 +463,15 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
+// UpdateChannel defines model for UpdateChannel.
+type UpdateChannel struct {
+	// Description New description for the channel
+	Description string `json:"description"`
+
+	// Name New name for the channel
+	Name string `json:"name"`
+}
+
 // UpdateWallet defines model for UpdateWallet.
 type UpdateWallet struct {
 	// Name New name for the wallet
@@ -798,6 +807,9 @@ type GetWalletsParamsStatus string
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
 
+// PutChannelsChannelIdJSONRequestBody defines body for PutChannelsChannelId for application/json ContentType.
+type PutChannelsChannelIdJSONRequestBody = UpdateChannel
+
 // PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
 type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
@@ -1100,6 +1112,9 @@ type ServerInterface interface {
 	// Retrieves a specific channel by ID.
 	// (GET /channels/{channel_id})
 	GetChannelsChannelId(c *gin.Context, channelId openapi_types.UUID)
+	// Updates a channel.
+	// (PUT /channels/{channel_id})
+	PutChannelsChannelId(c *gin.Context, channelId openapi_types.UUID)
 	// Retrieves events from a channel.
 	// (GET /channels/{channel_id}/events)
 	GetChannelsChannelIdEvents(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams)
@@ -1265,6 +1280,32 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelId(c *gin.Context) {
 	}
 
 	siw.Handler.GetChannelsChannelId(c, channelId)
+}
+
+// PutChannelsChannelId operation middleware
+func (siw *ServerInterfaceWrapper) PutChannelsChannelId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.PutChannelsChannelId(c, channelId)
 }
 
 // GetChannelsChannelIdEvents operation middleware
@@ -2012,6 +2053,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.POST(options.BaseURL+"/channels", wrapper.PostChannels)
 	router.DELETE(options.BaseURL+"/channels/:channel_id", wrapper.DeleteChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id", wrapper.GetChannelsChannelId)
+	router.PUT(options.BaseURL+"/channels/:channel_id", wrapper.PutChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id/events", wrapper.GetChannelsChannelIdEvents)
 	router.GET(options.BaseURL+"/channels/:channel_id/events/search", wrapper.GetChannelsChannelIdEventsSearch)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations", wrapper.GetChannelsChannelIdOperations)
@@ -2153,6 +2195,51 @@ func (response GetChannelsChannelId404JSONResponse) VisitGetChannelsChannelIdRes
 type GetChannelsChannelId500JSONResponse ApplicationError
 
 func (response GetChannelsChannelId500JSONResponse) VisitGetChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChannelsChannelIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	Body      *PutChannelsChannelIdJSONRequestBody
+}
+
+type PutChannelsChannelIdResponseObject interface {
+	VisitPutChannelsChannelIdResponse(w http.ResponseWriter) error
+}
+
+type PutChannelsChannelId200JSONResponse Channel
+
+func (response PutChannelsChannelId200JSONResponse) VisitPutChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChannelsChannelId400JSONResponse ApplicationError
+
+func (response PutChannelsChannelId400JSONResponse) VisitPutChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChannelsChannelId404JSONResponse ApplicationError
+
+func (response PutChannelsChannelId404JSONResponse) VisitPutChannelsChannelIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PutChannelsChannelId500JSONResponse ApplicationError
+
+func (response PutChannelsChannelId500JSONResponse) VisitPutChannelsChannelIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -2735,6 +2822,9 @@ type StrictServerInterface interface {
 	// Retrieves a specific channel by ID.
 	// (GET /channels/{channel_id})
 	GetChannelsChannelId(ctx context.Context, request GetChannelsChannelIdRequestObject) (GetChannelsChannelIdResponseObject, error)
+	// Updates a channel.
+	// (PUT /channels/{channel_id})
+	PutChannelsChannelId(ctx context.Context, request PutChannelsChannelIdRequestObject) (PutChannelsChannelIdResponseObject, error)
 	// Retrieves events from a channel.
 	// (GET /channels/{channel_id}/events)
 	GetChannelsChannelIdEvents(ctx context.Context, request GetChannelsChannelIdEventsRequestObject) (GetChannelsChannelIdEventsResponseObject, error)
@@ -2901,6 +2991,41 @@ func (sh *strictHandler) GetChannelsChannelId(ctx *gin.Context, channelId openap
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetChannelsChannelIdResponseObject); ok {
 		if err := validResponse.VisitGetChannelsChannelIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// PutChannelsChannelId operation middleware
+func (sh *strictHandler) PutChannelsChannelId(ctx *gin.Context, channelId openapi_types.UUID) {
+	var request PutChannelsChannelIdRequestObject
+
+	request.ChannelId = channelId
+
+	var body PutChannelsChannelIdJSONRequestBody
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PutChannelsChannelId(ctx, request.(PutChannelsChannelIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PutChannelsChannelId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(PutChannelsChannelIdResponseObject); ok {
+		if err := validResponse.VisitPutChannelsChannelIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

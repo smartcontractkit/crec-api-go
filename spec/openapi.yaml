@@ -274,6 +274,46 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+    put:
+      summary: Updates a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateChannel"
+      responses:
+        "200":
+          description: Channel updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Channel"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
     delete:
       summary: Deletes a channel.
       parameters:
@@ -1114,6 +1154,18 @@ components:
           description: Description of the channel
       required:
         - name
+    UpdateChannel:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New name for the channel
+        description:
+          type: string
+          description: New description for the channel
+      required:
+        - name
+        - description
     Channel:
       type: object
       properties:

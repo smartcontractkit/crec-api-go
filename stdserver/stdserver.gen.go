@@ -451,6 +451,15 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
+// UpdateChannel defines model for UpdateChannel.
+type UpdateChannel struct {
+	// Description New description for the channel
+	Description string `json:"description"`
+
+	// Name New name for the channel
+	Name string `json:"name"`
+}
+
 // UpdateWallet defines model for UpdateWallet.
 type UpdateWallet struct {
 	// Name New name for the wallet
@@ -786,6 +795,9 @@ type GetWalletsParamsStatus string
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
 
+// PutChannelsChannelIdJSONRequestBody defines body for PutChannelsChannelId for application/json ContentType.
+type PutChannelsChannelIdJSONRequestBody = UpdateChannel
+
 // PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
 type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
 
@@ -1088,6 +1100,9 @@ type ServerInterface interface {
 	// Retrieves a specific channel by ID.
 	// (GET /channels/{channel_id})
 	GetChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
+	// Updates a channel.
+	// (PUT /channels/{channel_id})
+	PutChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Retrieves events from a channel.
 	// (GET /channels/{channel_id}/events)
 	GetChannelsChannelIdEvents(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams)
@@ -1266,6 +1281,37 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelId(w http.ResponseWriter, r
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetChannelsChannelId(w, r, channelId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PutChannelsChannelId operation middleware
+func (siw *ServerInterfaceWrapper) PutChannelsChannelId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutChannelsChannelId(w, r, channelId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2188,6 +2234,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/channels", wrapper.PostChannels)
 	m.HandleFunc("DELETE "+options.BaseURL+"/channels/{channel_id}", wrapper.DeleteChannelsChannelId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}", wrapper.GetChannelsChannelId)
+	m.HandleFunc("PUT "+options.BaseURL+"/channels/{channel_id}", wrapper.PutChannelsChannelId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events", wrapper.GetChannelsChannelIdEvents)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search", wrapper.GetChannelsChannelIdEventsSearch)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.GetChannelsChannelIdOperations)
