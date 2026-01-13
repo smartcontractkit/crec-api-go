@@ -144,6 +144,9 @@ type Channel struct {
 	// CreatedAt Timestamp of when the channel was created
 	CreatedAt int64 `json:"created_at"`
 
+	// Description Description of the channel
+	Description *string `json:"description,omitempty"`
+
 	// Name Name of the channel
 	Name string `json:"name"`
 }
@@ -158,6 +161,9 @@ type ChannelList struct {
 
 // CreateChannel defines model for CreateChannel.
 type CreateChannel struct {
+	// Description Description of the channel
+	Description *string `json:"description,omitempty"`
+
 	// Name Name of the channel
 	Name string `json:"name"`
 }
