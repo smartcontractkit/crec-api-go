@@ -1109,6 +1109,9 @@ components:
         name:
           type: string
           description: Name of the channel
+        description:
+          type: string
+          description: Description of the channel
       required:
         - name
     Channel:
