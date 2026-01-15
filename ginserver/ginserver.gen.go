@@ -1154,6 +1154,9 @@ type ServerInterface interface {
 	// Creates a new wallet.
 	// (POST /wallets)
 	PostWallets(c *gin.Context)
+	// Remove a wallet.
+	// (DELETE /wallets/{wallet_id})
+	DeleteWalletsWalletId(c *gin.Context, walletId openapi_types.UUID)
 	// Retrieves a specific wallet by ID.
 	// (GET /wallets/{wallet_id})
 	GetWalletsWalletId(c *gin.Context, walletId openapi_types.UUID)
@@ -1970,6 +1973,32 @@ func (siw *ServerInterfaceWrapper) PostWallets(c *gin.Context) {
 	siw.Handler.PostWallets(c)
 }
 
+// DeleteWalletsWalletId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteWalletsWalletId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", c.Param("wallet_id"), &walletId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter wallet_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteWalletsWalletId(c, walletId)
+}
+
 // GetWalletsWalletId operation middleware
 func (siw *ServerInterfaceWrapper) GetWalletsWalletId(c *gin.Context) {
 
@@ -2067,6 +2096,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/health-check", wrapper.GetHealthCheck)
 	router.GET(options.BaseURL+"/wallets", wrapper.GetWallets)
 	router.POST(options.BaseURL+"/wallets", wrapper.PostWallets)
+	router.DELETE(options.BaseURL+"/wallets/:wallet_id", wrapper.DeleteWalletsWalletId)
 	router.GET(options.BaseURL+"/wallets/:wallet_id", wrapper.GetWalletsWalletId)
 	router.PATCH(options.BaseURL+"/wallets/:wallet_id", wrapper.PatchWalletsWalletId)
 }
@@ -2728,6 +2758,40 @@ func (response PostWallets500JSONResponse) VisitPostWalletsResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteWalletsWalletIdRequestObject struct {
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+type DeleteWalletsWalletIdResponseObject interface {
+	VisitDeleteWalletsWalletIdResponse(w http.ResponseWriter) error
+}
+
+type DeleteWalletsWalletId200Response struct {
+}
+
+func (response DeleteWalletsWalletId200Response) VisitDeleteWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.WriteHeader(200)
+	return nil
+}
+
+type DeleteWalletsWalletId404JSONResponse ApplicationError
+
+func (response DeleteWalletsWalletId404JSONResponse) VisitDeleteWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteWalletsWalletId500JSONResponse ApplicationError
+
+func (response DeleteWalletsWalletId500JSONResponse) VisitDeleteWalletsWalletIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetWalletsWalletIdRequestObject struct {
 	WalletId openapi_types.UUID `json:"wallet_id"`
 }
@@ -2864,6 +2928,9 @@ type StrictServerInterface interface {
 	// Creates a new wallet.
 	// (POST /wallets)
 	PostWallets(ctx context.Context, request PostWalletsRequestObject) (PostWalletsResponseObject, error)
+	// Remove a wallet.
+	// (DELETE /wallets/{wallet_id})
+	DeleteWalletsWalletId(ctx context.Context, request DeleteWalletsWalletIdRequestObject) (DeleteWalletsWalletIdResponseObject, error)
 	// Retrieves a specific wallet by ID.
 	// (GET /wallets/{wallet_id})
 	GetWalletsWalletId(ctx context.Context, request GetWalletsWalletIdRequestObject) (GetWalletsWalletIdResponseObject, error)
@@ -3413,6 +3480,33 @@ func (sh *strictHandler) PostWallets(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PostWalletsResponseObject); ok {
 		if err := validResponse.VisitPostWalletsResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// DeleteWalletsWalletId operation middleware
+func (sh *strictHandler) DeleteWalletsWalletId(ctx *gin.Context, walletId openapi_types.UUID) {
+	var request DeleteWalletsWalletIdRequestObject
+
+	request.WalletId = walletId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteWalletsWalletId(ctx, request.(DeleteWalletsWalletIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteWalletsWalletId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteWalletsWalletIdResponseObject); ok {
+		if err := validResponse.VisitDeleteWalletsWalletIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

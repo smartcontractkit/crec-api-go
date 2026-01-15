@@ -1142,6 +1142,9 @@ type ServerInterface interface {
 	// Creates a new wallet.
 	// (POST /wallets)
 	PostWallets(w http.ResponseWriter, r *http.Request)
+	// Remove a wallet.
+	// (DELETE /wallets/{wallet_id})
+	DeleteWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
 	// Retrieves a specific wallet by ID.
 	// (GET /wallets/{wallet_id})
 	GetWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
@@ -2048,6 +2051,37 @@ func (siw *ServerInterfaceWrapper) PostWallets(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
+// DeleteWalletsWalletId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteWalletsWalletId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteWalletsWalletId(w, r, walletId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetWalletsWalletId operation middleware
 func (siw *ServerInterfaceWrapper) GetWalletsWalletId(w http.ResponseWriter, r *http.Request) {
 
@@ -2248,6 +2282,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.GetWallets)
 	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.PostWallets)
+	m.HandleFunc("DELETE "+options.BaseURL+"/wallets/{wallet_id}", wrapper.DeleteWalletsWalletId)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}", wrapper.GetWalletsWalletId)
 	m.HandleFunc("PATCH "+options.BaseURL+"/wallets/{wallet_id}", wrapper.PatchWalletsWalletId)
 
