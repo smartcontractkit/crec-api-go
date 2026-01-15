@@ -1227,6 +1227,9 @@ type ClientInterface interface {
 
 	PostWallets(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// DeleteWalletsWalletId request
+	DeleteWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetWalletsWalletId request
 	GetWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1514,6 +1517,18 @@ func (c *Client) PostWalletsWithBody(ctx context.Context, contentType string, bo
 
 func (c *Client) PostWallets(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostWalletsRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) DeleteWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteWalletsWalletIdRequest(c.Server, walletId)
 	if err != nil {
 		return nil, err
 	}
@@ -2935,6 +2950,40 @@ func NewPostWalletsRequestWithBody(server string, contentType string, body io.Re
 	return req, nil
 }
 
+// NewDeleteWalletsWalletIdRequest generates requests for DeleteWalletsWalletId
+func NewDeleteWalletsWalletIdRequest(server string, walletId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetWalletsWalletIdRequest generates requests for GetWalletsWalletId
 func NewGetWalletsWalletIdRequest(server string, walletId openapi_types.UUID) (*http.Request, error) {
 	var err error
@@ -3124,6 +3173,9 @@ type ClientWithResponsesInterface interface {
 	PostWalletsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error)
 
 	PostWalletsWithResponse(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error)
+
+	// DeleteWalletsWalletIdWithResponse request
+	DeleteWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteWalletsWalletIdResponse, error)
 
 	// GetWalletsWalletIdWithResponse request
 	GetWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletsWalletIdResponse, error)
@@ -3566,6 +3618,29 @@ func (r PostWalletsResponse) StatusCode() int {
 	return 0
 }
 
+type DeleteWalletsWalletIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r DeleteWalletsWalletIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r DeleteWalletsWalletIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetWalletsWalletIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3823,6 +3898,15 @@ func (c *ClientWithResponses) PostWalletsWithResponse(ctx context.Context, body 
 		return nil, err
 	}
 	return ParsePostWalletsResponse(rsp)
+}
+
+// DeleteWalletsWalletIdWithResponse request returning *DeleteWalletsWalletIdResponse
+func (c *ClientWithResponses) DeleteWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*DeleteWalletsWalletIdResponse, error) {
+	rsp, err := c.DeleteWalletsWalletId(ctx, walletId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseDeleteWalletsWalletIdResponse(rsp)
 }
 
 // GetWalletsWalletIdWithResponse request returning *GetWalletsWalletIdResponse
@@ -4558,6 +4642,39 @@ func ParsePostWalletsResponse(rsp *http.Response) (*PostWalletsResponse, error) 
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseDeleteWalletsWalletIdResponse parses an HTTP response from a DeleteWalletsWalletIdWithResponse call
+func ParseDeleteWalletsWalletIdResponse(rsp *http.Response) (*DeleteWalletsWalletIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &DeleteWalletsWalletIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError

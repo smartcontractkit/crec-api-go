@@ -179,6 +179,30 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+    delete:
+      summary: Remove a wallet.
+      parameters:
+        - in: path
+          name: wallet_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Wallet removed successfully.
+        "404":
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
 
   /channels:
     post:
