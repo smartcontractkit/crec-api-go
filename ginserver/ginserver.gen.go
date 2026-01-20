@@ -716,6 +716,9 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
 	WalletOperationId *string `form:"wallet_operation_id,omitempty" json:"wallet_operation_id,omitempty"`
 
+	// OperationId Filter by operation ID (applies to operation.status type)
+	OperationId *string `form:"operation_id,omitempty" json:"operation_id,omitempty"`
+
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 
@@ -1476,6 +1479,14 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 	err = runtime.BindQueryParameter("form", true, false, "wallet_operation_id", c.Request.URL.Query(), &params.WalletOperationId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter wallet_operation_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "operation_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "operation_id", c.Request.URL.Query(), &params.OperationId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter operation_id: %w", err), http.StatusBadRequest)
 		return
 	}
 
