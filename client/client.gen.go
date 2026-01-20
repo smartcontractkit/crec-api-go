@@ -706,6 +706,9 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
 	WalletOperationId *string `form:"wallet_operation_id,omitempty" json:"wallet_operation_id,omitempty"`
 
+	// OperationId Filter by operation ID (applies to operation.status type)
+	OperationId *string `form:"operation_id,omitempty" json:"operation_id,omitempty"`
+
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 
@@ -2107,6 +2110,22 @@ func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi
 		if params.WalletOperationId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "wallet_operation_id", runtime.ParamLocationQuery, *params.WalletOperationId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.OperationId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "operation_id", runtime.ParamLocationQuery, *params.OperationId); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

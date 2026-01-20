@@ -885,6 +885,11 @@ paths:
           schema:
             type: string
         - in: query
+          name: operation_id
+          description: Filter by operation ID (applies to operation.status type)
+          schema:
+            type: string
+        - in: query
           name: event_name
           description: Filter by event name (applies to watcher.event type)
           schema:
