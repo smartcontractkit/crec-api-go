@@ -611,7 +611,7 @@ type WatcherEventPayloadType string
 
 // WatcherList defines model for WatcherList.
 type WatcherList struct {
-	Data []Watcher `json:"data"`
+	Data []WatcherSummary `json:"data"`
 
 	// HasMore True if there are more watchers to fetch
 	HasMore bool `json:"has_more"`
@@ -641,6 +641,39 @@ type WatcherStatusPayloadStatus string
 
 // WatcherStatusPayloadType defines model for WatcherStatusPayload.Type.
 type WatcherStatusPayloadType string
+
+// WatcherSummary defines model for WatcherSummary.
+type WatcherSummary struct {
+	// Address Smart contract address being watched
+	Address string `json:"address"`
+
+	// ChainSelector The chain selector to identify the chain where the watcher will run
+	ChainSelector string `json:"chain_selector"`
+
+	// ChannelId ID of the channel this watcher belongs to
+	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// CreatedAt Timestamp of when the watcher was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Domain Service domain namespace (if using domain-based events)
+	Domain *string `json:"domain,omitempty"`
+
+	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
+	DonFamily string `json:"don_family"`
+
+	// Name Name of the watcher for identification
+	Name *string `json:"name,omitempty"`
+
+	// Status Current status of the watcher
+	Status string `json:"status"`
+
+	// WatcherId Unique identifier for the watcher
+	WatcherId openapi_types.UUID `json:"watcher_id"`
+
+	// WorkflowId Unique identifier for the workflow that created the watcher
+	WorkflowId string `json:"workflow_id"`
+}
 
 // GetChannelsParams defines parameters for GetChannels.
 type GetChannelsParams struct {
