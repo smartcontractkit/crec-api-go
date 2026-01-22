@@ -1387,13 +1387,58 @@ components:
         - events
         - workflow_id
         - don_family
+    WatcherSummary:
+      type: object
+      properties:
+        watcher_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the watcher
+        workflow_id:
+          type: string
+          description: Unique identifier for the workflow that created the watcher
+        name:
+          type: string
+          description: Name of the watcher for identification
+        channel_id:
+          type: string
+          format: uuid
+          description: ID of the channel this watcher belongs to
+        created_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the watcher was created
+        status:
+          type: string
+          description: Current status of the watcher
+        chain_selector:
+          type: string
+          description: The chain selector to identify the chain where the watcher will run
+        address:
+          type: string
+          description: Smart contract address being watched
+        domain:
+          type: string
+          description: Service domain namespace (if using domain-based events)
+        don_family:
+          type: string
+          description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
+      required:
+        - watcher_id
+        - channel_id
+        - created_at
+        - status
+        - chain_selector
+        - address
+        - workflow_id
+        - don_family
     WatcherList:
       type: object
       properties:
         data:
           type: array
           items:
-            $ref: "#/components/schemas/Watcher"
+            $ref: "#/components/schemas/WatcherSummary"
         has_more:
           type: boolean
           description: True if there are more watchers to fetch
