@@ -492,6 +492,9 @@ type Wallet struct {
 	// ChainSelector The chain selector to identify the chain where the wallet exists
 	ChainSelector string `json:"chain_selector"`
 
+	// CreatedAt Timestamp of when the wallet was created
+	CreatedAt *int64 `json:"created_at,omitempty"`
+
 	// Name Name of the wallet
 	Name *string `json:"name,omitempty"`
 
