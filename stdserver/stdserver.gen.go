@@ -345,6 +345,38 @@ type HealthCheck struct {
 	Status string `json:"status"`
 }
 
+// Network defines model for Network.
+type Network struct {
+	// ChainFamily Chain family (e.g., "evm", "solana")
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain ID identifier
+	ChainId string `json:"chain_id"`
+
+	// ChainSelector Chain selector identifier
+	ChainSelector string `json:"chain_selector"`
+
+	// CreatedAt Timestamp of when the network was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Id Unique identifier for the network
+	Id openapi_types.UUID `json:"id"`
+
+	// Name Name of the network
+	Name string `json:"name"`
+
+	// UpdatedAt Timestamp of when the network was last updated
+	UpdatedAt int64 `json:"updated_at"`
+}
+
+// NetworkList defines model for NetworkList.
+type NetworkList struct {
+	Data []Network `json:"data"`
+
+	// HasMore True if there are more networks to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // OCRProof defines model for OCRProof.
 type OCRProof struct {
 	// Alg Algorithm used for the proof
@@ -1175,6 +1207,9 @@ type ServerInterface interface {
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(w http.ResponseWriter, r *http.Request)
+	// Retrieves available networks.
+	// (GET /networks)
+	GetNetworks(w http.ResponseWriter, r *http.Request)
 	// Retrieves wallets for the organization.
 	// (GET /wallets)
 	GetWallets(w http.ResponseWriter, r *http.Request, params GetWalletsParams)
@@ -1997,6 +2032,26 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
+// GetNetworks operation middleware
+func (siw *ServerInterfaceWrapper) GetNetworks(w http.ResponseWriter, r *http.Request) {
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetNetworks(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetWallets operation middleware
 func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Request) {
 
@@ -2327,6 +2382,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.PatchChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
+	m.HandleFunc("GET "+options.BaseURL+"/networks", wrapper.GetNetworks)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.GetWallets)
 	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.PostWallets)
 	m.HandleFunc("DELETE "+options.BaseURL+"/wallets/{wallet_id}", wrapper.DeleteWalletsWalletId)
