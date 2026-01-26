@@ -262,8 +262,10 @@ type CreateWatcherWithDomain struct {
 
 // Event defines model for Event.
 type Event struct {
-	Headers EventHeaders  `json:"headers"`
-	Payload Event_Payload `json:"payload"`
+	// EventId Unique identifier for the event
+	EventId openapi_types.UUID `json:"event_id"`
+	Headers EventHeaders       `json:"headers"`
+	Payload Event_Payload      `json:"payload"`
 }
 
 // Event_Payload defines model for Event.Payload.

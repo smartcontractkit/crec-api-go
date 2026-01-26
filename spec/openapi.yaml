@@ -1554,6 +1554,10 @@ components:
     Event:
       type: object
       properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the event
         payload:
           oneOf:
             - $ref: "#/components/schemas/OperationStatusPayload"
@@ -1570,6 +1574,7 @@ components:
         headers:
           $ref: "#/components/schemas/EventHeaders"
       required:
+        - event_id
         - payload
         - headers
     EventHeaders:
