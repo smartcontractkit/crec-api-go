@@ -262,8 +262,10 @@ type CreateWatcherWithDomain struct {
 
 // Event defines model for Event.
 type Event struct {
-	Headers EventHeaders  `json:"headers"`
-	Payload Event_Payload `json:"payload"`
+	// EventId Unique identifier for the event
+	EventId *openapi_types.UUID `json:"event_id,omitempty"`
+	Headers EventHeaders        `json:"headers"`
+	Payload Event_Payload       `json:"payload"`
 }
 
 // Event_Payload defines model for Event.Payload.
@@ -744,6 +746,9 @@ type GetChannelsChannelIdEventsSearchParams struct {
 
 	// OperationId Filter by operation ID (applies to operation.status type)
 	OperationId *string `form:"operation_id,omitempty" json:"operation_id,omitempty"`
+
+	// EventId Filter by event ID (applies to all event types)
+	EventId *openapi_types.UUID `form:"event_id,omitempty" json:"event_id,omitempty"`
 
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
@@ -2162,6 +2167,22 @@ func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi
 		if params.OperationId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "operation_id", runtime.ParamLocationQuery, *params.OperationId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.EventId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "event_id", runtime.ParamLocationQuery, *params.EventId); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

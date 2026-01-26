@@ -795,7 +795,7 @@ paths:
         - watcher.event: watcher_id, chain_selector, address, event_name, domain
         - wallet.status: wallet_id, status, chain_selector, address
 
-        Universal parameters (apply to all types): type, limit, offset, created.*
+        Universal parameters (apply to all types): type, limit, offset, created.*, event_id
       parameters:
         - in: path
           name: channel_id
@@ -889,6 +889,12 @@ paths:
           description: Filter by operation ID (applies to operation.status type)
           schema:
             type: string
+        - in: query
+          name: event_id
+          description: Filter by event ID (applies to all event types)
+          schema:
+            type: string
+            format: uuid
         - in: query
           name: event_name
           description: Filter by event name (applies to watcher.event type)
@@ -1554,6 +1560,10 @@ components:
     Event:
       type: object
       properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the event
         payload:
           oneOf:
             - $ref: "#/components/schemas/OperationStatusPayload"

@@ -260,8 +260,10 @@ type CreateWatcherWithDomain struct {
 
 // Event defines model for Event.
 type Event struct {
-	Headers EventHeaders  `json:"headers"`
-	Payload Event_Payload `json:"payload"`
+	// EventId Unique identifier for the event
+	EventId *openapi_types.UUID `json:"event_id,omitempty"`
+	Headers EventHeaders        `json:"headers"`
+	Payload Event_Payload       `json:"payload"`
 }
 
 // Event_Payload defines model for Event.Payload.
@@ -754,6 +756,9 @@ type GetChannelsChannelIdEventsSearchParams struct {
 
 	// OperationId Filter by operation ID (applies to operation.status type)
 	OperationId *string `form:"operation_id,omitempty" json:"operation_id,omitempty"`
+
+	// EventId Filter by event ID (applies to all event types)
+	EventId *openapi_types.UUID `form:"event_id,omitempty" json:"event_id,omitempty"`
 
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
@@ -1523,6 +1528,14 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 	err = runtime.BindQueryParameter("form", true, false, "operation_id", c.Request.URL.Query(), &params.OperationId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter operation_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "event_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "event_id", c.Request.URL.Query(), &params.EventId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_id: %w", err), http.StatusBadRequest)
 		return
 	}
 
