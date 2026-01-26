@@ -747,9 +747,6 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// OperationId Filter by operation ID (applies to operation.status type)
 	OperationId *string `form:"operation_id,omitempty" json:"operation_id,omitempty"`
 
-	// EventId Filter by event ID (applies to all event types)
-	EventId *openapi_types.UUID `form:"event_id,omitempty" json:"event_id,omitempty"`
-
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 
@@ -1230,6 +1227,9 @@ type ClientInterface interface {
 	// GetChannelsChannelIdEventsSearch request
 	GetChannelsChannelIdEventsSearch(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetChannelsChannelIdEventsSearchEventId request
+	GetChannelsChannelIdEventsSearchEventId(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetChannelsChannelIdOperations request
 	GetChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1381,6 +1381,18 @@ func (c *Client) GetChannelsChannelIdEvents(ctx context.Context, channelId opena
 
 func (c *Client) GetChannelsChannelIdEventsSearch(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetChannelsChannelIdEventsSearchRequest(c.Server, channelId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetChannelsChannelIdEventsSearchEventId(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelsChannelIdEventsSearchEventIdRequest(c.Server, channelId, eventId)
 	if err != nil {
 		return nil, err
 	}
@@ -2180,22 +2192,6 @@ func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi
 
 		}
 
-		if params.EventId != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "event_id", runtime.ParamLocationQuery, *params.EventId); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
 		if params.EventName != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "event_name", runtime.ParamLocationQuery, *params.EventName); err != nil {
@@ -2229,6 +2225,47 @@ func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi
 		}
 
 		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetChannelsChannelIdEventsSearchEventIdRequest generates requests for GetChannelsChannelIdEventsSearchEventId
+func NewGetChannelsChannelIdEventsSearchEventIdRequest(server string, channelId openapi_types.UUID, eventId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "event_id", runtime.ParamLocationPath, eventId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/events/search/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequest("GET", queryURL.String(), nil)
@@ -3209,6 +3246,9 @@ type ClientWithResponsesInterface interface {
 	// GetChannelsChannelIdEventsSearchWithResponse request
 	GetChannelsChannelIdEventsSearchWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchResponse, error)
 
+	// GetChannelsChannelIdEventsSearchEventIdWithResponse request
+	GetChannelsChannelIdEventsSearchEventIdWithResponse(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchEventIdResponse, error)
+
 	// GetChannelsChannelIdOperationsWithResponse request
 	GetChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsResponse, error)
 
@@ -3425,6 +3465,30 @@ func (r GetChannelsChannelIdEventsSearchResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetChannelsChannelIdEventsSearchResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetChannelsChannelIdEventsSearchEventIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Event
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetChannelsChannelIdEventsSearchEventIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetChannelsChannelIdEventsSearchEventIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3843,6 +3907,15 @@ func (c *ClientWithResponses) GetChannelsChannelIdEventsSearchWithResponse(ctx c
 		return nil, err
 	}
 	return ParseGetChannelsChannelIdEventsSearchResponse(rsp)
+}
+
+// GetChannelsChannelIdEventsSearchEventIdWithResponse request returning *GetChannelsChannelIdEventsSearchEventIdResponse
+func (c *ClientWithResponses) GetChannelsChannelIdEventsSearchEventIdWithResponse(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchEventIdResponse, error) {
+	rsp, err := c.GetChannelsChannelIdEventsSearchEventId(ctx, channelId, eventId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetChannelsChannelIdEventsSearchEventIdResponse(rsp)
 }
 
 // GetChannelsChannelIdOperationsWithResponse request returning *GetChannelsChannelIdOperationsResponse
@@ -4278,6 +4351,46 @@ func ParseGetChannelsChannelIdEventsSearchResponse(rsp *http.Response) (*GetChan
 			return nil, err
 		}
 		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetChannelsChannelIdEventsSearchEventIdResponse parses an HTTP response from a GetChannelsChannelIdEventsSearchEventIdWithResponse call
+func ParseGetChannelsChannelIdEventsSearchEventIdResponse(rsp *http.Response) (*GetChannelsChannelIdEventsSearchEventIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetChannelsChannelIdEventsSearchEventIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Event
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError

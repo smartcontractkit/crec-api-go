@@ -795,7 +795,7 @@ paths:
         - watcher.event: watcher_id, chain_selector, address, event_name, domain
         - wallet.status: wallet_id, status, chain_selector, address
 
-        Universal parameters (apply to all types): type, limit, offset, created.*, event_id
+        Universal parameters (apply to all types): type, limit, offset, created.*
       parameters:
         - in: path
           name: channel_id
@@ -890,12 +890,6 @@ paths:
           schema:
             type: string
         - in: query
-          name: event_id
-          description: Filter by event ID (applies to all event types)
-          schema:
-            type: string
-            format: uuid
-        - in: query
           name: event_name
           description: Filter by event name (applies to watcher.event type)
           schema:
@@ -920,6 +914,42 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
         "404":
           description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
+  /channels/{channel_id}/events/search/{event_id}:
+    get:
+      summary: Retrieves a specific event by ID from a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Channel or event not found
           content:
             application/json:
               schema:
