@@ -4,7 +4,7 @@ info:
   version: 0.4.0
   description: OpenAPI specification for the models used in CRE Connect
 
-paths: { }
+paths: {}
 
 components:
   schemas:
@@ -13,7 +13,7 @@ components:
       properties:
         service:
           type: string
-          description: The service that generated the event
+          description: The service that generated the event (_crec is used for internal events not related to a specific service)
         name:
           type: string
           description: The name of the event
@@ -27,7 +27,7 @@ components:
         chain_selector:
           type: string
           description: The specific blockchain network related to the event
-        event:
+        chain_event:
           oneOf:
             - $ref: "#/components/schemas/EVMEvent"
         data:
@@ -37,9 +37,6 @@ components:
         - service
         - name
         - timestamp
-        - chain_family
-        - chain_selector
-        - event
     EVMEvent:
       type: object
       properties:

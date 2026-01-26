@@ -40,45 +40,46 @@ type EVMEvent struct {
 
 // VerifiableEvent defines model for VerifiableEvent.
 type VerifiableEvent struct {
+	ChainEvent *VerifiableEvent_ChainEvent `json:"chain_event,omitempty"`
+
 	// ChainFamily The blockchain family related to the event
-	ChainFamily string `json:"chain_family"`
+	ChainFamily *string `json:"chain_family,omitempty"`
 
 	// ChainSelector The specific blockchain network related to the event
-	ChainSelector string                  `json:"chain_selector"`
+	ChainSelector *string                 `json:"chain_selector,omitempty"`
 	Data          *map[string]interface{} `json:"data,omitempty"`
-	Event         VerifiableEvent_Event   `json:"event"`
 
 	// Name The name of the event
 	Name string `json:"name"`
 
-	// Service The service that generated the event
+	// Service The service that generated the event (_crec is used for internal events not related to a specific service)
 	Service string `json:"service"`
 
 	// Timestamp The timestamp when the event was created
 	Timestamp time.Time `json:"timestamp"`
 }
 
-// VerifiableEvent_Event defines model for VerifiableEvent.Event.
-type VerifiableEvent_Event struct {
+// VerifiableEvent_ChainEvent defines model for VerifiableEvent.ChainEvent.
+type VerifiableEvent_ChainEvent struct {
 	union json.RawMessage
 }
 
-// AsEVMEvent returns the union data inside the VerifiableEvent_Event as a EVMEvent
-func (t VerifiableEvent_Event) AsEVMEvent() (EVMEvent, error) {
+// AsEVMEvent returns the union data inside the VerifiableEvent_ChainEvent as a EVMEvent
+func (t VerifiableEvent_ChainEvent) AsEVMEvent() (EVMEvent, error) {
 	var body EVMEvent
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromEVMEvent overwrites any union data inside the VerifiableEvent_Event as the provided EVMEvent
-func (t *VerifiableEvent_Event) FromEVMEvent(v EVMEvent) error {
+// FromEVMEvent overwrites any union data inside the VerifiableEvent_ChainEvent as the provided EVMEvent
+func (t *VerifiableEvent_ChainEvent) FromEVMEvent(v EVMEvent) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeEVMEvent performs a merge with any union data inside the VerifiableEvent_Event, using the provided EVMEvent
-func (t *VerifiableEvent_Event) MergeEVMEvent(v EVMEvent) error {
+// MergeEVMEvent performs a merge with any union data inside the VerifiableEvent_ChainEvent, using the provided EVMEvent
+func (t *VerifiableEvent_ChainEvent) MergeEVMEvent(v EVMEvent) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -89,12 +90,12 @@ func (t *VerifiableEvent_Event) MergeEVMEvent(v EVMEvent) error {
 	return err
 }
 
-func (t VerifiableEvent_Event) MarshalJSON() ([]byte, error) {
+func (t VerifiableEvent_ChainEvent) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
 }
 
-func (t *VerifiableEvent_Event) UnmarshalJSON(b []byte) error {
+func (t *VerifiableEvent_ChainEvent) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
