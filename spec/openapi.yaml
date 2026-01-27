@@ -1725,7 +1725,7 @@ components:
           description: Unique watcher identifier
         status:
           type: string
-          enum: [pending, deploying, removed, failed, deleting, deleted]
+          enum: [pending, active, failed, deleting, deletion_failed, deleted]
           description: Current status of the watcher
         status_code:
           type: string
@@ -1786,7 +1786,7 @@ components:
           description: Unique identifier for the wallet
         status:
           type: string
-          enum: [pending, deploying, deployed, failed]
+          enum: [pending, deploying, deployed, failed, deleted]
           description: Current status of the wallet
         chain_selector:
           type: string
