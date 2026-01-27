@@ -260,8 +260,10 @@ type CreateWatcherWithDomain struct {
 
 // Event defines model for Event.
 type Event struct {
-	Headers EventHeaders  `json:"headers"`
-	Payload Event_Payload `json:"payload"`
+	// EventId Unique identifier for the event
+	EventId *openapi_types.UUID `json:"event_id,omitempty"`
+	Headers EventHeaders        `json:"headers"`
+	Payload Event_Payload       `json:"payload"`
 }
 
 // Event_Payload defines model for Event.Payload.
@@ -824,6 +826,9 @@ type GetWalletsParams struct {
 	// Owner Filter wallets by owner address
 	Owner *string `form:"owner,omitempty" json:"owner,omitempty"`
 
+	// Address Filter wallets by wallet address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
 	// Type Filter wallets by type
 	Type *GetWalletsParamsType `form:"type,omitempty" json:"type,omitempty"`
 
@@ -1160,6 +1165,9 @@ type ServerInterface interface {
 	// Query and search historical events from a channel.
 	// (GET /channels/{channel_id}/events/search)
 	GetChannelsChannelIdEventsSearch(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsSearchParams)
+	// Retrieves a specific event by ID from a channel.
+	// (GET /channels/{channel_id}/events/search/{event_id})
+	GetChannelsChannelIdEventsSearchEventId(c *gin.Context, channelId openapi_types.UUID, eventId openapi_types.UUID)
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	GetChannelsChannelIdOperations(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdOperationsParams)
@@ -1550,6 +1558,41 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 	}
 
 	siw.Handler.GetChannelsChannelIdEventsSearch(c, channelId, params)
+}
+
+// GetChannelsChannelIdEventsSearchEventId operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearchEventId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "event_id" -------------
+	var eventId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "event_id", c.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChannelsChannelIdEventsSearchEventId(c, channelId, eventId)
 }
 
 // GetChannelsChannelIdOperations operation middleware
@@ -1963,6 +2006,14 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "address" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address", c.Request.URL.Query(), &params.Address)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "type" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "type", c.Request.URL.Query(), &params.Type)
@@ -2132,6 +2183,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/channels/:channel_id", wrapper.PutChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id/events", wrapper.GetChannelsChannelIdEvents)
 	router.GET(options.BaseURL+"/channels/:channel_id/events/search", wrapper.GetChannelsChannelIdEventsSearch)
+	router.GET(options.BaseURL+"/channels/:channel_id/events/search/:event_id", wrapper.GetChannelsChannelIdEventsSearchEventId)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations", wrapper.GetChannelsChannelIdOperations)
 	router.POST(options.BaseURL+"/channels/:channel_id/operations", wrapper.PostChannelsChannelIdOperations)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations/:operation_id", wrapper.GetChannelsChannelIdOperationsOperationId)
@@ -2407,6 +2459,42 @@ func (response GetChannelsChannelIdEventsSearch404JSONResponse) VisitGetChannels
 type GetChannelsChannelIdEventsSearch500JSONResponse ApplicationError
 
 func (response GetChannelsChannelIdEventsSearch500JSONResponse) VisitGetChannelsChannelIdEventsSearchResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearchEventIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	EventId   openapi_types.UUID `json:"event_id"`
+}
+
+type GetChannelsChannelIdEventsSearchEventIdResponseObject interface {
+	VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdEventsSearchEventId200JSONResponse Event
+
+func (response GetChannelsChannelIdEventsSearchEventId200JSONResponse) VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearchEventId404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEventsSearchEventId404JSONResponse) VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearchEventId500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEventsSearchEventId500JSONResponse) VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -2942,6 +3030,9 @@ type StrictServerInterface interface {
 	// Query and search historical events from a channel.
 	// (GET /channels/{channel_id}/events/search)
 	GetChannelsChannelIdEventsSearch(ctx context.Context, request GetChannelsChannelIdEventsSearchRequestObject) (GetChannelsChannelIdEventsSearchResponseObject, error)
+	// Retrieves a specific event by ID from a channel.
+	// (GET /channels/{channel_id}/events/search/{event_id})
+	GetChannelsChannelIdEventsSearchEventId(ctx context.Context, request GetChannelsChannelIdEventsSearchEventIdRequestObject) (GetChannelsChannelIdEventsSearchEventIdResponseObject, error)
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	GetChannelsChannelIdOperations(ctx context.Context, request GetChannelsChannelIdOperationsRequestObject) (GetChannelsChannelIdOperationsResponseObject, error)
@@ -3196,6 +3287,34 @@ func (sh *strictHandler) GetChannelsChannelIdEventsSearch(ctx *gin.Context, chan
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetChannelsChannelIdEventsSearchResponseObject); ok {
 		if err := validResponse.VisitGetChannelsChannelIdEventsSearchResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdEventsSearchEventId operation middleware
+func (sh *strictHandler) GetChannelsChannelIdEventsSearchEventId(ctx *gin.Context, channelId openapi_types.UUID, eventId openapi_types.UUID) {
+	var request GetChannelsChannelIdEventsSearchEventIdRequestObject
+
+	request.ChannelId = channelId
+	request.EventId = eventId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdEventsSearchEventId(ctx, request.(GetChannelsChannelIdEventsSearchEventIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdEventsSearchEventId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdEventsSearchEventIdResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdEventsSearchEventIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

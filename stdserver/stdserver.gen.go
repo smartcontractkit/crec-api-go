@@ -260,8 +260,10 @@ type CreateWatcherWithDomain struct {
 
 // Event defines model for Event.
 type Event struct {
-	Headers EventHeaders  `json:"headers"`
-	Payload Event_Payload `json:"payload"`
+	// EventId Unique identifier for the event
+	EventId *openapi_types.UUID `json:"event_id,omitempty"`
+	Headers EventHeaders        `json:"headers"`
+	Payload Event_Payload       `json:"payload"`
 }
 
 // Event_Payload defines model for Event.Payload.
@@ -812,6 +814,9 @@ type GetWalletsParams struct {
 	// Owner Filter wallets by owner address
 	Owner *string `form:"owner,omitempty" json:"owner,omitempty"`
 
+	// Address Filter wallets by wallet address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
 	// Type Filter wallets by type
 	Type *GetWalletsParamsType `form:"type,omitempty" json:"type,omitempty"`
 
@@ -1148,6 +1153,9 @@ type ServerInterface interface {
 	// Query and search historical events from a channel.
 	// (GET /channels/{channel_id}/events/search)
 	GetChannelsChannelIdEventsSearch(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdEventsSearchParams)
+	// Retrieves a specific event by ID from a channel.
+	// (GET /channels/{channel_id}/events/search/{event_id})
+	GetChannelsChannelIdEventsSearchEventId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, eventId openapi_types.UUID)
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	GetChannelsChannelIdOperations(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdOperationsParams)
@@ -1566,6 +1574,46 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(w http.Respo
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetChannelsChannelIdEventsSearch(w, r, channelId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetChannelsChannelIdEventsSearchEventId operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearchEventId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "event_id" -------------
+	var eventId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "event_id", r.PathValue("event_id"), &eventId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "event_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetChannelsChannelIdEventsSearchEventId(w, r, channelId, eventId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2035,6 +2083,14 @@ func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	// ------------- Optional query parameter "address" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address", r.URL.Query(), &params.Address)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "address", Err: err})
+		return
+	}
+
 	// ------------- Optional query parameter "type" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "type", r.URL.Query(), &params.Type)
@@ -2318,6 +2374,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("PUT "+options.BaseURL+"/channels/{channel_id}", wrapper.PutChannelsChannelId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events", wrapper.GetChannelsChannelIdEvents)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search", wrapper.GetChannelsChannelIdEventsSearch)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search/{event_id}", wrapper.GetChannelsChannelIdEventsSearchEventId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.GetChannelsChannelIdOperations)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.PostChannelsChannelIdOperations)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetChannelsChannelIdOperationsOperationId)
