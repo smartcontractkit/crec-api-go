@@ -814,6 +814,9 @@ type GetWalletsParams struct {
 	// Owner Filter wallets by owner address
 	Owner *string `form:"owner,omitempty" json:"owner,omitempty"`
 
+	// Address Filter wallets by wallet address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
 	// Type Filter wallets by type
 	Type *GetWalletsParamsType `form:"type,omitempty" json:"type,omitempty"`
 
@@ -2077,6 +2080,14 @@ func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Req
 	err = runtime.BindQueryParameter("form", true, false, "owner", r.URL.Query(), &params.Owner)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "owner", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "address" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address", r.URL.Query(), &params.Address)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "address", Err: err})
 		return
 	}
 

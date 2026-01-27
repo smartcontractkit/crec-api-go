@@ -816,6 +816,9 @@ type GetWalletsParams struct {
 	// Owner Filter wallets by owner address
 	Owner *string `form:"owner,omitempty" json:"owner,omitempty"`
 
+	// Address Filter wallets by wallet address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
 	// Type Filter wallets by type
 	Type *GetWalletsParamsType `form:"type,omitempty" json:"type,omitempty"`
 
@@ -2935,6 +2938,22 @@ func NewGetWalletsRequest(server string, params *GetWalletsParams) (*http.Reques
 		if params.Owner != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "owner", runtime.ParamLocationQuery, *params.Owner); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Address != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "address", runtime.ParamLocationQuery, *params.Address); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

@@ -64,6 +64,12 @@ paths:
             type: string
             pattern: "^0x[a-fA-F0-9]{40}$"
         - in: query
+          name: address
+          description: Filter wallets by wallet address
+          schema:
+            type: string
+            pattern: "^0x[a-fA-F0-9]{40}$"
+        - in: query
           name: type
           description: Filter wallets by type
           schema:
