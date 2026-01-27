@@ -64,6 +64,12 @@ paths:
             type: string
             pattern: "^0x[a-fA-F0-9]{40}$"
         - in: query
+          name: address
+          description: Filter wallets by wallet address
+          schema:
+            type: string
+            pattern: "^0x[a-fA-F0-9]{40}$"
+        - in: query
           name: type
           description: Filter wallets by type
           schema:
@@ -925,6 +931,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
 
+  /channels/{channel_id}/events/search/{event_id}:
+    get:
+      summary: Retrieves a specific event by ID from a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Channel or event not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
 security:
   - ApiKeyAuth: []
 
@@ -1554,6 +1596,10 @@ components:
     Event:
       type: object
       properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the event
         payload:
           oneOf:
             - $ref: "#/components/schemas/OperationStatusPayload"
