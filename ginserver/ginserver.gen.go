@@ -388,7 +388,7 @@ type OperationStatusPayload struct {
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`
 
-	// VerifiableEvent Base64 encoded verifiable event for verification (only present when status is confirmed)
+	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
 
 	// WalletOperationId Wallet operation identifier

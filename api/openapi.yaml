@@ -1639,7 +1639,7 @@ components:
           description: Verifiable event hash for reference (only present when status is confirmed)
         verifiable_event:
           type: string
-          description: Base64 encoded verifiable event for verification (only present when status is confirmed)
+          description: Base64 encoded verifiable event for verification
       required:
         - status
         - status_code
