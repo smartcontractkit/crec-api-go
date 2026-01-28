@@ -8,7 +8,6 @@ package stdserver
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -56,11 +55,6 @@ const (
 	OperationStatusPayloadStatusSent         OperationStatusPayloadStatus = "sent"
 )
 
-// Defines values for OperationStatusPayloadType.
-const (
-	OperationStatusPayloadTypeOperationStatus OperationStatusPayloadType = "operation.status"
-)
-
 // Defines values for WalletWalletType.
 const (
 	WalletWalletTypeEcdsa WalletWalletType = "ecdsa"
@@ -76,16 +70,6 @@ const (
 	WalletStatusPayloadStatusPending   WalletStatusPayloadStatus = "pending"
 )
 
-// Defines values for WalletStatusPayloadType.
-const (
-	WalletStatusPayloadTypeWalletStatus WalletStatusPayloadType = "wallet.status"
-)
-
-// Defines values for WatcherEventPayloadType.
-const (
-	WatcherEvent WatcherEventPayloadType = "watcher.event"
-)
-
 // Defines values for WatcherStatusPayloadStatus.
 const (
 	WatcherStatusPayloadStatusActive         WatcherStatusPayloadStatus = "active"
@@ -94,11 +78,6 @@ const (
 	WatcherStatusPayloadStatusDeletionFailed WatcherStatusPayloadStatus = "deletion_failed"
 	WatcherStatusPayloadStatusFailed         WatcherStatusPayloadStatus = "failed"
 	WatcherStatusPayloadStatusPending        WatcherStatusPayloadStatus = "pending"
-)
-
-// Defines values for WatcherStatusPayloadType.
-const (
-	WatcherStatus WatcherStatusPayloadType = "watcher.status"
 )
 
 // Defines values for GetChannelsChannelIdEventsSearchParamsType.
@@ -334,15 +313,6 @@ type EventList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// EventTransaction defines model for EventTransaction.
-type EventTransaction struct {
-	// Hash Transaction hash
-	Hash string `json:"hash"`
-
-	// Timestamp Transaction timestamp
-	Timestamp int64 `json:"timestamp"`
-}
-
 // HealthCheck defines model for HealthCheck.
 type HealthCheck struct {
 	Status string `json:"status"`
@@ -406,30 +376,22 @@ type OperationResponse struct {
 
 // OperationStatusPayload defines model for OperationStatusPayload.
 type OperationStatusPayload struct {
-	// Address Wallet address
-	Address string `json:"address"`
-
-	// ChainSelector The chain selector to identify the chain where the operation will be executed
-	ChainSelector string `json:"chain_selector"`
-
-	// EventHash Deterministic event hash for verification (only present when status is confirmed)
+	// EventHash Verifiable event hash for reference (only present when status is confirmed)
 	EventHash *string `json:"event_hash,omitempty"`
 
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Signatures Array of DON node signatures for verification (only present when status is confirmed)
-	Signatures *[]string `json:"signatures,omitempty"`
-
 	// Status Current status of the operation
 	Status OperationStatusPayloadStatus `json:"status"`
 
-	// StatusReason Reason for the status
-	StatusReason string                     `json:"status_reason"`
-	Transaction  *EventTransaction          `json:"transaction,omitempty"`
-	Type         OperationStatusPayloadType `json:"type"`
+	// StatusCode Status code
+	StatusCode string `json:"status_code"`
 
-	// VerifiableEvent Base64 encoded verifiable event for verification (only present when status is confirmed)
+	// StatusReason Reason for the status
+	StatusReason string `json:"status_reason"`
+
+	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
 
 	// WalletOperationId Wallet operation identifier
@@ -438,9 +400,6 @@ type OperationStatusPayload struct {
 
 // OperationStatusPayloadStatus Current status of the operation
 type OperationStatusPayloadStatus string
-
-// OperationStatusPayloadType defines model for OperationStatusPayload.Type.
-type OperationStatusPayloadType string
 
 // TransactionRequest defines model for TransactionRequest.
 type TransactionRequest struct {
@@ -531,15 +490,14 @@ type WalletList struct {
 
 // WalletStatusPayload defines model for WalletStatusPayload.
 type WalletStatusPayload struct {
-	// Address EVM wallet address
-	Address *string `json:"address,omitempty"`
-
-	// ChainSelector The chain selector to identify the chain where the wallet exists
-	ChainSelector string `json:"chain_selector"`
-
 	// Status Current status of the wallet
 	Status WalletStatusPayloadStatus `json:"status"`
-	Type   WalletStatusPayloadType   `json:"type"`
+
+	// StatusCode Status code
+	StatusCode string `json:"status_code"`
+
+	// StatusReason Reason for the status
+	StatusReason string `json:"status_reason"`
 
 	// WalletId Unique identifier for the wallet
 	WalletId openapi_types.UUID `json:"wallet_id"`
@@ -547,9 +505,6 @@ type WalletStatusPayload struct {
 
 // WalletStatusPayloadStatus Current status of the wallet
 type WalletStatusPayloadStatus string
-
-// WalletStatusPayloadType defines model for WalletStatusPayload.Type.
-type WalletStatusPayloadType string
 
 // Watcher defines model for Watcher.
 type Watcher struct {
@@ -592,18 +547,8 @@ type Watcher struct {
 
 // WatcherEventPayload defines model for WatcherEventPayload.
 type WatcherEventPayload struct {
-	// Address Contract address that emitted the event
-	Address string `json:"address"`
-
-	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector string `json:"chain_selector"`
-
-	// Domain Domain associated with the event (optional)
-	Domain *string `json:"domain,omitempty"`
-
-	// Name Name of the event
-	Name string                  `json:"name"`
-	Type WatcherEventPayloadType `json:"type"`
+	// EventHash Verifiable event hash
+	EventHash string `json:"event_hash"`
 
 	// VerifiableEvent Base64 encoded verifiable event
 	VerifiableEvent string `json:"verifiable_event"`
@@ -611,9 +556,6 @@ type WatcherEventPayload struct {
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
 }
-
-// WatcherEventPayloadType defines model for WatcherEventPayload.Type.
-type WatcherEventPayloadType string
 
 // WatcherList defines model for WatcherList.
 type WatcherList struct {
@@ -625,9 +567,6 @@ type WatcherList struct {
 
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
-	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector string `json:"chain_selector"`
-
 	// Status Current status of the watcher
 	Status WatcherStatusPayloadStatus `json:"status"`
 
@@ -635,8 +574,7 @@ type WatcherStatusPayload struct {
 	StatusCode string `json:"status_code"`
 
 	// StatusReason Reason for the status
-	StatusReason string                   `json:"status_reason"`
-	Type         WatcherStatusPayloadType `json:"type"`
+	StatusReason string `json:"status_reason"`
 
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
@@ -644,9 +582,6 @@ type WatcherStatusPayload struct {
 
 // WatcherStatusPayloadStatus Current status of the watcher
 type WatcherStatusPayloadStatus string
-
-// WatcherStatusPayloadType defines model for WatcherStatusPayload.Type.
-type WatcherStatusPayloadType string
 
 // WatcherSummary defines model for WatcherSummary.
 type WatcherSummary struct {
@@ -929,7 +864,6 @@ func (t Event_Payload) AsOperationStatusPayload() (OperationStatusPayload, error
 
 // FromOperationStatusPayload overwrites any union data inside the Event_Payload as the provided OperationStatusPayload
 func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) error {
-	v.Type = "operation.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -937,7 +871,6 @@ func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) err
 
 // MergeOperationStatusPayload performs a merge with any union data inside the Event_Payload, using the provided OperationStatusPayload
 func (t *Event_Payload) MergeOperationStatusPayload(v OperationStatusPayload) error {
-	v.Type = "operation.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -957,7 +890,6 @@ func (t Event_Payload) AsWatcherStatusPayload() (WatcherStatusPayload, error) {
 
 // FromWatcherStatusPayload overwrites any union data inside the Event_Payload as the provided WatcherStatusPayload
 func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
-	v.Type = "watcher.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -965,7 +897,6 @@ func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
 
 // MergeWatcherStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherStatusPayload
 func (t *Event_Payload) MergeWatcherStatusPayload(v WatcherStatusPayload) error {
-	v.Type = "watcher.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -985,7 +916,6 @@ func (t Event_Payload) AsWatcherEventPayload() (WatcherEventPayload, error) {
 
 // FromWatcherEventPayload overwrites any union data inside the Event_Payload as the provided WatcherEventPayload
 func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
-	v.Type = "watcher.event"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -993,7 +923,6 @@ func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
 
 // MergeWatcherEventPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherEventPayload
 func (t *Event_Payload) MergeWatcherEventPayload(v WatcherEventPayload) error {
-	v.Type = "watcher.event"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1013,7 +942,6 @@ func (t Event_Payload) AsWalletStatusPayload() (WalletStatusPayload, error) {
 
 // FromWalletStatusPayload overwrites any union data inside the Event_Payload as the provided WalletStatusPayload
 func (t *Event_Payload) FromWalletStatusPayload(v WalletStatusPayload) error {
-	v.Type = "wallet.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -1021,7 +949,6 @@ func (t *Event_Payload) FromWalletStatusPayload(v WalletStatusPayload) error {
 
 // MergeWalletStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WalletStatusPayload
 func (t *Event_Payload) MergeWalletStatusPayload(v WalletStatusPayload) error {
-	v.Type = "wallet.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1030,33 +957,6 @@ func (t *Event_Payload) MergeWalletStatusPayload(v WalletStatusPayload) error {
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
-}
-
-func (t Event_Payload) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"type"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t Event_Payload) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "operation.status":
-		return t.AsOperationStatusPayload()
-	case "wallet.status":
-		return t.AsWalletStatusPayload()
-	case "watcher.event":
-		return t.AsWatcherEventPayload()
-	case "watcher.status":
-		return t.AsWatcherStatusPayload()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
 }
 
 func (t Event_Payload) MarshalJSON() ([]byte, error) {
