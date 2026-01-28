@@ -65,6 +65,7 @@ const (
 
 // Defines values for WalletStatusPayloadStatus.
 const (
+	WalletStatusPayloadStatusDeleted   WalletStatusPayloadStatus = "deleted"
 	WalletStatusPayloadStatusDeployed  WalletStatusPayloadStatus = "deployed"
 	WalletStatusPayloadStatusDeploying WalletStatusPayloadStatus = "deploying"
 	WalletStatusPayloadStatusFailed    WalletStatusPayloadStatus = "failed"
@@ -73,12 +74,12 @@ const (
 
 // Defines values for WatcherStatusPayloadStatus.
 const (
-	WatcherStatusPayloadStatusDeleted   WatcherStatusPayloadStatus = "deleted"
-	WatcherStatusPayloadStatusDeleting  WatcherStatusPayloadStatus = "deleting"
-	WatcherStatusPayloadStatusDeploying WatcherStatusPayloadStatus = "deploying"
-	WatcherStatusPayloadStatusFailed    WatcherStatusPayloadStatus = "failed"
-	WatcherStatusPayloadStatusPending   WatcherStatusPayloadStatus = "pending"
-	WatcherStatusPayloadStatusRemoved   WatcherStatusPayloadStatus = "removed"
+	WatcherStatusPayloadStatusActive         WatcherStatusPayloadStatus = "active"
+	WatcherStatusPayloadStatusDeleted        WatcherStatusPayloadStatus = "deleted"
+	WatcherStatusPayloadStatusDeleting       WatcherStatusPayloadStatus = "deleting"
+	WatcherStatusPayloadStatusDeletionFailed WatcherStatusPayloadStatus = "deletion_failed"
+	WatcherStatusPayloadStatusFailed         WatcherStatusPayloadStatus = "failed"
+	WatcherStatusPayloadStatusPending        WatcherStatusPayloadStatus = "pending"
 )
 
 // Defines values for GetChannelsChannelIdEventsSearchParamsType.
