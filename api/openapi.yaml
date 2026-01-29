@@ -73,20 +73,12 @@ paths:
           name: type
           description: Filter wallets by type
           schema:
-            type: string
-            enum:
-              - ecdsa
-              - rsa
+            $ref: "#/components/schemas/WalletType"
         - in: query
           name: status
           description: Filter wallets by status
           schema:
-            type: string
-            enum:
-              - deployed
-              - deploying
-              - failed
-              - pending
+            $ref: "#/components/schemas/WalletStatus"
         - in: query
           name: limit
           description: Maximum number of wallets to return
@@ -444,7 +436,7 @@ paths:
           name: status
           description: Filter watchers by status
           schema:
-            type: string
+            $ref: "#/components/schemas/WatcherStatus"
         - in: query
           name: chain_selector
           description: Filter watchers by chain selector
@@ -666,7 +658,7 @@ paths:
           name: status
           description: Filter operations by status
           schema:
-            type: string
+            $ref: "#/components/schemas/OperationStatus"
         - in: query
           name: chain_selector
           description: Filter operations by chain selector
@@ -828,12 +820,7 @@ paths:
           name: type
           description: Filter events by type
           schema:
-            type: string
-            enum:
-              - operation.status
-              - watcher.status
-              - watcher.event
-              - wallet.status
+            $ref: "#/components/schemas/EventType"
         - in: query
           name: created.lt
           description: Filter events created before this timestamp
@@ -978,6 +965,108 @@ components:
       name: Api-Key
       description: Public organisation API key.
   schemas:
+    WalletStatus:
+      type: string
+      description: Status of a wallet
+      enum:
+        - pending
+        - deploying
+        - deployed
+        - failed
+        - deleted
+    WatcherStatus:
+      type: string
+      description: Status of a watcher
+      enum:
+        - pending
+        - active
+        - failed
+        - deleting
+        - deletion_failed
+        - deleted
+    OperationStatus:
+      type: string
+      description: Status of an operation
+      enum:
+        - pending
+        - sent
+        - broadcasting
+        - confirmed
+        - failed
+    WalletType:
+      type: string
+      description: Type of wallet
+      enum:
+        - ecdsa
+        - rsa
+    EventType:
+      type: string
+      description: Type of event
+      enum:
+        - operation.status
+        - watcher.status
+        - watcher.event
+        - wallet.status
+      # Custom varnames to avoid Go naming collision with OperationStatus, WatcherStatus, WalletStatus types
+      x-enum-varnames:
+        - EventTypeOperationStatus
+        - EventTypeWatcherStatus
+        - EventTypeWatcherEvent
+        - EventTypeWalletStatus
+    EthereumAddress:
+      type: string
+      description: 42-character hex Ethereum address
+      pattern: "^0x[a-fA-F0-9]{40}$"
+    RSAPublicKey:
+      type: object
+      description: RSA public key with exponent and modulus
+      properties:
+        e:
+          type: string
+          description: RSA public exponent (hex encoded, 2-17 bytes)
+          ## For the public exponent (e), the common and recommended values
+          ## result in an exact size of 3 or 4 bytes in encoded form.
+          ## Max 17 bytes. in rare or custom implementations, it could be a
+          ## large number up to the size of the modulus itself, i.e., hundreds
+          ## of bytes (e.g., 256 bytes for a 2048-bit key). However, this is
+          ## avoided in modern practice because it makes public key operations
+          ## (encryption/signature verification) much slower without improving
+          ## security
+          ## bytes*2 for hex representation.
+          pattern: "^0x[a-fA-F0-9]{2,34}$"
+        n:
+          type: string
+          description: RSA modulus (hex encoded, min 2048 bits)
+          ## 1024 bit keys are less secure. Only 2048 bit keys or 4096 bit RSA
+          ## keys are supported. Modulus = (number_of_bits / 8) bytes =
+          ## bytes*2 for hex representation.
+          pattern: "^0x[a-fA-F0-9]{512,}$"
+      required:
+        - e
+        - n
+    RSASignersList:
+      type: array
+      description: List of allowed RSA public signing keys
+      items:
+        $ref: "#/components/schemas/RSAPublicKey"
+      minItems: 0
+      maxItems: 10
+      uniqueItems: true
+    ECDSASignersList:
+      type: array
+      description: List of allowed ECDSA public signing keys (Ethereum addresses)
+      items:
+        $ref: "#/components/schemas/EthereumAddress"
+      minItems: 0
+      maxItems: 10
+      uniqueItems: true
+    ChainSelector:
+      type: string
+      description: Chain selector identifier for the blockchain network
+    Timestamp:
+      type: integer
+      format: int64
+      description: Unix timestamp in seconds
     HealthCheck:
       type: object
       properties:
@@ -993,60 +1082,15 @@ components:
           type: string
           description: Name of the wallet
         wallet_owner_address:
-          type: string
-          description: Wallet Contract Owner Address (42-character hex string starting with 0x)
-          pattern: "^0x[a-fA-F0-9]{40}$"
+          $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
-          type: string
-          description: The id that identifies the chain where the wallet exists
+          $ref: "#/components/schemas/ChainSelector"
         wallet_type:
-          type: string
-          description: Type of the wallet
-          enum:
-            - "ecdsa"
-            - "rsa"
+          $ref: "#/components/schemas/WalletType"
         allowed_rsa_signers:
-          type: array
-          items:
-            type: object
-            properties:
-              e:
-                type: string
-                description: RSA public exponent of allowed signer
-                ## For the public exponent (e), the common and recommended values
-                ## result in an exact size of 3 or 4 bytes in encoded form.
-                ## Max 17 bytes. in rare or custom implementations, it could be a
-                ## large number up to the size of the modulus itself, i.e., hundreds
-                ## of bytes (e.g., 256 bytes for a 2048-bit key). However, this is
-                ## avoided in modern practice because it makes public key operations
-                ## (encryption/signature verification) much slower without improving
-                ## security
-                ## bytes*2 for hex representation.
-                pattern: "^0x[a-fA-F0-9]{2,34}$"
-              n:
-                type: string
-                description: RSA modulus of allowed signer
-                ## 1024 bit keys are less secure. Only 2048 bit keys or 4096 bit RSA
-                ## keys are supported. Modulus = (number_of_bits / 8) bytes =
-                ## bytes*2 for hex representation.
-                pattern: "^0x[a-fA-F0-9]{512,}$"
-            required:
-              - e
-              - n
-          description: Allowed RSA public signing keys for the wallet
-          minItems: 0
-          maxItems: 10
-          uniqueItems: true
+          $ref: "#/components/schemas/RSASignersList"
         allowed_ecdsa_signers:
-          type: array
-          items:
-            type: string
-            description: ECDSA public key of allowed signer
-            pattern: "^0x[a-fA-F0-9]{40}$"
-          description: Allowed ECDSA public signing keys for the wallet
-          minItems: 0
-          maxItems: 10
-          uniqueItems: true
+          $ref: "#/components/schemas/ECDSASignersList"
         status_channel_id:
           type: string
           format: uuid
@@ -1090,21 +1134,15 @@ components:
           type: string
           description: Name of the wallet
         address:
-          type: string
-          description: EVM wallet address
+          $ref: "#/components/schemas/EthereumAddress"
         wallet_owner_address:
-          type: string
-          description: Wallet Contract Owner Address
-          pattern: "^0x[a-fA-F0-9]{40}$"
+          $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the wallet exists
+          $ref: "#/components/schemas/ChainSelector"
         wallet_type:
-          type: string
-          enum: [ecdsa, rsa]
+          $ref: "#/components/schemas/WalletType"
         status:
-          type: string
-          description: Current status of the wallet
+          $ref: "#/components/schemas/WalletStatus"
         workflow_id:
           type: string
           description: Unique identifier for the workflow that created the wallet
@@ -1113,39 +1151,11 @@ components:
           format: uuid
           description: Channel ID where wallet status events are published
         allowed_rsa_signers:
-          type: array
-          items:
-            type: object
-            properties:
-              e:
-                type: string
-                description: RSA public exponent of allowed signer
-                pattern: "^0x[a-fA-F0-9]{2,34}$"
-              n:
-                type: string
-                description: RSA modulus of allowed signer
-                pattern: "^0x[a-fA-F0-9]{512,}$"
-            required:
-              - e
-              - n
-          description: Allowed RSA public signing keys for the wallet
-          minItems: 0
-          maxItems: 10
-          uniqueItems: true
+          $ref: "#/components/schemas/RSASignersList"
         allowed_ecdsa_signers:
-          type: array
-          items:
-            type: string
-            description: ECDSA public key of allowed signer
-            pattern: "^0x[a-fA-F0-9]{40}$"
-          description: Allowed ECDSA public signing keys for the wallet
-          minItems: 0
-          maxItems: 10
-          uniqueItems: true
+          $ref: "#/components/schemas/ECDSASignersList"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the wallet was created
+          $ref: "#/components/schemas/Timestamp"
       required:
         - wallet_id
         - address
@@ -1399,8 +1409,7 @@ components:
           format: int64
           description: Timestamp of when the watcher was created
         status:
-          type: string
-          description: Current status of the watcher
+          $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
@@ -1455,11 +1464,9 @@ components:
           format: int64
           description: Timestamp of when the watcher was created
         status:
-          type: string
-          description: Current status of the watcher
+          $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the watcher will run
+          $ref: "#/components/schemas/ChainSelector"
         address:
           type: string
           description: Smart contract address being watched
@@ -1495,8 +1502,7 @@ components:
       type: object
       properties:
         chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the operation will be executed
+          $ref: "#/components/schemas/ChainSelector"
         address:
           type: string
           description: Wallet address performing the operation
@@ -1526,11 +1532,9 @@ components:
           format: uuid
           description: Unique identifier for the operation
         status:
-          type: string
-          description: Current status of the operation
+          $ref: "#/components/schemas/OperationStatus"
         chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the operation is executed
+          $ref: "#/components/schemas/ChainSelector"
         address:
           type: string
           description: Wallet address performing the operation
@@ -1615,13 +1619,7 @@ components:
       type: object
       properties:
         type:
-          type: string
-          description: The type of event payload contained in this event
-          enum:
-            - operation.status
-            - watcher.status
-            - watcher.event
-            - wallet.status
+          $ref: "#/components/schemas/EventType"
         offset:
           type: integer
           format: int64
@@ -1664,9 +1662,7 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum: [pending, sent, broadcasting, confirmed, failed]
-          description: Current status of the operation
+          $ref: "#/components/schemas/OperationStatus"
         status_code:
           type: string
           description: Status code
@@ -1696,9 +1692,7 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum: [pending, active, failed, deleting, deletion_failed, deleted]
-          description: Current status of the watcher
+          $ref: "#/components/schemas/WatcherStatus"
         status_code:
           type: string
           description: Status code
@@ -1733,9 +1727,7 @@ components:
       type: object
       properties:
         status:
-          type: string
-          enum: [pending, deploying, deployed, failed, deleted]
-          description: Current status of the wallet
+          $ref: "#/components/schemas/WalletStatus"
         status_code:
           type: string
           description: Status code
