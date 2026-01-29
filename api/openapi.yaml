@@ -32,7 +32,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-
   /wallets:
     post:
       summary: Creates a new wallet.
