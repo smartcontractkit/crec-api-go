@@ -3,7 +3,7 @@ name: pull-request-main
 on:
   pull_request:
     paths:
-      - "spec/openapi.yaml"
+      - "api/openapi.yaml"
     branches:
       - main
 env:
