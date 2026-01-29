@@ -320,6 +320,38 @@ type HealthCheck struct {
 	Status string `json:"status"`
 }
 
+// Network defines model for Network.
+type Network struct {
+	// ChainFamily Chain family (e.g., "evm", "solana")
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain ID identifier
+	ChainId string `json:"chain_id"`
+
+	// ChainSelector Chain selector identifier
+	ChainSelector string `json:"chain_selector"`
+
+	// CreatedAt Timestamp of when the network was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Id Unique identifier for the network
+	Id openapi_types.UUID `json:"id"`
+
+	// Name Name of the network
+	Name string `json:"name"`
+
+	// UpdatedAt Timestamp of when the network was last updated
+	UpdatedAt int64 `json:"updated_at"`
+}
+
+// NetworkList defines model for NetworkList.
+type NetworkList struct {
+	Data []Network `json:"data"`
+
+	// HasMore True if there are more networks to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // OCRProof defines model for OCRProof.
 type OCRProof struct {
 	// Alg Algorithm used for the proof
@@ -1167,6 +1199,9 @@ type ClientInterface interface {
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// GetNetworks request
+	GetNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// GetWallets request
 	GetWallets(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1441,6 +1476,18 @@ func (c *Client) PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, ch
 
 func (c *Client) GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetHealthCheckRequest(c.Server)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetNetworksRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -2782,6 +2829,33 @@ func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewGetNetworksRequest generates requests for GetNetworks
+func NewGetNetworksRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/networks")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetWalletsRequest generates requests for GetWallets
 func NewGetWalletsRequest(server string, params *GetWalletsParams) (*http.Request, error) {
 	var err error
@@ -3201,6 +3275,9 @@ type ClientWithResponsesInterface interface {
 
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
+
+	// GetNetworksWithResponse request
+	GetNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNetworksResponse, error)
 
 	// GetWalletsWithResponse request
 	GetWalletsWithResponse(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*GetWalletsResponse, error)
@@ -3631,6 +3708,29 @@ func (r GetHealthCheckResponse) StatusCode() int {
 	return 0
 }
 
+type GetNetworksResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *NetworkList
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetNetworksResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetNetworksResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type GetWalletsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3941,6 +4041,15 @@ func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseGetHealthCheckResponse(rsp)
+}
+
+// GetNetworksWithResponse request returning *GetNetworksResponse
+func (c *ClientWithResponses) GetNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNetworksResponse, error) {
+	rsp, err := c.GetNetworks(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetNetworksResponse(rsp)
 }
 
 // GetWalletsWithResponse request returning *GetWalletsResponse
@@ -4685,6 +4794,39 @@ func ParseGetHealthCheckResponse(rsp *http.Response) (*GetHealthCheckResponse, e
 			return nil, err
 		}
 		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetNetworksResponse parses an HTTP response from a GetNetworksWithResponse call
+func ParseGetNetworksResponse(rsp *http.Response) (*GetNetworksResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetNetworksResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest NetworkList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 

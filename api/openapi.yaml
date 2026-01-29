@@ -16,6 +16,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/HealthCheck"
 
+  /networks:
+    get:
+      summary: Retrieves available networks.
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NetworkList"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
   /wallets:
     post:
       summary: Creates a new wallet.
@@ -1165,6 +1181,55 @@ components:
         has_more:
           type: boolean
           description: True if there are more wallets to fetch
+      required:
+        - data
+        - has_more
+
+    Network:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the network
+        name:
+          type: string
+          description: Name of the network
+        chain_selector:
+          type: string
+          description: Chain selector identifier
+        chain_id:
+          type: string
+          description: Chain ID identifier
+        chain_family:
+          type: string
+          description: Chain family (e.g., "evm", "solana")
+        created_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the network was created
+        updated_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the network was last updated
+      required:
+        - id
+        - name
+        - chain_selector
+        - chain_id
+        - chain_family
+        - created_at
+        - updated_at
+    NetworkList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Network"
+        has_more:
+          type: boolean
+          description: True if there are more networks to fetch
       required:
         - data
         - has_more
