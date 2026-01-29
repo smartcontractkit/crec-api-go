@@ -1178,7 +1178,6 @@ components:
       required:
         - data
         - has_more
-
     TransactionRequest:
       type: object
       properties:
