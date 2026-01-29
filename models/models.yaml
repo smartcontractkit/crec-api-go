@@ -99,6 +99,10 @@ components:
         status_reason:
           type: string
           description: Reason for the status.
+        # Non-mandatory field - the transaction hash is only present when the status is broadcasting or confirmed.
+        transaction_hash:
+          type: string
+          description: The hash of the transaction that caused the status update.
       required:
         - wallet_operation_id
         - wallet_address

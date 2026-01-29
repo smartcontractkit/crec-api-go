@@ -53,6 +53,9 @@ type OperationStatusData struct {
 	// StatusReason Reason for the status.
 	StatusReason string `json:"status_reason"`
 
+	// TransactionHash The hash of the transaction that caused the status update.
+	TransactionHash *string `json:"transaction_hash,omitempty"`
+
 	// WalletAddress Wallet address associated with the operation
 	WalletAddress string `json:"wallet_address"`
 
