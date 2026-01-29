@@ -6,7 +6,6 @@ package ginserver
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 
@@ -56,11 +55,6 @@ const (
 	OperationStatusPayloadStatusSent         OperationStatusPayloadStatus = "sent"
 )
 
-// Defines values for OperationStatusPayloadType.
-const (
-	OperationStatusPayloadTypeOperationStatus OperationStatusPayloadType = "operation.status"
-)
-
 // Defines values for WalletWalletType.
 const (
 	WalletWalletTypeEcdsa WalletWalletType = "ecdsa"
@@ -69,35 +63,21 @@ const (
 
 // Defines values for WalletStatusPayloadStatus.
 const (
+	WalletStatusPayloadStatusDeleted   WalletStatusPayloadStatus = "deleted"
 	WalletStatusPayloadStatusDeployed  WalletStatusPayloadStatus = "deployed"
 	WalletStatusPayloadStatusDeploying WalletStatusPayloadStatus = "deploying"
 	WalletStatusPayloadStatusFailed    WalletStatusPayloadStatus = "failed"
 	WalletStatusPayloadStatusPending   WalletStatusPayloadStatus = "pending"
 )
 
-// Defines values for WalletStatusPayloadType.
-const (
-	WalletStatusPayloadTypeWalletStatus WalletStatusPayloadType = "wallet.status"
-)
-
-// Defines values for WatcherEventPayloadType.
-const (
-	WatcherEvent WatcherEventPayloadType = "watcher.event"
-)
-
 // Defines values for WatcherStatusPayloadStatus.
 const (
-	WatcherStatusPayloadStatusDeleted   WatcherStatusPayloadStatus = "deleted"
-	WatcherStatusPayloadStatusDeleting  WatcherStatusPayloadStatus = "deleting"
-	WatcherStatusPayloadStatusDeploying WatcherStatusPayloadStatus = "deploying"
-	WatcherStatusPayloadStatusFailed    WatcherStatusPayloadStatus = "failed"
-	WatcherStatusPayloadStatusPending   WatcherStatusPayloadStatus = "pending"
-	WatcherStatusPayloadStatusRemoved   WatcherStatusPayloadStatus = "removed"
-)
-
-// Defines values for WatcherStatusPayloadType.
-const (
-	WatcherStatus WatcherStatusPayloadType = "watcher.status"
+	WatcherStatusPayloadStatusActive         WatcherStatusPayloadStatus = "active"
+	WatcherStatusPayloadStatusDeleted        WatcherStatusPayloadStatus = "deleted"
+	WatcherStatusPayloadStatusDeleting       WatcherStatusPayloadStatus = "deleting"
+	WatcherStatusPayloadStatusDeletionFailed WatcherStatusPayloadStatus = "deletion_failed"
+	WatcherStatusPayloadStatusFailed         WatcherStatusPayloadStatus = "failed"
+	WatcherStatusPayloadStatusPending        WatcherStatusPayloadStatus = "pending"
 )
 
 // Defines values for GetChannelsChannelIdEventsSearchParamsType.
@@ -260,8 +240,10 @@ type CreateWatcherWithDomain struct {
 
 // Event defines model for Event.
 type Event struct {
-	Headers EventHeaders  `json:"headers"`
-	Payload Event_Payload `json:"payload"`
+	// EventId Unique identifier for the event
+	EventId *openapi_types.UUID `json:"event_id,omitempty"`
+	Headers EventHeaders        `json:"headers"`
+	Payload Event_Payload       `json:"payload"`
 }
 
 // Event_Payload defines model for Event.Payload.
@@ -329,15 +311,6 @@ type EventList struct {
 
 	// HasMore True if there are more events to fetch
 	HasMore bool `json:"has_more"`
-}
-
-// EventTransaction defines model for EventTransaction.
-type EventTransaction struct {
-	// Hash Transaction hash
-	Hash string `json:"hash"`
-
-	// Timestamp Transaction timestamp
-	Timestamp int64 `json:"timestamp"`
 }
 
 // HealthCheck defines model for HealthCheck.
@@ -435,30 +408,22 @@ type OperationResponse struct {
 
 // OperationStatusPayload defines model for OperationStatusPayload.
 type OperationStatusPayload struct {
-	// Address Wallet address
-	Address string `json:"address"`
-
-	// ChainSelector The chain selector to identify the chain where the operation will be executed
-	ChainSelector string `json:"chain_selector"`
-
-	// EventHash Deterministic event hash for verification (only present when status is confirmed)
+	// EventHash Verifiable event hash for reference (only present when status is confirmed)
 	EventHash *string `json:"event_hash,omitempty"`
 
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Signatures Array of DON node signatures for verification (only present when status is confirmed)
-	Signatures *[]string `json:"signatures,omitempty"`
-
 	// Status Current status of the operation
 	Status OperationStatusPayloadStatus `json:"status"`
 
-	// StatusReason Reason for the status
-	StatusReason string                     `json:"status_reason"`
-	Transaction  *EventTransaction          `json:"transaction,omitempty"`
-	Type         OperationStatusPayloadType `json:"type"`
+	// StatusCode Status code
+	StatusCode string `json:"status_code"`
 
-	// VerifiableEvent Base64 encoded verifiable event for verification (only present when status is confirmed)
+	// StatusReason Reason for the status
+	StatusReason string `json:"status_reason"`
+
+	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
 
 	// WalletOperationId Wallet operation identifier
@@ -467,9 +432,6 @@ type OperationStatusPayload struct {
 
 // OperationStatusPayloadStatus Current status of the operation
 type OperationStatusPayloadStatus string
-
-// OperationStatusPayloadType defines model for OperationStatusPayload.Type.
-type OperationStatusPayloadType string
 
 // Transaction defines model for Transaction.
 type Transaction struct {
@@ -572,15 +534,14 @@ type WalletList struct {
 
 // WalletStatusPayload defines model for WalletStatusPayload.
 type WalletStatusPayload struct {
-	// Address EVM wallet address
-	Address *string `json:"address,omitempty"`
-
-	// ChainSelector The chain selector to identify the chain where the wallet exists
-	ChainSelector string `json:"chain_selector"`
-
 	// Status Current status of the wallet
 	Status WalletStatusPayloadStatus `json:"status"`
-	Type   WalletStatusPayloadType   `json:"type"`
+
+	// StatusCode Status code
+	StatusCode string `json:"status_code"`
+
+	// StatusReason Reason for the status
+	StatusReason string `json:"status_reason"`
 
 	// WalletId Unique identifier for the wallet
 	WalletId openapi_types.UUID `json:"wallet_id"`
@@ -588,9 +549,6 @@ type WalletStatusPayload struct {
 
 // WalletStatusPayloadStatus Current status of the wallet
 type WalletStatusPayloadStatus string
-
-// WalletStatusPayloadType defines model for WalletStatusPayload.Type.
-type WalletStatusPayloadType string
 
 // Watcher defines model for Watcher.
 type Watcher struct {
@@ -633,18 +591,8 @@ type Watcher struct {
 
 // WatcherEventPayload defines model for WatcherEventPayload.
 type WatcherEventPayload struct {
-	// Address Contract address that emitted the event
-	Address string `json:"address"`
-
-	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector string `json:"chain_selector"`
-
-	// Domain Domain associated with the event (optional)
-	Domain *string `json:"domain,omitempty"`
-
-	// Name Name of the event
-	Name string                  `json:"name"`
-	Type WatcherEventPayloadType `json:"type"`
+	// EventHash Verifiable event hash
+	EventHash string `json:"event_hash"`
 
 	// VerifiableEvent Base64 encoded verifiable event
 	VerifiableEvent string `json:"verifiable_event"`
@@ -652,9 +600,6 @@ type WatcherEventPayload struct {
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
 }
-
-// WatcherEventPayloadType defines model for WatcherEventPayload.Type.
-type WatcherEventPayloadType string
 
 // WatcherList defines model for WatcherList.
 type WatcherList struct {
@@ -666,9 +611,6 @@ type WatcherList struct {
 
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
-	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector string `json:"chain_selector"`
-
 	// Status Current status of the watcher
 	Status WatcherStatusPayloadStatus `json:"status"`
 
@@ -676,8 +618,7 @@ type WatcherStatusPayload struct {
 	StatusCode string `json:"status_code"`
 
 	// StatusReason Reason for the status
-	StatusReason string                   `json:"status_reason"`
-	Type         WatcherStatusPayloadType `json:"type"`
+	StatusReason string `json:"status_reason"`
 
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
@@ -685,9 +626,6 @@ type WatcherStatusPayload struct {
 
 // WatcherStatusPayloadStatus Current status of the watcher
 type WatcherStatusPayloadStatus string
-
-// WatcherStatusPayloadType defines model for WatcherStatusPayload.Type.
-type WatcherStatusPayloadType string
 
 // WatcherSummary defines model for WatcherSummary.
 type WatcherSummary struct {
@@ -856,6 +794,9 @@ type GetWalletsParams struct {
 	// Owner Filter wallets by owner address
 	Owner *string `form:"owner,omitempty" json:"owner,omitempty"`
 
+	// Address Filter wallets by wallet address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
+
 	// Type Filter wallets by type
 	Type *GetWalletsParamsType `form:"type,omitempty" json:"type,omitempty"`
 
@@ -967,7 +908,6 @@ func (t Event_Payload) AsOperationStatusPayload() (OperationStatusPayload, error
 
 // FromOperationStatusPayload overwrites any union data inside the Event_Payload as the provided OperationStatusPayload
 func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) error {
-	v.Type = "operation.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -975,7 +915,6 @@ func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) err
 
 // MergeOperationStatusPayload performs a merge with any union data inside the Event_Payload, using the provided OperationStatusPayload
 func (t *Event_Payload) MergeOperationStatusPayload(v OperationStatusPayload) error {
-	v.Type = "operation.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -995,7 +934,6 @@ func (t Event_Payload) AsWatcherStatusPayload() (WatcherStatusPayload, error) {
 
 // FromWatcherStatusPayload overwrites any union data inside the Event_Payload as the provided WatcherStatusPayload
 func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
-	v.Type = "watcher.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -1003,7 +941,6 @@ func (t *Event_Payload) FromWatcherStatusPayload(v WatcherStatusPayload) error {
 
 // MergeWatcherStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherStatusPayload
 func (t *Event_Payload) MergeWatcherStatusPayload(v WatcherStatusPayload) error {
-	v.Type = "watcher.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1023,7 +960,6 @@ func (t Event_Payload) AsWatcherEventPayload() (WatcherEventPayload, error) {
 
 // FromWatcherEventPayload overwrites any union data inside the Event_Payload as the provided WatcherEventPayload
 func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
-	v.Type = "watcher.event"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -1031,7 +967,6 @@ func (t *Event_Payload) FromWatcherEventPayload(v WatcherEventPayload) error {
 
 // MergeWatcherEventPayload performs a merge with any union data inside the Event_Payload, using the provided WatcherEventPayload
 func (t *Event_Payload) MergeWatcherEventPayload(v WatcherEventPayload) error {
-	v.Type = "watcher.event"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1051,7 +986,6 @@ func (t Event_Payload) AsWalletStatusPayload() (WalletStatusPayload, error) {
 
 // FromWalletStatusPayload overwrites any union data inside the Event_Payload as the provided WalletStatusPayload
 func (t *Event_Payload) FromWalletStatusPayload(v WalletStatusPayload) error {
-	v.Type = "wallet.status"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -1059,7 +993,6 @@ func (t *Event_Payload) FromWalletStatusPayload(v WalletStatusPayload) error {
 
 // MergeWalletStatusPayload performs a merge with any union data inside the Event_Payload, using the provided WalletStatusPayload
 func (t *Event_Payload) MergeWalletStatusPayload(v WalletStatusPayload) error {
-	v.Type = "wallet.status"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1068,33 +1001,6 @@ func (t *Event_Payload) MergeWalletStatusPayload(v WalletStatusPayload) error {
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
-}
-
-func (t Event_Payload) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"type"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t Event_Payload) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "operation.status":
-		return t.AsOperationStatusPayload()
-	case "wallet.status":
-		return t.AsWalletStatusPayload()
-	case "watcher.event":
-		return t.AsWatcherEventPayload()
-	case "watcher.status":
-		return t.AsWatcherStatusPayload()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
 }
 
 func (t Event_Payload) MarshalJSON() ([]byte, error) {
@@ -1192,6 +1098,9 @@ type ServerInterface interface {
 	// Query and search historical events from a channel.
 	// (GET /channels/{channel_id}/events/search)
 	GetChannelsChannelIdEventsSearch(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdEventsSearchParams)
+	// Retrieves a specific event by ID from a channel.
+	// (GET /channels/{channel_id}/events/search/{event_id})
+	GetChannelsChannelIdEventsSearchEventId(c *gin.Context, channelId openapi_types.UUID, eventId openapi_types.UUID)
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	GetChannelsChannelIdOperations(c *gin.Context, channelId openapi_types.UUID, params GetChannelsChannelIdOperationsParams)
@@ -1585,6 +1494,41 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 	}
 
 	siw.Handler.GetChannelsChannelIdEventsSearch(c, channelId, params)
+}
+
+// GetChannelsChannelIdEventsSearchEventId operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearchEventId(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", c.Param("channel_id"), &channelId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter channel_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "event_id" -------------
+	var eventId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "event_id", c.Param("event_id"), &eventId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetChannelsChannelIdEventsSearchEventId(c, channelId, eventId)
 }
 
 // GetChannelsChannelIdOperations operation middleware
@@ -2013,6 +1957,14 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 		return
 	}
 
+	// ------------- Optional query parameter "address" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "address", c.Request.URL.Query(), &params.Address)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter address: %w", err), http.StatusBadRequest)
+		return
+	}
+
 	// ------------- Optional query parameter "type" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "type", c.Request.URL.Query(), &params.Type)
@@ -2182,6 +2134,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/channels/:channel_id", wrapper.PutChannelsChannelId)
 	router.GET(options.BaseURL+"/channels/:channel_id/events", wrapper.GetChannelsChannelIdEvents)
 	router.GET(options.BaseURL+"/channels/:channel_id/events/search", wrapper.GetChannelsChannelIdEventsSearch)
+	router.GET(options.BaseURL+"/channels/:channel_id/events/search/:event_id", wrapper.GetChannelsChannelIdEventsSearchEventId)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations", wrapper.GetChannelsChannelIdOperations)
 	router.POST(options.BaseURL+"/channels/:channel_id/operations", wrapper.PostChannelsChannelIdOperations)
 	router.GET(options.BaseURL+"/channels/:channel_id/operations/:operation_id", wrapper.GetChannelsChannelIdOperationsOperationId)
@@ -2458,6 +2411,42 @@ func (response GetChannelsChannelIdEventsSearch404JSONResponse) VisitGetChannels
 type GetChannelsChannelIdEventsSearch500JSONResponse ApplicationError
 
 func (response GetChannelsChannelIdEventsSearch500JSONResponse) VisitGetChannelsChannelIdEventsSearchResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearchEventIdRequestObject struct {
+	ChannelId openapi_types.UUID `json:"channel_id"`
+	EventId   openapi_types.UUID `json:"event_id"`
+}
+
+type GetChannelsChannelIdEventsSearchEventIdResponseObject interface {
+	VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error
+}
+
+type GetChannelsChannelIdEventsSearchEventId200JSONResponse Event
+
+func (response GetChannelsChannelIdEventsSearchEventId200JSONResponse) VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearchEventId404JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEventsSearchEventId404JSONResponse) VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannelsChannelIdEventsSearchEventId500JSONResponse ApplicationError
+
+func (response GetChannelsChannelIdEventsSearchEventId500JSONResponse) VisitGetChannelsChannelIdEventsSearchEventIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(500)
 
@@ -3018,6 +3007,9 @@ type StrictServerInterface interface {
 	// Query and search historical events from a channel.
 	// (GET /channels/{channel_id}/events/search)
 	GetChannelsChannelIdEventsSearch(ctx context.Context, request GetChannelsChannelIdEventsSearchRequestObject) (GetChannelsChannelIdEventsSearchResponseObject, error)
+	// Retrieves a specific event by ID from a channel.
+	// (GET /channels/{channel_id}/events/search/{event_id})
+	GetChannelsChannelIdEventsSearchEventId(ctx context.Context, request GetChannelsChannelIdEventsSearchEventIdRequestObject) (GetChannelsChannelIdEventsSearchEventIdResponseObject, error)
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	GetChannelsChannelIdOperations(ctx context.Context, request GetChannelsChannelIdOperationsRequestObject) (GetChannelsChannelIdOperationsResponseObject, error)
@@ -3275,6 +3267,34 @@ func (sh *strictHandler) GetChannelsChannelIdEventsSearch(ctx *gin.Context, chan
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetChannelsChannelIdEventsSearchResponseObject); ok {
 		if err := validResponse.VisitGetChannelsChannelIdEventsSearchResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetChannelsChannelIdEventsSearchEventId operation middleware
+func (sh *strictHandler) GetChannelsChannelIdEventsSearchEventId(ctx *gin.Context, channelId openapi_types.UUID, eventId openapi_types.UUID) {
+	var request GetChannelsChannelIdEventsSearchEventIdRequestObject
+
+	request.ChannelId = channelId
+	request.EventId = eventId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetChannelsChannelIdEventsSearchEventId(ctx, request.(GetChannelsChannelIdEventsSearchEventIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetChannelsChannelIdEventsSearchEventId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetChannelsChannelIdEventsSearchEventIdResponseObject); ok {
+		if err := validResponse.VisitGetChannelsChannelIdEventsSearchEventIdResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

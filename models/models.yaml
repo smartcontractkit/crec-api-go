@@ -1,0 +1,81 @@
+openapi: 3.0.4
+info:
+  title: CRE Connect Models Schema
+  version: 0.4.0
+  description: OpenAPI specification for the models used in CRE Connect
+
+paths: {}
+
+components:
+  schemas:
+    VerifiableEvent:
+      type: object
+      properties:
+        service:
+          type: string
+          description: The service that generated the event (_crec is used for internal events not related to a specific service)
+        name:
+          type: string
+          description: The name of the event
+        timestamp:
+          type: string
+          format: date-time
+          description: The timestamp when the event was created
+        chain_family:
+          type: string
+          description: The blockchain family related to the event
+        chain_selector:
+          type: string
+          description: The specific blockchain network related to the event
+        chain_event:
+          oneOf:
+            - $ref: "#/components/schemas/EVMEvent"
+        data:
+          type: object
+          additionalProperties: true
+      required:
+        - service
+        - name
+        - timestamp
+    EVMEvent:
+      type: object
+      properties:
+        chain_id:
+          type: string
+          description: The chain ID of the EVM network
+        block_number:
+          type: integer
+          format: uint64
+          description: The block number where the event was emitted
+        block_timestamp:
+          type: integer
+          format: uint64
+          description: The timestamp of the block where the event was emitted
+        tx_hash:
+          type: string
+          description: The transaction hash of the transaction that emitted the event
+        address:
+          type: string
+          description: The contract address that emitted the event
+        topic_hash:
+          type: string
+          description: The topic hash of the event
+        log_index:
+          type: integer
+          format: uint32
+          description: The log index of the event in the transaction receipt
+        event_signature:
+          type: string
+          description: The signature of the event
+        params:
+          type: object
+          additionalProperties: true
+      required:
+        - chain_id
+        - block_number
+        - block_timestamp
+        - tx_hash
+        - address
+        - topic_hash
+        - log_index
+        - event_signature

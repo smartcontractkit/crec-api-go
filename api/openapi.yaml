@@ -1,8 +1,8 @@
 openapi: 3.0.4
 info:
-  title: Chainlink Verifiable Network Tenant API
-  version: 0.1.0
-  description: Tenant API for managing wallets, channels, watchers, and operations
+  title: CRE Connect API
+  version: 0.4.0
+  description: API specification for CRE Connect resources
 
 paths:
   /health-check:
@@ -77,6 +77,12 @@ paths:
         - in: query
           name: owner
           description: Filter wallets by owner address
+          schema:
+            type: string
+            pattern: "^0x[a-fA-F0-9]{40}$"
+        - in: query
+          name: address
+          description: Filter wallets by wallet address
           schema:
             type: string
             pattern: "^0x[a-fA-F0-9]{40}$"
@@ -942,6 +948,42 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
 
+  /channels/{channel_id}/events/search/{event_id}:
+    get:
+      summary: Retrieves a specific event by ID from a channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: event_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Event found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "404":
+          description: Channel or event not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
 security:
   - ApiKeyAuth: []
 
@@ -1620,19 +1662,16 @@ components:
     Event:
       type: object
       properties:
+        event_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the event
         payload:
           oneOf:
             - $ref: "#/components/schemas/OperationStatusPayload"
             - $ref: "#/components/schemas/WatcherStatusPayload"
             - $ref: "#/components/schemas/WatcherEventPayload"
             - $ref: "#/components/schemas/WalletStatusPayload"
-          discriminator:
-            propertyName: type
-            mapping:
-              operation.status: "#/components/schemas/OperationStatusPayload"
-              watcher.status: "#/components/schemas/WatcherStatusPayload"
-              watcher.event: "#/components/schemas/WatcherEventPayload"
-              wallet.status: "#/components/schemas/WalletStatusPayload"
         headers:
           $ref: "#/components/schemas/EventHeaders"
       required:
@@ -1690,22 +1729,16 @@ components:
     OperationStatusPayload:
       type: object
       properties:
-        type:
-          type: string
-          enum: [operation.status]
         status:
           type: string
           enum: [pending, sent, broadcasting, confirmed, failed]
           description: Current status of the operation
+        status_code:
+          type: string
+          description: Status code
         status_reason:
           type: string
           description: Reason for the status
-        chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the operation will be executed
-        address:
-          type: string
-          description: Wallet address
         operation_id:
           type: string
           format: uuid
@@ -1713,39 +1746,24 @@ components:
         wallet_operation_id:
           type: string
           description: Wallet operation identifier
-        transaction:
-          $ref: "#/components/schemas/EventTransaction"
         event_hash:
           type: string
-          description: Deterministic event hash for verification (only present when status is confirmed)
+          description: Verifiable event hash for reference (only present when status is confirmed)
         verifiable_event:
           type: string
-          description: Base64 encoded verifiable event for verification (only present when status is confirmed)
-        signatures:
-          type: array
-          items:
-            type: string
-          description: Array of DON node signatures for verification (only present when status is confirmed)
+          description: Base64 encoded verifiable event for verification
       required:
-        - type
         - status
+        - status_code
         - status_reason
-        - chain_selector
-        - address
         - operation_id
         - wallet_operation_id
     WatcherStatusPayload:
       type: object
       properties:
-        type:
-          type: string
-          enum: [watcher.status]
-        watcher_id:
-          type: string
-          description: Unique watcher identifier
         status:
           type: string
-          enum: [pending, deploying, removed, failed, deleting, deleted]
+          enum: [pending, active, failed, deleting, deletion_failed, deleted]
           description: Current status of the watcher
         status_code:
           type: string
@@ -1753,82 +1771,49 @@ components:
         status_reason:
           type: string
           description: Reason for the status
-        chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the watcher will run
-      required:
-        - type
-        - watcher_id
-        - status
-        - status_code
-        - status_reason
-        - chain_selector
-    WatcherEventPayload:
-      type: object
-      properties:
-        type:
-          type: string
-          enum: [watcher.event]
         watcher_id:
           type: string
           description: Unique watcher identifier
-        domain:
+      required:
+        - status
+        - status_code
+        - status_reason
+        - watcher_id
+    WatcherEventPayload:
+      type: object
+      properties:
+        watcher_id:
           type: string
-          description: Domain associated with the event (optional)
-        name:
+          description: Unique watcher identifier
+        event_hash:
           type: string
-          description: Name of the event
-        chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the watcher will run
-        address:
-          type: string
-          description: Contract address that emitted the event
+          description: Verifiable event hash
         verifiable_event:
           type: string
           description: Base64 encoded verifiable event
       required:
-        - type
         - watcher_id
-        - name
-        - chain_selector
-        - address
+        - event_hash
         - verifiable_event
     WalletStatusPayload:
       type: object
       properties:
-        type:
+        status:
           type: string
-          enum: [wallet.status]
+          enum: [pending, deploying, deployed, failed, deleted]
+          description: Current status of the wallet
+        status_code:
+          type: string
+          description: Status code
+        status_reason:
+          type: string
+          description: Reason for the status
         wallet_id:
           type: string
           format: uuid
           description: Unique identifier for the wallet
-        status:
-          type: string
-          enum: [pending, deploying, deployed, failed]
-          description: Current status of the wallet
-        chain_selector:
-          type: string
-          description: The chain selector to identify the chain where the wallet exists
-        address:
-          type: string
-          description: EVM wallet address
       required:
-        - type
-        - wallet_id
         - status
-        - chain_selector
-    EventTransaction:
-      type: object
-      properties:
-        timestamp:
-          type: integer
-          format: int64
-          description: Transaction timestamp
-        hash:
-          type: string
-          description: Transaction hash
-      required:
-        - timestamp
-        - hash
+        - status_code
+        - status_reason
+        - wallet_id
