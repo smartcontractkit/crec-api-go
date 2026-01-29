@@ -10,6 +10,13 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// Defines values for OperationStatusDataStatus.
+const (
+	Broadcasting OperationStatusDataStatus = "broadcasting"
+	Confirmed    OperationStatusDataStatus = "confirmed"
+	Failed       OperationStatusDataStatus = "failed"
+)
+
 // EVMEvent defines model for EVMEvent.
 type EVMEvent struct {
 	// Address The contract address that emitted the event
@@ -37,6 +44,24 @@ type EVMEvent struct {
 	// TxHash The transaction hash of the transaction that emitted the event
 	TxHash string `json:"tx_hash"`
 }
+
+// OperationStatusData defines model for OperationStatusData.
+type OperationStatusData struct {
+	// Status Status of the operation (broadcasting, confirmed, failed).
+	Status OperationStatusDataStatus `json:"status"`
+
+	// StatusReason Reason for the status.
+	StatusReason string `json:"status_reason"`
+
+	// WalletAddress Wallet address associated with the operation
+	WalletAddress string `json:"wallet_address"`
+
+	// WalletOperationId Unique identifier for the wallet operation
+	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// OperationStatusDataStatus Status of the operation (broadcasting, confirmed, failed).
+type OperationStatusDataStatus string
 
 // VerifiableEvent defines model for VerifiableEvent.
 type VerifiableEvent struct {
