@@ -79,3 +79,28 @@ components:
         - topic_hash
         - log_index
         - event_signature
+    # OperationStatusData is used as the "data" object field in a VerifiableEvent that corresponds to an operation status update.
+    OperationStatusData:
+      type: object
+      properties:
+        wallet_operation_id:
+          type: string
+          description: Unique identifier for the wallet operation
+        wallet_address:
+          type: string
+          description: Wallet address associated with the operation
+        status:
+          type: string
+          description: Status of the operation (broadcasting, confirmed, failed).
+          enum:
+            - broadcasting
+            - confirmed
+            - failed
+        status_reason:
+          type: string
+          description: Reason for the status.
+      required:
+        - wallet_operation_id
+        - wallet_address
+        - status
+        - status_reason

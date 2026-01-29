@@ -15,4 +15,3 @@ generate:
 .PHONY: validate-openapi
 validate-openapi:
 	vacuum lint --ruleset .vacuum.yaml ./api/openapi.yaml
-
