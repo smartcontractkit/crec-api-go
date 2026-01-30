@@ -967,7 +967,15 @@ components:
   schemas:
     WalletStatus:
       type: string
-      description: Status of a wallet
+      description: Status of a wallet entity
+      enum:
+        - pending
+        - deploying
+        - deployed
+        - failed
+    WalletEventStatus:
+      type: string
+      description: Status of a wallet in events (includes deleted state for filtering)
       enum:
         - pending
         - deploying
@@ -976,7 +984,14 @@ components:
         - deleted
     WatcherStatus:
       type: string
-      description: Status of a watcher
+      description: Status of a watcher entity
+      enum:
+        - pending
+        - active
+        - failed
+    WatcherEventStatus:
+      type: string
+      description: Status of a watcher in events (includes transitional and deletion states for filtering)
       enum:
         - pending
         - active
@@ -1691,7 +1706,7 @@ components:
       type: object
       properties:
         status:
-          $ref: "#/components/schemas/WatcherStatus"
+          $ref: "#/components/schemas/WatcherEventStatus"
         status_code:
           type: string
           description: Status code
@@ -1726,7 +1741,7 @@ components:
       type: object
       properties:
         status:
-          $ref: "#/components/schemas/WalletStatus"
+          $ref: "#/components/schemas/WalletEventStatus"
         status_code:
           type: string
           description: Status code

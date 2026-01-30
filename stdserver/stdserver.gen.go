@@ -49,9 +49,17 @@ const (
 	OperationStatusSent         OperationStatus = "sent"
 )
 
+// Defines values for WalletEventStatus.
+const (
+	WalletEventStatusDeleted   WalletEventStatus = "deleted"
+	WalletEventStatusDeployed  WalletEventStatus = "deployed"
+	WalletEventStatusDeploying WalletEventStatus = "deploying"
+	WalletEventStatusFailed    WalletEventStatus = "failed"
+	WalletEventStatusPending   WalletEventStatus = "pending"
+)
+
 // Defines values for WalletStatus.
 const (
-	WalletStatusDeleted   WalletStatus = "deleted"
 	WalletStatusDeployed  WalletStatus = "deployed"
 	WalletStatusDeploying WalletStatus = "deploying"
 	WalletStatusFailed    WalletStatus = "failed"
@@ -64,14 +72,21 @@ const (
 	Rsa   WalletType = "rsa"
 )
 
+// Defines values for WatcherEventStatus.
+const (
+	WatcherEventStatusActive         WatcherEventStatus = "active"
+	WatcherEventStatusDeleted        WatcherEventStatus = "deleted"
+	WatcherEventStatusDeleting       WatcherEventStatus = "deleting"
+	WatcherEventStatusDeletionFailed WatcherEventStatus = "deletion_failed"
+	WatcherEventStatusFailed         WatcherEventStatus = "failed"
+	WatcherEventStatusPending        WatcherEventStatus = "pending"
+)
+
 // Defines values for WatcherStatus.
 const (
-	Active         WatcherStatus = "active"
-	Deleted        WatcherStatus = "deleted"
-	Deleting       WatcherStatus = "deleting"
-	DeletionFailed WatcherStatus = "deletion_failed"
-	Failed         WatcherStatus = "failed"
-	Pending        WatcherStatus = "pending"
+	Active  WatcherStatus = "active"
+	Failed  WatcherStatus = "failed"
+	Pending WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -441,7 +456,7 @@ type Wallet struct {
 	// Name Name of the wallet
 	Name *string `json:"name,omitempty"`
 
-	// Status Status of a wallet
+	// Status Status of a wallet entity
 	Status WalletStatus `json:"status"`
 
 	// StatusChannelId Channel ID where wallet status events are published
@@ -460,6 +475,9 @@ type Wallet struct {
 	WorkflowId *string `json:"workflow_id,omitempty"`
 }
 
+// WalletEventStatus Status of a wallet in events (includes deleted state for filtering)
+type WalletEventStatus string
+
 // WalletList defines model for WalletList.
 type WalletList struct {
 	Data []Wallet `json:"data"`
@@ -468,13 +486,13 @@ type WalletList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// WalletStatus Status of a wallet
+// WalletStatus Status of a wallet entity
 type WalletStatus string
 
 // WalletStatusPayload defines model for WalletStatusPayload.
 type WalletStatusPayload struct {
-	// Status Status of a wallet
-	Status WalletStatus `json:"status"`
+	// Status Status of a wallet in events (includes deleted state for filtering)
+	Status WalletEventStatus `json:"status"`
 
 	// StatusCode Status code
 	StatusCode string `json:"status_code"`
@@ -518,7 +536,7 @@ type Watcher struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Status Status of a watcher
+	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
 
 	// WatcherId Unique identifier for the watcher
@@ -540,6 +558,9 @@ type WatcherEventPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
+// WatcherEventStatus Status of a watcher in events (includes transitional and deletion states for filtering)
+type WatcherEventStatus string
+
 // WatcherList defines model for WatcherList.
 type WatcherList struct {
 	Data []WatcherSummary `json:"data"`
@@ -548,13 +569,13 @@ type WatcherList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// WatcherStatus Status of a watcher
+// WatcherStatus Status of a watcher entity
 type WatcherStatus string
 
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
-	// Status Status of a watcher
-	Status WatcherStatus `json:"status"`
+	// Status Status of a watcher in events (includes transitional and deletion states for filtering)
+	Status WatcherEventStatus `json:"status"`
 
 	// StatusCode Status code
 	StatusCode string `json:"status_code"`
@@ -589,7 +610,7 @@ type WatcherSummary struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Status Status of a watcher
+	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
 
 	// WatcherId Unique identifier for the watcher
