@@ -13,7 +13,7 @@ components:
       properties:
         service:
           type: string
-          description: The service that generated the event (_crec is used for internal events not related to a specific service)
+          description: The service that generated the event (_crec is used for non verifiable events not related to a specific service). Generic listeners will populate them as nil.
         name:
           type: string
           description: The name of the event
@@ -34,7 +34,6 @@ components:
           type: object
           additionalProperties: true
       required:
-        - service
         - name
         - timestamp
     EVMEvent:
