@@ -13,7 +13,7 @@ components:
       properties:
         service:
           type: string
-          description: The service that generated the event (_crec is used for internal events not related to a specific service)
+          description: The service that generated the event (_crec is used for non verifiable events not related to a specific service). Generic listeners will populate them as nil.
         name:
           type: string
           description: The name of the event
@@ -34,7 +34,6 @@ components:
           type: object
           additionalProperties: true
       required:
-        - service
         - name
         - timestamp
     EVMEvent:
@@ -79,3 +78,32 @@ components:
         - topic_hash
         - log_index
         - event_signature
+    # OperationStatusData is used as the "data" object field in a VerifiableEvent that corresponds to an operation status update.
+    OperationStatusData:
+      type: object
+      properties:
+        wallet_operation_id:
+          type: string
+          description: Unique identifier for the wallet operation
+        wallet_address:
+          type: string
+          description: Wallet address associated with the operation
+        status:
+          type: string
+          description: Status of the operation (broadcasting, confirmed, failed).
+          enum:
+            - broadcasting
+            - confirmed
+            - failed
+        status_reason:
+          type: string
+          description: Reason for the status.
+        # Non-mandatory field - the transaction hash is only present when the status is broadcasting or confirmed.
+        transaction_hash:
+          type: string
+          description: The hash of the transaction that caused the status update.
+      required:
+        - wallet_operation_id
+        - wallet_address
+        - status
+        - status_reason

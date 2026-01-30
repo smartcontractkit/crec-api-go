@@ -10,6 +10,13 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// Defines values for OperationStatusDataStatus.
+const (
+	Broadcasting OperationStatusDataStatus = "broadcasting"
+	Confirmed    OperationStatusDataStatus = "confirmed"
+	Failed       OperationStatusDataStatus = "failed"
+)
+
 // EVMEvent defines model for EVMEvent.
 type EVMEvent struct {
 	// Address The contract address that emitted the event
@@ -38,6 +45,27 @@ type EVMEvent struct {
 	TxHash string `json:"tx_hash"`
 }
 
+// OperationStatusData defines model for OperationStatusData.
+type OperationStatusData struct {
+	// Status Status of the operation (broadcasting, confirmed, failed).
+	Status OperationStatusDataStatus `json:"status"`
+
+	// StatusReason Reason for the status.
+	StatusReason string `json:"status_reason"`
+
+	// TransactionHash The hash of the transaction that caused the status update.
+	TransactionHash *string `json:"transaction_hash,omitempty"`
+
+	// WalletAddress Wallet address associated with the operation
+	WalletAddress string `json:"wallet_address"`
+
+	// WalletOperationId Unique identifier for the wallet operation
+	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// OperationStatusDataStatus Status of the operation (broadcasting, confirmed, failed).
+type OperationStatusDataStatus string
+
 // VerifiableEvent defines model for VerifiableEvent.
 type VerifiableEvent struct {
 	ChainEvent *VerifiableEvent_ChainEvent `json:"chain_event,omitempty"`
@@ -52,8 +80,8 @@ type VerifiableEvent struct {
 	// Name The name of the event
 	Name string `json:"name"`
 
-	// Service The service that generated the event (_crec is used for internal events not related to a specific service)
-	Service string `json:"service"`
+	// Service The service that generated the event (_crec is used for non verifiable events not related to a specific service). Generic listeners will populate them as nil.
+	Service *string `json:"service,omitempty"`
 
 	// Timestamp The timestamp when the event was created
 	Timestamp time.Time `json:"timestamp"`

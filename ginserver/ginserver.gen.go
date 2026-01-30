@@ -305,6 +305,38 @@ type HealthCheck struct {
 	Status string `json:"status"`
 }
 
+// Network defines model for Network.
+type Network struct {
+	// ChainFamily Chain family (e.g., "evm", "solana")
+	ChainFamily string `json:"chain_family"`
+
+	// ChainId Chain ID identifier
+	ChainId string `json:"chain_id"`
+
+	// ChainSelector Chain selector identifier
+	ChainSelector string `json:"chain_selector"`
+
+	// CreatedAt Timestamp of when the network was created
+	CreatedAt int64 `json:"created_at"`
+
+	// Id Unique identifier for the network
+	Id openapi_types.UUID `json:"id"`
+
+	// Name Name of the network
+	Name string `json:"name"`
+
+	// UpdatedAt Timestamp of when the network was last updated
+	UpdatedAt int64 `json:"updated_at"`
+}
+
+// NetworkList defines model for NetworkList.
+type NetworkList struct {
+	Data []Network `json:"data"`
+
+	// HasMore True if there are more networks to fetch
+	HasMore bool `json:"has_more"`
+}
+
 // OCRProof defines model for OCRProof.
 type OCRProof struct {
 	// Alg Algorithm used for the proof
@@ -1091,6 +1123,9 @@ type ServerInterface interface {
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(c *gin.Context)
+	// Retrieves available networks.
+	// (GET /networks)
+	GetNetworks(c *gin.Context)
 	// Retrieves wallets for the organization.
 	// (GET /wallets)
 	GetWallets(c *gin.Context, params GetWalletsParams)
@@ -1868,6 +1903,21 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
 	siw.Handler.GetHealthCheck(c)
 }
 
+// GetNetworks operation middleware
+func (siw *ServerInterfaceWrapper) GetNetworks(c *gin.Context) {
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetNetworks(c)
+}
+
 // GetWallets operation middleware
 func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 
@@ -2089,6 +2139,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.GET(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	router.PATCH(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.PatchChannelsChannelIdWatchersWatcherId)
 	router.GET(options.BaseURL+"/health-check", wrapper.GetHealthCheck)
+	router.GET(options.BaseURL+"/networks", wrapper.GetNetworks)
 	router.GET(options.BaseURL+"/wallets", wrapper.GetWallets)
 	router.POST(options.BaseURL+"/wallets", wrapper.PostWallets)
 	router.DELETE(options.BaseURL+"/wallets/:wallet_id", wrapper.DeleteWalletsWalletId)
@@ -2728,6 +2779,31 @@ func (response GetHealthCheck200JSONResponse) VisitGetHealthCheckResponse(w http
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetNetworksRequestObject struct {
+}
+
+type GetNetworksResponseObject interface {
+	VisitGetNetworksResponse(w http.ResponseWriter) error
+}
+
+type GetNetworks200JSONResponse NetworkList
+
+func (response GetNetworks200JSONResponse) VisitGetNetworksResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetNetworks500JSONResponse ApplicationError
+
+func (response GetNetworks500JSONResponse) VisitGetNetworksResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetWalletsRequestObject struct {
 	Params GetWalletsParams
 }
@@ -2956,6 +3032,9 @@ type StrictServerInterface interface {
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(ctx context.Context, request GetHealthCheckRequestObject) (GetHealthCheckResponseObject, error)
+	// Retrieves available networks.
+	// (GET /networks)
+	GetNetworks(ctx context.Context, request GetNetworksRequestObject) (GetNetworksResponseObject, error)
 	// Retrieves wallets for the organization.
 	// (GET /wallets)
 	GetWallets(ctx context.Context, request GetWalletsRequestObject) (GetWalletsResponseObject, error)
@@ -3482,6 +3561,31 @@ func (sh *strictHandler) GetHealthCheck(ctx *gin.Context) {
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(GetHealthCheckResponseObject); ok {
 		if err := validResponse.VisitGetHealthCheckResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetNetworks operation middleware
+func (sh *strictHandler) GetNetworks(ctx *gin.Context) {
+	var request GetNetworksRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetNetworks(ctx, request.(GetNetworksRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetNetworks")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetNetworksResponseObject); ok {
+		if err := validResponse.VisitGetNetworksResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {

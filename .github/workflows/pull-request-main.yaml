@@ -2,35 +2,33 @@ name: pull-request-main
 
 on:
   pull_request:
-    paths:
-      - "api/openapi.yaml"
     branches:
       - main
 env:
   VACUUM_VERSION: "0.20.5"
 jobs:
   validate-openapi:
-      runs-on: ubuntu-latest
-      permissions:
-        id-token: write
-        contents: read
-        actions: read
-      steps:
-        - name: Checkout code
-          uses: actions/checkout@v4
-        - name: Setup Go
-          uses: smartcontractkit/.github/actions/setup-golang@setup-golang/0.3.2
-          with:
-            go-version-file: ./go.mod
-            use-go-cache: "true"
-        - name: Download Vacuum
-          run: |
-            curl -L "https://github.com/daveshanley/vacuum/releases/download/v${VACUUM_VERSION}/vacuum_${VACUUM_VERSION}_linux_x86_64.tar.gz" \
-              -o vacuum.tar.gz
-            tar -xzf vacuum.tar.gz
-            sudo mv vacuum /usr/local/bin/vacuum
-        - name: Lint OpenAPI spec
-          run: make validate-openapi
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Go
+        uses: smartcontractkit/.github/actions/setup-golang@setup-golang/0.3.2
+        with:
+          go-version-file: ./go.mod
+          use-go-cache: "true"
+      - name: Download Vacuum
+        run: |
+          curl -L "https://github.com/daveshanley/vacuum/releases/download/v${VACUUM_VERSION}/vacuum_${VACUUM_VERSION}_linux_x86_64.tar.gz" \
+            -o vacuum.tar.gz
+          tar -xzf vacuum.tar.gz
+          sudo mv vacuum /usr/local/bin/vacuum
+      - name: Lint OpenAPI spec
+        run: make validate-openapi
 
   generate:
     name: Verify Code Generation is Up-to-Date
@@ -77,4 +75,3 @@ jobs:
       - name: Check for uncommitted changes
         run: |
           git diff --exit-code || (echo "go.mod or go.sum is not tidy. Run 'go mod tidy' and commit the changes." && exit 1)
-
