@@ -53,6 +53,9 @@ type OperationStatusData struct {
 	// StatusReason Reason for the status.
 	StatusReason string `json:"status_reason"`
 
+	// TransactionHash The hash of the transaction that caused the status update.
+	TransactionHash *string `json:"transaction_hash,omitempty"`
+
 	// WalletAddress Wallet address associated with the operation
 	WalletAddress string `json:"wallet_address"`
 
@@ -77,8 +80,8 @@ type VerifiableEvent struct {
 	// Name The name of the event
 	Name string `json:"name"`
 
-	// Service The service that generated the event (_crec is used for internal events not related to a specific service)
-	Service string `json:"service"`
+	// Service The service that generated the event (_crec is used for non verifiable events not related to a specific service). Generic listeners will populate them as nil.
+	Service *string `json:"service,omitempty"`
 
 	// Timestamp The timestamp when the event was created
 	Timestamp time.Time `json:"timestamp"`
