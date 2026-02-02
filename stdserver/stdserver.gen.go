@@ -27,79 +27,66 @@ const (
 	NotFound      ApplicationErrorType = "Not found"
 )
 
-// Defines values for CreateWalletWalletType.
-const (
-	CreateWalletWalletTypeEcdsa CreateWalletWalletType = "ecdsa"
-	CreateWalletWalletTypeRsa   CreateWalletWalletType = "rsa"
-)
-
 // Defines values for EventABIType.
 const (
 	EventABITypeEvent EventABIType = "event"
 )
 
-// Defines values for EventHeadersType.
+// Defines values for EventType.
 const (
-	EventHeadersTypeOperationStatus EventHeadersType = "operation.status"
-	EventHeadersTypeWalletStatus    EventHeadersType = "wallet.status"
-	EventHeadersTypeWatcherEvent    EventHeadersType = "watcher.event"
-	EventHeadersTypeWatcherStatus   EventHeadersType = "watcher.status"
+	EventTypeOperationStatus EventType = "operation.status"
+	EventTypeWalletStatus    EventType = "wallet.status"
+	EventTypeWatcherEvent    EventType = "watcher.event"
+	EventTypeWatcherStatus   EventType = "watcher.status"
 )
 
-// Defines values for OperationStatusPayloadStatus.
+// Defines values for OperationStatus.
 const (
-	OperationStatusPayloadStatusBroadcasting OperationStatusPayloadStatus = "broadcasting"
-	OperationStatusPayloadStatusConfirmed    OperationStatusPayloadStatus = "confirmed"
-	OperationStatusPayloadStatusFailed       OperationStatusPayloadStatus = "failed"
-	OperationStatusPayloadStatusPending      OperationStatusPayloadStatus = "pending"
-	OperationStatusPayloadStatusSent         OperationStatusPayloadStatus = "sent"
+	OperationStatusBroadcasting OperationStatus = "broadcasting"
+	OperationStatusConfirmed    OperationStatus = "confirmed"
+	OperationStatusFailed       OperationStatus = "failed"
+	OperationStatusPending      OperationStatus = "pending"
+	OperationStatusSent         OperationStatus = "sent"
 )
 
-// Defines values for WalletWalletType.
+// Defines values for WalletEventStatus.
 const (
-	WalletWalletTypeEcdsa WalletWalletType = "ecdsa"
-	WalletWalletTypeRsa   WalletWalletType = "rsa"
+	WalletEventStatusDeleted   WalletEventStatus = "deleted"
+	WalletEventStatusDeployed  WalletEventStatus = "deployed"
+	WalletEventStatusDeploying WalletEventStatus = "deploying"
+	WalletEventStatusFailed    WalletEventStatus = "failed"
+	WalletEventStatusPending   WalletEventStatus = "pending"
 )
 
-// Defines values for WalletStatusPayloadStatus.
+// Defines values for WalletStatus.
 const (
-	WalletStatusPayloadStatusDeleted   WalletStatusPayloadStatus = "deleted"
-	WalletStatusPayloadStatusDeployed  WalletStatusPayloadStatus = "deployed"
-	WalletStatusPayloadStatusDeploying WalletStatusPayloadStatus = "deploying"
-	WalletStatusPayloadStatusFailed    WalletStatusPayloadStatus = "failed"
-	WalletStatusPayloadStatusPending   WalletStatusPayloadStatus = "pending"
+	WalletStatusDeployed  WalletStatus = "deployed"
+	WalletStatusDeploying WalletStatus = "deploying"
+	WalletStatusFailed    WalletStatus = "failed"
+	WalletStatusPending   WalletStatus = "pending"
 )
 
-// Defines values for WatcherStatusPayloadStatus.
+// Defines values for WalletType.
 const (
-	WatcherStatusPayloadStatusActive         WatcherStatusPayloadStatus = "active"
-	WatcherStatusPayloadStatusDeleted        WatcherStatusPayloadStatus = "deleted"
-	WatcherStatusPayloadStatusDeleting       WatcherStatusPayloadStatus = "deleting"
-	WatcherStatusPayloadStatusDeletionFailed WatcherStatusPayloadStatus = "deletion_failed"
-	WatcherStatusPayloadStatusFailed         WatcherStatusPayloadStatus = "failed"
-	WatcherStatusPayloadStatusPending        WatcherStatusPayloadStatus = "pending"
+	Ecdsa WalletType = "ecdsa"
+	Rsa   WalletType = "rsa"
 )
 
-// Defines values for GetChannelsChannelIdEventsSearchParamsType.
+// Defines values for WatcherEventStatus.
 const (
-	GetChannelsChannelIdEventsSearchParamsTypeOperationStatus GetChannelsChannelIdEventsSearchParamsType = "operation.status"
-	GetChannelsChannelIdEventsSearchParamsTypeWalletStatus    GetChannelsChannelIdEventsSearchParamsType = "wallet.status"
-	GetChannelsChannelIdEventsSearchParamsTypeWatcherEvent    GetChannelsChannelIdEventsSearchParamsType = "watcher.event"
-	GetChannelsChannelIdEventsSearchParamsTypeWatcherStatus   GetChannelsChannelIdEventsSearchParamsType = "watcher.status"
+	WatcherEventStatusActive         WatcherEventStatus = "active"
+	WatcherEventStatusDeleted        WatcherEventStatus = "deleted"
+	WatcherEventStatusDeleting       WatcherEventStatus = "deleting"
+	WatcherEventStatusDeletionFailed WatcherEventStatus = "deletion_failed"
+	WatcherEventStatusFailed         WatcherEventStatus = "failed"
+	WatcherEventStatusPending        WatcherEventStatus = "pending"
 )
 
-// Defines values for GetWalletsParamsType.
+// Defines values for WatcherStatus.
 const (
-	Ecdsa GetWalletsParamsType = "ecdsa"
-	Rsa   GetWalletsParamsType = "rsa"
-)
-
-// Defines values for GetWalletsParamsStatus.
-const (
-	GetWalletsParamsStatusDeployed  GetWalletsParamsStatus = "deployed"
-	GetWalletsParamsStatusDeploying GetWalletsParamsStatus = "deploying"
-	GetWalletsParamsStatusFailed    GetWalletsParamsStatus = "failed"
-	GetWalletsParamsStatusPending   GetWalletsParamsStatus = "pending"
+	Active  WatcherStatus = "active"
+	Failed  WatcherStatus = "failed"
+	Pending WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -113,6 +100,9 @@ type ApplicationError struct {
 
 // ApplicationErrorType Error type
 type ApplicationErrorType string
+
+// ChainSelector Chain selector identifier for the blockchain network
+type ChainSelector = string
 
 // Channel defines model for Channel.
 type Channel struct {
@@ -151,8 +141,8 @@ type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
-	// ChainSelector The chain selector to identify the chain where the operation will be executed
-	ChainSelector string `json:"chain_selector"`
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
 
 	// Signature EIP-712 signature of the operation
 	Signature string `json:"signature"`
@@ -166,20 +156,14 @@ type CreateOperation struct {
 
 // CreateWallet defines model for CreateWallet.
 type CreateWallet struct {
-	// AllowedEcdsaSigners Allowed ECDSA public signing keys for the wallet
-	AllowedEcdsaSigners *[]string `json:"allowed_ecdsa_signers,omitempty"`
+	// AllowedEcdsaSigners List of allowed ECDSA public signing keys (Ethereum addresses)
+	AllowedEcdsaSigners *ECDSASignersList `json:"allowed_ecdsa_signers,omitempty"`
 
-	// AllowedRsaSigners Allowed RSA public signing keys for the wallet
-	AllowedRsaSigners *[]struct {
-		// E RSA public exponent of allowed signer
-		E string `json:"e"`
+	// AllowedRsaSigners List of allowed RSA public signing keys
+	AllowedRsaSigners *RSASignersList `json:"allowed_rsa_signers,omitempty"`
 
-		// N RSA modulus of allowed signer
-		N string `json:"n"`
-	} `json:"allowed_rsa_signers,omitempty"`
-
-	// ChainSelector The id that identifies the chain where the wallet exists
-	ChainSelector string `json:"chain_selector"`
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
 
 	// Name Name of the wallet
 	Name string `json:"name"`
@@ -187,15 +171,12 @@ type CreateWallet struct {
 	// StatusChannelId Unique identifier for the channel where the wallet status will be published
 	StatusChannelId *openapi_types.UUID `json:"status_channel_id,omitempty"`
 
-	// WalletOwnerAddress Wallet Contract Owner Address (42-character hex string starting with 0x)
-	WalletOwnerAddress string `json:"wallet_owner_address"`
+	// WalletOwnerAddress 42-character hex Ethereum address
+	WalletOwnerAddress EthereumAddress `json:"wallet_owner_address"`
 
-	// WalletType Type of the wallet
-	WalletType CreateWalletWalletType `json:"wallet_type"`
+	// WalletType Type of wallet
+	WalletType WalletType `json:"wallet_type"`
 }
-
-// CreateWalletWalletType Type of the wallet
-type CreateWalletWalletType string
 
 // CreateWatcher defines model for CreateWatcher.
 type CreateWatcher struct {
@@ -237,6 +218,12 @@ type CreateWatcherWithDomain struct {
 	// Name Name for the watcher to help identify it
 	Name *string `json:"name,omitempty"`
 }
+
+// ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
+type ECDSASignersList = []EthereumAddress
+
+// EthereumAddress 42-character hex Ethereum address
+type EthereumAddress = string
 
 // Event defines model for Event.
 type Event struct {
@@ -290,8 +277,8 @@ type EventHeaders struct {
 	Offset int64                      `json:"offset"`
 	Proofs []EventHeaders_Proofs_Item `json:"proofs"`
 
-	// Type The type of event payload contained in this event
-	Type EventHeadersType `json:"type"`
+	// Type Type of event
+	Type EventType `json:"type"`
 }
 
 // EventHeadersProofs1 Generic proof object for future extensibility
@@ -302,9 +289,6 @@ type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
 }
 
-// EventHeadersType The type of event payload contained in this event
-type EventHeadersType string
-
 // EventList defines model for EventList.
 type EventList struct {
 	Events []Event `json:"events"`
@@ -312,6 +296,9 @@ type EventList struct {
 	// HasMore True if there are more events to fetch
 	HasMore bool `json:"has_more"`
 }
+
+// EventType Type of event
+type EventType string
 
 // HealthCheck defines model for HealthCheck.
 type HealthCheck struct {
@@ -370,8 +357,8 @@ type Operation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
-	// ChainSelector The chain selector to identify the chain where the operation is executed
-	ChainSelector string `json:"chain_selector"`
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
 
 	// CreatedAt Timestamp of when the operation was created
 	CreatedAt int64 `json:"created_at"`
@@ -382,8 +369,8 @@ type Operation struct {
 	// Signature EIP-712 signature of the operation
 	Signature string `json:"signature"`
 
-	// Status Current status of the operation
-	Status string `json:"status"`
+	// Status Status of an operation
+	Status OperationStatus `json:"status"`
 
 	// Transactions List of transactions to execute
 	Transactions []TransactionRequest `json:"transactions"`
@@ -406,6 +393,9 @@ type OperationResponse struct {
 	OperationId openapi_types.UUID `json:"operation_id"`
 }
 
+// OperationStatus Status of an operation
+type OperationStatus string
+
 // OperationStatusPayload defines model for OperationStatusPayload.
 type OperationStatusPayload struct {
 	// EventHash Verifiable event hash for reference (only present when status is confirmed)
@@ -414,8 +404,8 @@ type OperationStatusPayload struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Status Current status of the operation
-	Status OperationStatusPayloadStatus `json:"status"`
+	// Status Status of an operation
+	Status OperationStatus `json:"status"`
 
 	// StatusCode Status code
 	StatusCode string `json:"status_code"`
@@ -430,8 +420,20 @@ type OperationStatusPayload struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationStatusPayloadStatus Current status of the operation
-type OperationStatusPayloadStatus string
+// RSAPublicKey RSA public key with exponent and modulus
+type RSAPublicKey struct {
+	// E RSA public exponent (hex encoded, 2-17 bytes)
+	E string `json:"e"`
+
+	// N RSA modulus (hex encoded, min 2048 bits)
+	N string `json:"n"`
+}
+
+// RSASignersList List of allowed RSA public signing keys
+type RSASignersList = []RSAPublicKey
+
+// Timestamp Unix timestamp in seconds
+type Timestamp = int64
 
 // TransactionRequest defines model for TransactionRequest.
 type TransactionRequest struct {
@@ -468,32 +470,26 @@ type UpdateWatcher struct {
 
 // Wallet defines model for Wallet.
 type Wallet struct {
-	// Address EVM wallet address
-	Address string `json:"address"`
+	// Address 42-character hex Ethereum address
+	Address EthereumAddress `json:"address"`
 
-	// AllowedEcdsaSigners Allowed ECDSA public signing keys for the wallet
-	AllowedEcdsaSigners []string `json:"allowed_ecdsa_signers"`
+	// AllowedEcdsaSigners List of allowed ECDSA public signing keys (Ethereum addresses)
+	AllowedEcdsaSigners ECDSASignersList `json:"allowed_ecdsa_signers"`
 
-	// AllowedRsaSigners Allowed RSA public signing keys for the wallet
-	AllowedRsaSigners []struct {
-		// E RSA public exponent of allowed signer
-		E string `json:"e"`
+	// AllowedRsaSigners List of allowed RSA public signing keys
+	AllowedRsaSigners RSASignersList `json:"allowed_rsa_signers"`
 
-		// N RSA modulus of allowed signer
-		N string `json:"n"`
-	} `json:"allowed_rsa_signers"`
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// ChainSelector The chain selector to identify the chain where the wallet exists
-	ChainSelector string `json:"chain_selector"`
-
-	// CreatedAt Timestamp of when the wallet was created
-	CreatedAt *int64 `json:"created_at,omitempty"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
 	// Name Name of the wallet
 	Name *string `json:"name,omitempty"`
 
-	// Status Current status of the wallet
-	Status string `json:"status"`
+	// Status Status of a wallet entity
+	Status WalletStatus `json:"status"`
 
 	// StatusChannelId Channel ID where wallet status events are published
 	StatusChannelId *openapi_types.UUID `json:"status_channel_id,omitempty"`
@@ -501,16 +497,18 @@ type Wallet struct {
 	// WalletId Unique identifier for the wallet
 	WalletId openapi_types.UUID `json:"wallet_id"`
 
-	// WalletOwnerAddress Wallet Contract Owner Address
-	WalletOwnerAddress string           `json:"wallet_owner_address"`
-	WalletType         WalletWalletType `json:"wallet_type"`
+	// WalletOwnerAddress 42-character hex Ethereum address
+	WalletOwnerAddress EthereumAddress `json:"wallet_owner_address"`
+
+	// WalletType Type of wallet
+	WalletType WalletType `json:"wallet_type"`
 
 	// WorkflowId Unique identifier for the workflow that created the wallet
 	WorkflowId *string `json:"workflow_id,omitempty"`
 }
 
-// WalletWalletType defines model for Wallet.WalletType.
-type WalletWalletType string
+// WalletEventStatus Status of a wallet in events (includes deleted state for filtering)
+type WalletEventStatus string
 
 // WalletList defines model for WalletList.
 type WalletList struct {
@@ -520,10 +518,13 @@ type WalletList struct {
 	HasMore bool `json:"has_more"`
 }
 
+// WalletStatus Status of a wallet entity
+type WalletStatus string
+
 // WalletStatusPayload defines model for WalletStatusPayload.
 type WalletStatusPayload struct {
-	// Status Current status of the wallet
-	Status WalletStatusPayloadStatus `json:"status"`
+	// Status Status of a wallet in events (includes deleted state for filtering)
+	Status WalletEventStatus `json:"status"`
 
 	// StatusCode Status code
 	StatusCode string `json:"status_code"`
@@ -535,8 +536,8 @@ type WalletStatusPayload struct {
 	WalletId openapi_types.UUID `json:"wallet_id"`
 }
 
-// WalletStatusPayloadStatus Current status of the wallet
-type WalletStatusPayloadStatus string
+// WalletType Type of wallet
+type WalletType string
 
 // Watcher defines model for Watcher.
 type Watcher struct {
@@ -567,8 +568,8 @@ type Watcher struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Status Current status of the watcher
-	Status string `json:"status"`
+	// Status Status of a watcher entity
+	Status WatcherStatus `json:"status"`
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
@@ -589,6 +590,9 @@ type WatcherEventPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
+// WatcherEventStatus Status of a watcher in events (includes transitional and deletion states for filtering)
+type WatcherEventStatus string
+
 // WatcherList defines model for WatcherList.
 type WatcherList struct {
 	Data []WatcherSummary `json:"data"`
@@ -597,10 +601,13 @@ type WatcherList struct {
 	HasMore bool `json:"has_more"`
 }
 
+// WatcherStatus Status of a watcher entity
+type WatcherStatus string
+
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
-	// Status Current status of the watcher
-	Status WatcherStatusPayloadStatus `json:"status"`
+	// Status Status of a watcher in events (includes transitional and deletion states for filtering)
+	Status WatcherEventStatus `json:"status"`
 
 	// StatusCode Status code
 	StatusCode string `json:"status_code"`
@@ -612,16 +619,13 @@ type WatcherStatusPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
-// WatcherStatusPayloadStatus Current status of the watcher
-type WatcherStatusPayloadStatus string
-
 // WatcherSummary defines model for WatcherSummary.
 type WatcherSummary struct {
 	// Address Smart contract address being watched
 	Address string `json:"address"`
 
-	// ChainSelector The chain selector to identify the chain where the watcher will run
-	ChainSelector string `json:"chain_selector"`
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
@@ -638,8 +642,8 @@ type WatcherSummary struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Status Current status of the watcher
-	Status string `json:"status"`
+	// Status Status of a watcher entity
+	Status WatcherStatus `json:"status"`
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
@@ -678,7 +682,7 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Type Filter events by type
-	Type *GetChannelsChannelIdEventsSearchParamsType `form:"type,omitempty" json:"type,omitempty"`
+	Type *EventType `form:"type,omitempty" json:"type,omitempty"`
 
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
@@ -720,9 +724,6 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
 }
 
-// GetChannelsChannelIdEventsSearchParamsType defines parameters for GetChannelsChannelIdEventsSearch.
-type GetChannelsChannelIdEventsSearchParamsType string
-
 // GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
 type GetChannelsChannelIdOperationsParams struct {
 	// Limit Maximum number of operations to return
@@ -732,7 +733,7 @@ type GetChannelsChannelIdOperationsParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
 	// Status Filter operations by status
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
+	Status *OperationStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ChainSelector Filter operations by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
@@ -756,7 +757,7 @@ type GetChannelsChannelIdWatchersParams struct {
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// Status Filter watchers by status
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
+	Status *WatcherStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ChainSelector Filter watchers by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
@@ -786,10 +787,10 @@ type GetWalletsParams struct {
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 
 	// Type Filter wallets by type
-	Type *GetWalletsParamsType `form:"type,omitempty" json:"type,omitempty"`
+	Type *WalletType `form:"type,omitempty" json:"type,omitempty"`
 
 	// Status Filter wallets by status
-	Status *GetWalletsParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+	Status *WalletStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -797,12 +798,6 @@ type GetWalletsParams struct {
 	// Offset Number of wallets to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
-
-// GetWalletsParamsType defines parameters for GetWallets.
-type GetWalletsParamsType string
-
-// GetWalletsParamsStatus defines parameters for GetWallets.
-type GetWalletsParamsStatus string
 
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
