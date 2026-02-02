@@ -1005,6 +1005,7 @@ components:
         - pending
         - active
         - failed
+        - deleting
     WatcherEventStatus:
       type: string
       description: Status of a watcher in events (includes transitional and deletion states for filtering)

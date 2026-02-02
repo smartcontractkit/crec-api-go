@@ -84,9 +84,10 @@ const (
 
 // Defines values for WatcherStatus.
 const (
-	Active  WatcherStatus = "active"
-	Failed  WatcherStatus = "failed"
-	Pending WatcherStatus = "pending"
+	Active   WatcherStatus = "active"
+	Deleting WatcherStatus = "deleting"
+	Failed   WatcherStatus = "failed"
+	Pending  WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
