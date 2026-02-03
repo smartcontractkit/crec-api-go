@@ -698,8 +698,8 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// CreatedGte Filter events created at or after this timestamp
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
 
-	// ChainSelector Filter by chain selector. Multiple values allowed.
-	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+	// ChainSelector Filter by chain selector
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
@@ -737,11 +737,11 @@ type GetChannelsChannelIdOperationsParams struct {
 	// Status Filter operations by status. Multiple values allowed.
 	Status *[]OperationStatus `form:"status,omitempty" json:"status,omitempty"`
 
-	// ChainSelector Filter operations by chain selector. Multiple values allowed.
-	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+	// ChainSelector Filter operations by chain selector
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Address Filter operations by wallet address. Multiple values allowed.
-	Address *[]string `form:"address,omitempty" json:"address,omitempty"`
+	// Address Filter operations by wallet address
+	Address *string `form:"address,omitempty" json:"address,omitempty"`
 
 	// WalletId Filter operations by wallet ID
 	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
@@ -761,8 +761,8 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Status Filter watchers by status. Multiple values allowed.
 	Status *[]WatcherStatus `form:"status,omitempty" json:"status,omitempty"`
 
-	// ChainSelector Filter watchers by chain selector. Multiple values allowed.
-	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+	// ChainSelector Filter watchers by chain selector
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -779,11 +779,11 @@ type GetWalletsParams struct {
 	// Name Filter wallets by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
-	// ChainSelector Filter wallets by chain selector. Multiple values allowed.
-	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+	// ChainSelector Filter wallets by chain selector
+	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Owner Filter wallets by owner address. Multiple values allowed.
-	Owner *[]EthereumAddress `form:"owner,omitempty" json:"owner,omitempty"`
+	// Owner Filter wallets by owner address
+	Owner *EthereumAddress `form:"owner,omitempty" json:"owner,omitempty"`
 
 	// Address Filter wallets by wallet address
 	Address *EthereumAddress `form:"address,omitempty" json:"address,omitempty"`

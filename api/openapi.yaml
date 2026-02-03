@@ -70,22 +70,14 @@ paths:
             type: string
         - in: query
           name: chain_selector
-          description: Filter wallets by chain selector. Multiple values allowed.
+          description: Filter wallets by chain selector
           schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: true
+            type: string
         - in: query
           name: owner
-          description: Filter wallets by owner address. Multiple values allowed.
+          description: Filter wallets by owner address
           schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/EthereumAddress"
-          style: form
-          explode: true
+            $ref: "#/components/schemas/EthereumAddress"
         - in: query
           name: address
           description: Filter wallets by wallet address
@@ -469,13 +461,9 @@ paths:
           explode: true
         - in: query
           name: chain_selector
-          description: Filter watchers by chain selector. Multiple values allowed.
+          description: Filter watchers by chain selector
           schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: true
+            type: string
         - in: query
           name: address
           description: Filter watchers by contract address
@@ -703,22 +691,14 @@ paths:
           explode: true
         - in: query
           name: chain_selector
-          description: Filter operations by chain selector. Multiple values allowed.
+          description: Filter operations by chain selector
           schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: true
+            type: string
         - in: query
           name: address
-          description: Filter operations by wallet address. Multiple values allowed.
+          description: Filter operations by wallet address
           schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: true
+            type: string
         - in: query
           name: wallet_id
           description: Filter operations by wallet ID
@@ -901,13 +881,9 @@ paths:
             format: int64
         - in: query
           name: chain_selector
-          description: Filter by chain selector. Multiple values allowed.
+          description: Filter by chain selector
           schema:
-            type: array
-            items:
-              type: string
-          style: form
-          explode: true
+            type: string
         - in: query
           name: status
           description: Filter by operation status. Multiple values allowed.
