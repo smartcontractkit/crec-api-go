@@ -470,8 +470,8 @@ paths:
           schema:
             type: string
         - in: query
-          name: domain
-          description: Filter watchers by domain. Multiple values allowed.
+          name: service
+          description: Filter watchers by service. Multiple values allowed.
           schema:
             type: array
             items:
@@ -820,7 +820,7 @@ paths:
         Note: Some query parameters only apply to specific event types. Invalid parameter combinations for a given event type will result in a 400 Bad Request response:
         - operation.status: status, chain_selector, address, wallet_operation_id
         - watcher.status: watcher_id, status, chain_selector
-        - watcher.event: watcher_id, chain_selector, address, event_name, domain
+        - watcher.event: watcher_id, chain_selector, address, event_name, service
         - wallet.status: wallet_id, status, chain_selector, address
 
         Universal parameters (apply to all types): type, limit, offset, created.*
@@ -930,8 +930,8 @@ paths:
           schema:
             type: string
         - in: query
-          name: domain
-          description: Filter by watcher domain. Multiple values allowed.
+          name: service
+          description: Filter by watcher service. Multiple values allowed.
           schema:
             type: array
             items:
@@ -1397,9 +1397,9 @@ components:
         - has_more
     CreateWatcher:
       oneOf:
-        - $ref: "#/components/schemas/CreateWatcherWithDomain"
+        - $ref: "#/components/schemas/CreateWatcherWithService"
         - $ref: "#/components/schemas/CreateWatcherWithABI"
-    CreateWatcherWithDomain:
+    CreateWatcherWithService:
       type: object
       properties:
         name:
@@ -1411,19 +1411,19 @@ components:
         address:
           type: string
           description: Smart contract address to watch for events
-        domain:
+        service:
           type: string
-          description: Service domain namespace (e.g., "dvp", "dta")
+          description: Service service namespace (e.g., "dvp", "dta")
         events:
           type: array
           items:
             type: string
-          description: List of event names to watch for within the domain
+          description: List of event names to watch for within the service
           minItems: 1
       required:
         - chain_selector
         - address
-        - domain
+        - service
         - events
     CreateWatcherWithABI:
       type: object
@@ -1526,9 +1526,9 @@ components:
         address:
           type: string
           description: Smart contract address being watched
-        domain:
+        service:
           type: string
-          description: Service domain namespace (if using domain-based events)
+          description: Service service namespace (if using service-based events)
         events:
           type: array
           items:
@@ -1538,7 +1538,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EventABI"
-          description: ABI definitions for the events (if not using domain-based events)
+          description: ABI definitions for the events (if not using service-based events)
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
@@ -1580,9 +1580,9 @@ components:
         address:
           type: string
           description: Smart contract address being watched
-        domain:
+        service:
           type: string
-          description: Service domain namespace (if using domain-based events)
+          description: Service service namespace (if using service-based events)
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.

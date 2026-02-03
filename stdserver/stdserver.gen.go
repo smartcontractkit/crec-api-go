@@ -201,22 +201,22 @@ type CreateWatcherWithABI struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CreateWatcherWithDomain defines model for CreateWatcherWithDomain.
-type CreateWatcherWithDomain struct {
+// CreateWatcherWithService defines model for CreateWatcherWithService.
+type CreateWatcherWithService struct {
 	// Address Smart contract address to watch for events
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
 
-	// Domain Service domain namespace (e.g., "dvp", "dta")
-	Domain string `json:"domain"`
-
-	// Events List of event names to watch for within the domain
+	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
 
 	// Name Name for the watcher to help identify it
 	Name *string `json:"name,omitempty"`
+
+	// Service Service service namespace (e.g., "dvp", "dta")
+	Service string `json:"service"`
 }
 
 // ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
@@ -541,7 +541,7 @@ type WalletType string
 
 // Watcher defines model for Watcher.
 type Watcher struct {
-	// Abi ABI definitions for the events (if not using domain-based events)
+	// Abi ABI definitions for the events (if not using service-based events)
 	Abi *[]EventABI `json:"abi,omitempty"`
 
 	// Address Smart contract address being watched
@@ -556,9 +556,6 @@ type Watcher struct {
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
 
-	// Domain Service domain namespace (if using domain-based events)
-	Domain *string `json:"domain,omitempty"`
-
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
 
@@ -567,6 +564,9 @@ type Watcher struct {
 
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
+
+	// Service Service service namespace (if using service-based events)
+	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
@@ -633,14 +633,14 @@ type WatcherSummary struct {
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
 
-	// Domain Service domain namespace (if using domain-based events)
-	Domain *string `json:"domain,omitempty"`
-
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
 
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
+
+	// Service Service service namespace (if using service-based events)
+	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
@@ -720,8 +720,8 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 
-	// Domain Filter by watcher domain. Multiple values allowed.
-	Domain *[]string `form:"domain,omitempty" json:"domain,omitempty"`
+	// Service Filter by watcher service. Multiple values allowed.
+	Service *[]string `form:"service,omitempty" json:"service,omitempty"`
 }
 
 // GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
@@ -765,8 +765,8 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 
-	// Domain Filter watchers by domain. Multiple values allowed.
-	Domain *[]string `form:"domain,omitempty" json:"domain,omitempty"`
+	// Service Filter watchers by service. Multiple values allowed.
+	Service *[]string `form:"service,omitempty" json:"service,omitempty"`
 
 	// EventName Filter watchers by event name
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
@@ -820,22 +820,22 @@ type PostWalletsJSONRequestBody = CreateWallet
 // PatchWalletsWalletIdJSONRequestBody defines body for PatchWalletsWalletId for application/json ContentType.
 type PatchWalletsWalletIdJSONRequestBody = UpdateWallet
 
-// AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
-func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
-	var body CreateWatcherWithDomain
+// AsCreateWatcherWithService returns the union data inside the CreateWatcher as a CreateWatcherWithService
+func (t CreateWatcher) AsCreateWatcherWithService() (CreateWatcherWithService, error) {
+	var body CreateWatcherWithService
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromCreateWatcherWithDomain overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithDomain
-func (t *CreateWatcher) FromCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+// FromCreateWatcherWithService overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithService
+func (t *CreateWatcher) FromCreateWatcherWithService(v CreateWatcherWithService) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeCreateWatcherWithDomain performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithDomain
-func (t *CreateWatcher) MergeCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+// MergeCreateWatcherWithService performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithService
+func (t *CreateWatcher) MergeCreateWatcherWithService(v CreateWatcherWithService) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1495,11 +1495,11 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(w http.Respo
 		return
 	}
 
-	// ------------- Optional query parameter "domain" -------------
+	// ------------- Optional query parameter "service" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "domain", r.URL.Query(), &params.Domain)
+	err = runtime.BindQueryParameter("form", true, false, "service", r.URL.Query(), &params.Service)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "domain", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "service", Err: err})
 		return
 	}
 
@@ -1778,11 +1778,11 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(w http.ResponseW
 		return
 	}
 
-	// ------------- Optional query parameter "domain" -------------
+	// ------------- Optional query parameter "service" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "domain", r.URL.Query(), &params.Domain)
+	err = runtime.BindQueryParameter("form", true, false, "service", r.URL.Query(), &params.Service)
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "domain", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "service", Err: err})
 		return
 	}
 
