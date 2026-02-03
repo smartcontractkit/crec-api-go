@@ -70,21 +70,27 @@ paths:
             type: string
         - in: query
           name: chain_selector
-          description: Filter wallets by chain selector
+          description: Filter wallets by chain selector. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: owner
-          description: Filter wallets by owner address
+          description: Filter wallets by owner address. Multiple values allowed.
           schema:
-            type: string
-            pattern: "^0x[a-fA-F0-9]{40}$"
+            type: array
+            items:
+              $ref: "#/components/schemas/EthereumAddress"
+          style: form
+          explode: true
         - in: query
           name: address
           description: Filter wallets by wallet address
           schema:
-            type: string
-            pattern: "^0x[a-fA-F0-9]{40}$"
+            $ref: "#/components/schemas/EthereumAddress"
         - in: query
           name: type
           description: Filter wallets by type
@@ -92,9 +98,13 @@ paths:
             $ref: "#/components/schemas/WalletType"
         - in: query
           name: status
-          description: Filter wallets by status
+          description: Filter wallets by status. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/WalletStatus"
+            type: array
+            items:
+              $ref: "#/components/schemas/WalletStatus"
+          style: form
+          explode: true
         - in: query
           name: limit
           description: Maximum number of wallets to return
@@ -450,14 +460,22 @@ paths:
             type: string
         - in: query
           name: status
-          description: Filter watchers by status
+          description: Filter watchers by status. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/WatcherStatus"
+            type: array
+            items:
+              $ref: "#/components/schemas/WatcherStatus"
+          style: form
+          explode: true
         - in: query
           name: chain_selector
-          description: Filter watchers by chain selector
+          description: Filter watchers by chain selector. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: address
           description: Filter watchers by contract address
@@ -465,9 +483,13 @@ paths:
             type: string
         - in: query
           name: domain
-          description: Filter watchers by domain
+          description: Filter watchers by domain. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: event_name
           description: Filter watchers by event name
@@ -672,19 +694,31 @@ paths:
             default: 0
         - in: query
           name: status
-          description: Filter operations by status
+          description: Filter operations by status. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/OperationStatus"
+            type: array
+            items:
+              $ref: "#/components/schemas/OperationStatus"
+          style: form
+          explode: true
         - in: query
           name: chain_selector
-          description: Filter operations by chain selector
+          description: Filter operations by chain selector. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: address
-          description: Filter operations by wallet address
+          description: Filter operations by wallet address. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: wallet_id
           description: Filter operations by wallet ID
@@ -834,9 +868,13 @@ paths:
             minimum: 0
         - in: query
           name: type
-          description: Filter events by type
+          description: Filter events by type. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/EventType"
+            type: array
+            items:
+              $ref: "#/components/schemas/EventType"
+          style: form
+          explode: true
         - in: query
           name: created.lt
           description: Filter events created before this timestamp
@@ -863,14 +901,22 @@ paths:
             format: int64
         - in: query
           name: chain_selector
-          description: Filter by chain selector (applies to operation.status, watcher.status, watcher.event, and wallet.status types)
+          description: Filter by chain selector. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: status
-          description: Filter by operation status (applies to operation.status), watcher status (applies to watcher.status), or wallet status (applies to wallet.status)
+          description: Filter by operation status. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: watcher_id
           description: Filter by watcher ID (applies to watcher.status and watcher.event types)
@@ -885,9 +931,13 @@ paths:
             format: uuid
         - in: query
           name: address
-          description: Filter by wallet address (applies to operation.status and wallet.status types) or contract address (applies to watcher.event type)
+          description: Filter by wallet address. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: wallet_operation_id
           description: Filter by wallet operation ID (applies to operation.status type)
@@ -905,9 +955,13 @@ paths:
             type: string
         - in: query
           name: domain
-          description: Filter by watcher domain (applies to watcher.event type)
+          description: Filter by watcher domain. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
       responses:
         "200":
           description: Events retrieved successfully
