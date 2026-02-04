@@ -203,22 +203,22 @@ type CreateWatcherWithABI struct {
 	Name *string `json:"name,omitempty"`
 }
 
-// CreateWatcherWithDomain defines model for CreateWatcherWithDomain.
-type CreateWatcherWithDomain struct {
+// CreateWatcherWithService defines model for CreateWatcherWithService.
+type CreateWatcherWithService struct {
 	// Address Smart contract address to watch for events
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
 
-	// Domain Service domain namespace (e.g., "dvp", "dta")
-	Domain string `json:"domain"`
-
-	// Events List of event names to watch for within the domain
+	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
 
 	// Name Name for the watcher to help identify it
 	Name *string `json:"name,omitempty"`
+
+	// Service Service service namespace (e.g., "dvp", "dta")
+	Service string `json:"service"`
 }
 
 // ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
@@ -555,7 +555,7 @@ type WalletType string
 
 // Watcher defines model for Watcher.
 type Watcher struct {
-	// Abi ABI definitions for the events (if not using domain-based events)
+	// Abi ABI definitions for the events (if not using service-based events)
 	Abi *[]EventABI `json:"abi,omitempty"`
 
 	// Address Smart contract address being watched
@@ -570,9 +570,6 @@ type Watcher struct {
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
 
-	// Domain Service domain namespace (if using domain-based events)
-	Domain *string `json:"domain,omitempty"`
-
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
 
@@ -581,6 +578,9 @@ type Watcher struct {
 
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
+
+	// Service Service service namespace (if using service-based events)
+	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
@@ -647,14 +647,14 @@ type WatcherSummary struct {
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
 
-	// Domain Service domain namespace (if using domain-based events)
-	Domain *string `json:"domain,omitempty"`
-
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
 
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
+
+	// Service Service service namespace (if using service-based events)
+	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
@@ -695,8 +695,8 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// Offset Offset for message-oriented pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// Type Filter events by type
-	Type *EventType `form:"type,omitempty" json:"type,omitempty"`
+	// Type Filter events by type. Multiple values allowed.
+	Type *[]EventType `form:"type,omitempty" json:"type,omitempty"`
 
 	// CreatedLt Filter events created before this timestamp
 	CreatedLt *int64 `form:"created.lt,omitempty" json:"created.lt,omitempty"`
@@ -710,11 +710,11 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// CreatedGte Filter events created at or after this timestamp
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
 
-	// ChainSelector Filter by chain selector (applies to operation.status, watcher.status, watcher.event, and wallet.status types)
+	// ChainSelector Filter by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Status Filter by operation status (applies to operation.status), watcher status (applies to watcher.status), or wallet status (applies to wallet.status)
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
+	// Status Filter by operation status. Multiple values allowed.
+	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
 
 	// WatcherId Filter by watcher ID (applies to watcher.status and watcher.event types)
 	WatcherId *openapi_types.UUID `form:"watcher_id,omitempty" json:"watcher_id,omitempty"`
@@ -722,8 +722,8 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// WalletId Filter by wallet ID (applies to wallet.status type)
 	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
 
-	// Address Filter by wallet address (applies to operation.status and wallet.status types) or contract address (applies to watcher.event type)
-	Address *string `form:"address,omitempty" json:"address,omitempty"`
+	// Address Filter by wallet address. Multiple values allowed.
+	Address *[]string `form:"address,omitempty" json:"address,omitempty"`
 
 	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
 	WalletOperationId *string `form:"wallet_operation_id,omitempty" json:"wallet_operation_id,omitempty"`
@@ -734,8 +734,8 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 
-	// Domain Filter by watcher domain (applies to watcher.event type)
-	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
+	// Service Filter by watcher service. Multiple values allowed.
+	Service *[]string `form:"service,omitempty" json:"service,omitempty"`
 }
 
 // GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
@@ -746,8 +746,8 @@ type GetChannelsChannelIdOperationsParams struct {
 	// Offset Number of operations to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// Status Filter operations by status
-	Status *OperationStatus `form:"status,omitempty" json:"status,omitempty"`
+	// Status Filter operations by status. Multiple values allowed.
+	Status *[]OperationStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ChainSelector Filter operations by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
@@ -770,8 +770,8 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Name Filter watchers by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
-	// Status Filter watchers by status
-	Status *WatcherStatus `form:"status,omitempty" json:"status,omitempty"`
+	// Status Filter watchers by status. Multiple values allowed.
+	Status *[]WatcherStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ChainSelector Filter watchers by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
@@ -779,8 +779,8 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 
-	// Domain Filter watchers by domain
-	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
+	// Service Filter watchers by service. Multiple values allowed.
+	Service *[]string `form:"service,omitempty" json:"service,omitempty"`
 
 	// EventName Filter watchers by event name
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
@@ -795,16 +795,16 @@ type GetWalletsParams struct {
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Owner Filter wallets by owner address
-	Owner *string `form:"owner,omitempty" json:"owner,omitempty"`
+	Owner *EthereumAddress `form:"owner,omitempty" json:"owner,omitempty"`
 
 	// Address Filter wallets by wallet address
-	Address *string `form:"address,omitempty" json:"address,omitempty"`
+	Address *EthereumAddress `form:"address,omitempty" json:"address,omitempty"`
 
 	// Type Filter wallets by type
 	Type *WalletType `form:"type,omitempty" json:"type,omitempty"`
 
-	// Status Filter wallets by status
-	Status *WalletStatus `form:"status,omitempty" json:"status,omitempty"`
+	// Status Filter wallets by status. Multiple values allowed.
+	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -834,22 +834,22 @@ type PostWalletsJSONRequestBody = CreateWallet
 // PatchWalletsWalletIdJSONRequestBody defines body for PatchWalletsWalletId for application/json ContentType.
 type PatchWalletsWalletIdJSONRequestBody = UpdateWallet
 
-// AsCreateWatcherWithDomain returns the union data inside the CreateWatcher as a CreateWatcherWithDomain
-func (t CreateWatcher) AsCreateWatcherWithDomain() (CreateWatcherWithDomain, error) {
-	var body CreateWatcherWithDomain
+// AsCreateWatcherWithService returns the union data inside the CreateWatcher as a CreateWatcherWithService
+func (t CreateWatcher) AsCreateWatcherWithService() (CreateWatcherWithService, error) {
+	var body CreateWatcherWithService
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromCreateWatcherWithDomain overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithDomain
-func (t *CreateWatcher) FromCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+// FromCreateWatcherWithService overwrites any union data inside the CreateWatcher as the provided CreateWatcherWithService
+func (t *CreateWatcher) FromCreateWatcherWithService(v CreateWatcherWithService) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeCreateWatcherWithDomain performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithDomain
-func (t *CreateWatcher) MergeCreateWatcherWithDomain(v CreateWatcherWithDomain) error {
+// MergeCreateWatcherWithService performs a merge with any union data inside the CreateWatcher, using the provided CreateWatcherWithService
+func (t *CreateWatcher) MergeCreateWatcherWithService(v CreateWatcherWithService) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1475,11 +1475,11 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 		return
 	}
 
-	// ------------- Optional query parameter "domain" -------------
+	// ------------- Optional query parameter "service" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "domain", c.Request.URL.Query(), &params.Domain)
+	err = runtime.BindQueryParameter("form", true, false, "service", c.Request.URL.Query(), &params.Service)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter domain: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -1733,11 +1733,11 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(c *gin.Context) 
 		return
 	}
 
-	// ------------- Optional query parameter "domain" -------------
+	// ------------- Optional query parameter "service" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "domain", c.Request.URL.Query(), &params.Domain)
+	err = runtime.BindQueryParameter("form", true, false, "service", c.Request.URL.Query(), &params.Service)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter domain: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter service: %w", err), http.StatusBadRequest)
 		return
 	}
 

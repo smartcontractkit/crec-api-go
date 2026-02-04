@@ -77,14 +77,12 @@ paths:
           name: owner
           description: Filter wallets by owner address
           schema:
-            type: string
-            pattern: "^0x[a-fA-F0-9]{40}$"
+            $ref: "#/components/schemas/EthereumAddress"
         - in: query
           name: address
           description: Filter wallets by wallet address
           schema:
-            type: string
-            pattern: "^0x[a-fA-F0-9]{40}$"
+            $ref: "#/components/schemas/EthereumAddress"
         - in: query
           name: type
           description: Filter wallets by type
@@ -92,9 +90,13 @@ paths:
             $ref: "#/components/schemas/WalletType"
         - in: query
           name: status
-          description: Filter wallets by status
+          description: Filter wallets by status. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/WalletStatus"
+            type: array
+            items:
+              $ref: "#/components/schemas/WalletStatus"
+          style: form
+          explode: true
         - in: query
           name: limit
           description: Maximum number of wallets to return
@@ -450,9 +452,13 @@ paths:
             type: string
         - in: query
           name: status
-          description: Filter watchers by status
+          description: Filter watchers by status. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/WatcherStatus"
+            type: array
+            items:
+              $ref: "#/components/schemas/WatcherStatus"
+          style: form
+          explode: true
         - in: query
           name: chain_selector
           description: Filter watchers by chain selector
@@ -464,10 +470,14 @@ paths:
           schema:
             type: string
         - in: query
-          name: domain
-          description: Filter watchers by domain
+          name: service
+          description: Filter watchers by service. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: event_name
           description: Filter watchers by event name
@@ -672,9 +682,13 @@ paths:
             default: 0
         - in: query
           name: status
-          description: Filter operations by status
+          description: Filter operations by status. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/OperationStatus"
+            type: array
+            items:
+              $ref: "#/components/schemas/OperationStatus"
+          style: form
+          explode: true
         - in: query
           name: chain_selector
           description: Filter operations by chain selector
@@ -806,7 +820,7 @@ paths:
         Note: Some query parameters only apply to specific event types. Invalid parameter combinations for a given event type will result in a 400 Bad Request response:
         - operation.status: status, chain_selector, address, wallet_operation_id
         - watcher.status: watcher_id, status, chain_selector
-        - watcher.event: watcher_id, chain_selector, address, event_name, domain
+        - watcher.event: watcher_id, chain_selector, address, event_name, service
         - wallet.status: wallet_id, status, chain_selector, address
 
         Universal parameters (apply to all types): type, limit, offset, created.*
@@ -834,9 +848,13 @@ paths:
             minimum: 0
         - in: query
           name: type
-          description: Filter events by type
+          description: Filter events by type. Multiple values allowed.
           schema:
-            $ref: "#/components/schemas/EventType"
+            type: array
+            items:
+              $ref: "#/components/schemas/EventType"
+          style: form
+          explode: true
         - in: query
           name: created.lt
           description: Filter events created before this timestamp
@@ -863,14 +881,18 @@ paths:
             format: int64
         - in: query
           name: chain_selector
-          description: Filter by chain selector (applies to operation.status, watcher.status, watcher.event, and wallet.status types)
+          description: Filter by chain selector
           schema:
             type: string
         - in: query
           name: status
-          description: Filter by operation status (applies to operation.status), watcher status (applies to watcher.status), or wallet status (applies to wallet.status)
+          description: Filter by operation status. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: watcher_id
           description: Filter by watcher ID (applies to watcher.status and watcher.event types)
@@ -885,9 +907,13 @@ paths:
             format: uuid
         - in: query
           name: address
-          description: Filter by wallet address (applies to operation.status and wallet.status types) or contract address (applies to watcher.event type)
+          description: Filter by wallet address. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: wallet_operation_id
           description: Filter by wallet operation ID (applies to operation.status type)
@@ -904,10 +930,14 @@ paths:
           schema:
             type: string
         - in: query
-          name: domain
-          description: Filter by watcher domain (applies to watcher.event type)
+          name: service
+          description: Filter by watcher service. Multiple values allowed.
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
       responses:
         "200":
           description: Events retrieved successfully
@@ -1369,9 +1399,9 @@ components:
         - has_more
     CreateWatcher:
       oneOf:
-        - $ref: "#/components/schemas/CreateWatcherWithDomain"
+        - $ref: "#/components/schemas/CreateWatcherWithService"
         - $ref: "#/components/schemas/CreateWatcherWithABI"
-    CreateWatcherWithDomain:
+    CreateWatcherWithService:
       type: object
       properties:
         name:
@@ -1383,19 +1413,19 @@ components:
         address:
           type: string
           description: Smart contract address to watch for events
-        domain:
+        service:
           type: string
-          description: Service domain namespace (e.g., "dvp", "dta")
+          description: Service service namespace (e.g., "dvp", "dta")
         events:
           type: array
           items:
             type: string
-          description: List of event names to watch for within the domain
+          description: List of event names to watch for within the service
           minItems: 1
       required:
         - chain_selector
         - address
-        - domain
+        - service
         - events
     CreateWatcherWithABI:
       type: object
@@ -1498,9 +1528,9 @@ components:
         address:
           type: string
           description: Smart contract address being watched
-        domain:
+        service:
           type: string
-          description: Service domain namespace (if using domain-based events)
+          description: Service service namespace (if using service-based events)
         events:
           type: array
           items:
@@ -1510,7 +1540,7 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/EventABI"
-          description: ABI definitions for the events (if not using domain-based events)
+          description: ABI definitions for the events (if not using service-based events)
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
@@ -1552,9 +1582,9 @@ components:
         address:
           type: string
           description: Smart contract address being watched
-        domain:
+        service:
           type: string
-          description: Service domain namespace (if using domain-based events)
+          description: Service service namespace (if using service-based events)
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
