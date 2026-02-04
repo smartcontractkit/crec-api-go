@@ -60,10 +60,11 @@ const (
 
 // Defines values for WalletStatus.
 const (
-	WalletStatusDeployed  WalletStatus = "deployed"
-	WalletStatusDeploying WalletStatus = "deploying"
-	WalletStatusFailed    WalletStatus = "failed"
-	WalletStatusPending   WalletStatus = "pending"
+	WalletStatusDeactivated WalletStatus = "deactivated"
+	WalletStatusDeployed    WalletStatus = "deployed"
+	WalletStatusDeploying   WalletStatus = "deploying"
+	WalletStatusFailed      WalletStatus = "failed"
+	WalletStatusPending     WalletStatus = "pending"
 )
 
 // Defines values for WalletType.
