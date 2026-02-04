@@ -1018,6 +1018,7 @@ components:
         - pending
         - deploying
         - deployed
+        - deactivated
         - failed
     WalletEventStatus:
       type: string
