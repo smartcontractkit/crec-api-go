@@ -33,7 +33,6 @@ const (
 const (
 	ChannelStatusActive      ChannelStatus = "active"
 	ChannelStatusDeactivated ChannelStatus = "deactivated"
-	ChannelStatusFailed      ChannelStatus = "failed"
 )
 
 // Defines values for EventABIType.

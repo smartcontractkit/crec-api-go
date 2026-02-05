@@ -1868,4 +1868,3 @@ components:
       enum:
         - active
         - deactivated
-        - failed
