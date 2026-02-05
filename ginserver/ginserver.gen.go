@@ -684,7 +684,7 @@ type GetChannelsParams struct {
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
 	// Status Filter channels by status.
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
+	Status *ChannelStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Limit Maximum number of channels to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -738,7 +738,7 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
 
 	// Address Filter by wallet address. Multiple values allowed.
-	Address *[]string `form:"address,omitempty" json:"address,omitempty"`
+	Address *[]EthereumAddress `form:"address,omitempty" json:"address,omitempty"`
 
 	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
 	WalletOperationId *string `form:"wallet_operation_id,omitempty" json:"wallet_operation_id,omitempty"`

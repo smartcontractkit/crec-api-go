@@ -260,7 +260,7 @@ paths:
           name: status
           description: Filter channels by status.
           schema:
-            type: string
+            $ref: "#/components/schemas/ChannelStatus"
         - in: query
           name: limit
           description: Maximum number of channels to return
@@ -916,7 +916,7 @@ paths:
           schema:
             type: array
             items:
-              type: string
+              $ref: "#/components/schemas/EthereumAddress"
           style: form
           explode: true
         - in: query
