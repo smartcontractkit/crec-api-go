@@ -29,6 +29,12 @@ const (
 	NotFound      ApplicationErrorType = "Not found"
 )
 
+// Defines values for ChannelStatus.
+const (
+	ChannelStatusActive      ChannelStatus = "active"
+	ChannelStatusDeactivated ChannelStatus = "deactivated"
+)
+
 // Defines values for EventABIType.
 const (
 	EventABITypeEvent EventABIType = "event"
@@ -87,10 +93,10 @@ const (
 
 // Defines values for WatcherStatus.
 const (
-	Active   WatcherStatus = "active"
-	Deleting WatcherStatus = "deleting"
-	Failed   WatcherStatus = "failed"
-	Pending  WatcherStatus = "pending"
+	WatcherStatusActive   WatcherStatus = "active"
+	WatcherStatusDeleting WatcherStatus = "deleting"
+	WatcherStatusFailed   WatcherStatus = "failed"
+	WatcherStatusPending  WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -121,6 +127,9 @@ type Channel struct {
 
 	// Name Name of the channel
 	Name string `json:"name"`
+
+	// Status Status of a channel
+	Status *ChannelStatus `json:"status,omitempty"`
 }
 
 // ChannelList defines model for ChannelList.
@@ -130,6 +139,9 @@ type ChannelList struct {
 	// HasMore True if there are more channels to fetch
 	HasMore bool `json:"has_more"`
 }
+
+// ChannelStatus Status of a channel
+type ChannelStatus string
 
 // CreateChannel defines model for CreateChannel.
 type CreateChannel struct {

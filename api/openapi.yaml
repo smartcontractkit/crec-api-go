@@ -1376,6 +1376,8 @@ components:
         description:
           type: string
           description: Description of the channel
+        status:
+          $ref: "#/components/schemas/ChannelStatus"
         created_at:
           type: integer
           format: int64
@@ -1855,3 +1857,9 @@ components:
         - status_code
         - status_reason
         - wallet_id
+    ChannelStatus:
+      type: string
+      description: Status of a channel
+      enum:
+        - active
+        - deactivated
