@@ -257,6 +257,11 @@ paths:
           schema:
             type: string
         - in: query
+          name: status
+          description: Filter channels by status.
+          schema:
+            type: string
+        - in: query
           name: limit
           description: Maximum number of channels to return
           schema:
