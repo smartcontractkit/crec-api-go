@@ -257,6 +257,11 @@ paths:
           schema:
             type: string
         - in: query
+          name: status
+          description: Filter channels by status.
+          schema:
+            $ref: "#/components/schemas/ChannelStatus"
+        - in: query
           name: limit
           description: Maximum number of channels to return
           schema:
@@ -911,7 +916,7 @@ paths:
           schema:
             type: array
             items:
-              type: string
+              $ref: "#/components/schemas/EthereumAddress"
           style: form
           explode: true
         - in: query
@@ -1018,7 +1023,7 @@ components:
         - pending
         - deploying
         - deployed
-        - deactivated
+        - deleted
         - failed
     WalletEventStatus:
       type: string
@@ -1376,6 +1381,8 @@ components:
         description:
           type: string
           description: Description of the channel
+        status:
+          $ref: "#/components/schemas/ChannelStatus"
         created_at:
           type: integer
           format: int64
@@ -1855,3 +1862,9 @@ components:
         - status_code
         - status_reason
         - wallet_id
+    ChannelStatus:
+      type: string
+      description: Status of a channel
+      enum:
+        - active
+        - deactivated

@@ -27,6 +27,12 @@ const (
 	NotFound      ApplicationErrorType = "Not found"
 )
 
+// Defines values for ChannelStatus.
+const (
+	ChannelStatusActive      ChannelStatus = "active"
+	ChannelStatusDeactivated ChannelStatus = "deactivated"
+)
+
 // Defines values for EventABIType.
 const (
 	EventABITypeEvent EventABIType = "event"
@@ -60,11 +66,11 @@ const (
 
 // Defines values for WalletStatus.
 const (
-	WalletStatusDeactivated WalletStatus = "deactivated"
-	WalletStatusDeployed    WalletStatus = "deployed"
-	WalletStatusDeploying   WalletStatus = "deploying"
-	WalletStatusFailed      WalletStatus = "failed"
-	WalletStatusPending     WalletStatus = "pending"
+	WalletStatusDeleted   WalletStatus = "deleted"
+	WalletStatusDeployed  WalletStatus = "deployed"
+	WalletStatusDeploying WalletStatus = "deploying"
+	WalletStatusFailed    WalletStatus = "failed"
+	WalletStatusPending   WalletStatus = "pending"
 )
 
 // Defines values for WalletType.
@@ -85,10 +91,10 @@ const (
 
 // Defines values for WatcherStatus.
 const (
-	Active   WatcherStatus = "active"
-	Deleting WatcherStatus = "deleting"
-	Failed   WatcherStatus = "failed"
-	Pending  WatcherStatus = "pending"
+	WatcherStatusActive   WatcherStatus = "active"
+	WatcherStatusDeleting WatcherStatus = "deleting"
+	WatcherStatusFailed   WatcherStatus = "failed"
+	WatcherStatusPending  WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -119,6 +125,9 @@ type Channel struct {
 
 	// Name Name of the channel
 	Name string `json:"name"`
+
+	// Status Status of a channel
+	Status *ChannelStatus `json:"status,omitempty"`
 }
 
 // ChannelList defines model for ChannelList.
@@ -128,6 +137,9 @@ type ChannelList struct {
 	// HasMore True if there are more channels to fetch
 	HasMore bool `json:"has_more"`
 }
+
+// ChannelStatus Status of a channel
+type ChannelStatus string
 
 // CreateChannel defines model for CreateChannel.
 type CreateChannel struct {
@@ -671,6 +683,9 @@ type GetChannelsParams struct {
 	// Name Filter channels by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
+	// Status Filter channels by status.
+	Status *ChannelStatus `form:"status,omitempty" json:"status,omitempty"`
+
 	// Limit Maximum number of channels to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -723,7 +738,7 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
 
 	// Address Filter by wallet address. Multiple values allowed.
-	Address *[]string `form:"address,omitempty" json:"address,omitempty"`
+	Address *[]EthereumAddress `form:"address,omitempty" json:"address,omitempty"`
 
 	// WalletOperationId Filter by wallet operation ID (applies to operation.status type)
 	WalletOperationId *string `form:"wallet_operation_id,omitempty" json:"wallet_operation_id,omitempty"`
@@ -1169,6 +1184,14 @@ func (siw *ServerInterfaceWrapper) GetChannels(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "name", c.Request.URL.Query(), &params.Name)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter name: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
 		return
 	}
 
