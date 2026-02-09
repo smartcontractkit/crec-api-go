@@ -31,8 +31,8 @@ const (
 
 // Defines values for ChannelStatus.
 const (
-	ChannelStatusActive      ChannelStatus = "active"
-	ChannelStatusDeactivated ChannelStatus = "deactivated"
+	ChannelStatusActive   ChannelStatus = "active"
+	ChannelStatusInactive ChannelStatus = "inactive"
 )
 
 // Defines values for EventABIType.

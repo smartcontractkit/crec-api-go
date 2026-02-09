@@ -1867,4 +1867,4 @@ components:
       description: Status of a channel
       enum:
         - active
-        - deactivated
+        - inactive
