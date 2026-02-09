@@ -129,7 +129,7 @@ type Channel struct {
 	Name string `json:"name"`
 
 	// Status Status of a channel
-	Status *ChannelStatus `json:"status,omitempty"`
+	Status ChannelStatus `json:"status"`
 }
 
 // ChannelList defines model for ChannelList.

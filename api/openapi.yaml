@@ -1390,6 +1390,7 @@ components:
       required:
         - channel_id
         - name
+        - status
         - created_at
     ChannelList:
       type: object
