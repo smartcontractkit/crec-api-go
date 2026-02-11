@@ -1783,9 +1783,6 @@ components:
       properties:
         status:
           $ref: "#/components/schemas/OperationStatus"
-        status_code:
-          type: string
-          description: Status code
         status_reason:
           type: string
           description: Reason for the status
@@ -1796,73 +1793,108 @@ components:
         wallet_operation_id:
           type: string
           description: Wallet operation identifier
+        address:
+          type: string
+          description: Wallet address performing the operation
         event_hash:
           type: string
           description: Verifiable event hash for reference (only present when status is confirmed)
         verifiable_event:
           type: string
           description: Base64 encoded verifiable event for verification
+        chain_selector:
+          type: string
+          description: Chain selector identifier for the blockchain network
+        timestamp:
+          type: integer
+          format: int64
+          description: Timestamp when the event was created
       required:
         - status
-        - status_code
         - status_reason
         - operation_id
         - wallet_operation_id
+        - address
+        - chain_selector
+        - timestamp
     WatcherStatusPayload:
       type: object
       properties:
         status:
           $ref: "#/components/schemas/WatcherEventStatus"
-        status_code:
-          type: string
-          description: Status code
         status_reason:
           type: string
           description: Reason for the status
         watcher_id:
           type: string
           description: Unique watcher identifier
+        chain_selector:
+          type: string
+          description: Chain selector identifier for the blockchain network
+        timestamp:
+          type: integer
+          format: int64
+          description: Timestamp when the event was created
       required:
         - status
-        - status_code
         - status_reason
         - watcher_id
+        - chain_selector
+        - timestamp
     WatcherEventPayload:
       type: object
       properties:
         watcher_id:
           type: string
           description: Unique watcher identifier
+        chain_selector:
+          type: string
+          description: Chain selector identifier for the blockchain network
         event_hash:
           type: string
           description: Verifiable event hash
         verifiable_event:
           type: string
           description: Base64 encoded verifiable event
+        timestamp:
+          type: integer
+          format: int64
+          description: Timestamp when the event was created
       required:
         - watcher_id
         - event_hash
         - verifiable_event
+        - chain_selector
+        - timestamp
     WalletStatusPayload:
       type: object
       properties:
         status:
           $ref: "#/components/schemas/WalletEventStatus"
-        status_code:
-          type: string
-          description: Status code
         status_reason:
           type: string
           description: Reason for the status
+        address:
+          type: string
+          description: Wallet address performing the operation
+        chain_selector:
+          type: string
+          description: Chain selector identifier for the blockchain network
         wallet_id:
           type: string
           format: uuid
           description: Unique identifier for the wallet
+        timestamp:
+          type: integer
+          format: int64
+          description: Timestamp when the event was created
       required:
         - status
-        - status_code
         - status_reason
         - wallet_id
+        - address
+        - chain_selector
+        - timestamp
     ChannelStatus:
       type: string
       description: Status of a channel
