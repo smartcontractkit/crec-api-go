@@ -179,6 +179,9 @@ type CreateWallet struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
+	// Description Description of the wallet
+	Description string `json:"description"`
+
 	// Name Name of the wallet
 	Name string `json:"name"`
 
@@ -412,6 +415,12 @@ type OperationStatus string
 
 // OperationStatusPayload defines model for OperationStatusPayload.
 type OperationStatusPayload struct {
+	// Address Wallet address performing the operation
+	Address string `json:"address"`
+
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector string `json:"chain_selector"`
+
 	// EventHash Verifiable event hash for reference (only present when status is confirmed)
 	EventHash *string `json:"event_hash,omitempty"`
 
@@ -421,11 +430,11 @@ type OperationStatusPayload struct {
 	// Status Status of an operation
 	Status OperationStatus `json:"status"`
 
-	// StatusCode Status code
-	StatusCode string `json:"status_code"`
-
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`
+
+	// Timestamp Timestamp when the event was created
+	Timestamp int64 `json:"timestamp"`
 
 	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
@@ -484,6 +493,9 @@ type UpdateChannel struct {
 
 // UpdateWallet defines model for UpdateWallet.
 type UpdateWallet struct {
+	// Description New description for the wallet
+	Description string `json:"description"`
+
 	// Name New name for the wallet
 	Name string `json:"name"`
 }
@@ -511,8 +523,11 @@ type Wallet struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
+	// Description Description of the wallet
+	Description string `json:"description"`
+
 	// Name Name of the wallet
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 
 	// Status Status of a wallet entity
 	Status WalletStatus `json:"status"`
@@ -549,14 +564,20 @@ type WalletStatus string
 
 // WalletStatusPayload defines model for WalletStatusPayload.
 type WalletStatusPayload struct {
+	// Address Wallet address performing the operation
+	Address string `json:"address"`
+
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector string `json:"chain_selector"`
+
 	// Status Status of a wallet in events (includes deleted state for filtering)
 	Status WalletEventStatus `json:"status"`
 
-	// StatusCode Status code
-	StatusCode string `json:"status_code"`
-
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`
+
+	// Timestamp Timestamp when the event was created
+	Timestamp int64 `json:"timestamp"`
 
 	// WalletId Unique identifier for the wallet
 	WalletId openapi_types.UUID `json:"wallet_id"`
@@ -606,8 +627,14 @@ type Watcher struct {
 
 // WatcherEventPayload defines model for WatcherEventPayload.
 type WatcherEventPayload struct {
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector string `json:"chain_selector"`
+
 	// EventHash Verifiable event hash
 	EventHash string `json:"event_hash"`
+
+	// Timestamp Timestamp when the event was created
+	Timestamp int64 `json:"timestamp"`
 
 	// VerifiableEvent Base64 encoded verifiable event
 	VerifiableEvent string `json:"verifiable_event"`
@@ -632,14 +659,17 @@ type WatcherStatus string
 
 // WatcherStatusPayload defines model for WatcherStatusPayload.
 type WatcherStatusPayload struct {
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector string `json:"chain_selector"`
+
 	// Status Status of a watcher in events (includes transitional and deletion states for filtering)
 	Status WatcherEventStatus `json:"status"`
 
-	// StatusCode Status code
-	StatusCode string `json:"status_code"`
-
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`
+
+	// Timestamp Timestamp when the event was created
+	Timestamp int64 `json:"timestamp"`
 
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
