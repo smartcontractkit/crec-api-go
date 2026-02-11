@@ -1149,6 +1149,9 @@ components:
         name:
           type: string
           description: Name of the wallet
+        description:
+          type: string
+          description: Description of the wallet
         wallet_owner_address:
           $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
@@ -1163,12 +1166,12 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the channel where the wallet status will be published
-
       required:
         - name
         - wallet_owner_address
         - chain_selector
         - wallet_type
+        - description
     UpdateWallet:
       type: object
       properties:
@@ -1178,8 +1181,15 @@ components:
           minLength: 1
           maxLength: 255
           pattern: '^(?!\s*$).+'
+        description:
+          type: string
+          description: New description for the wallet
+          minLength: 1
+          maxLength: 255
+          pattern: '^(?!\s*$).+'
       required:
         - name
+        - description
     UpdateWatcher:
       type: object
       properties:
@@ -1201,6 +1211,9 @@ components:
         name:
           type: string
           description: Name of the wallet
+        description:
+          type: string
+          description: Description of the wallet
         address:
           $ref: "#/components/schemas/EthereumAddress"
         wallet_owner_address:
@@ -1226,6 +1239,8 @@ components:
           $ref: "#/components/schemas/Timestamp"
       required:
         - wallet_id
+        - name
+        - description
         - address
         - chain_selector
         - wallet_type

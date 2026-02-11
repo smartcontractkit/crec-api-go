@@ -181,6 +181,9 @@ type CreateWallet struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
+	// Description Description of the wallet
+	Description string `json:"description"`
+
 	// Name Name of the wallet
 	Name string `json:"name"`
 
@@ -480,6 +483,9 @@ type UpdateChannel struct {
 
 // UpdateWallet defines model for UpdateWallet.
 type UpdateWallet struct {
+	// Description New description for the wallet
+	Description string `json:"description"`
+
 	// Name New name for the wallet
 	Name string `json:"name"`
 }
@@ -507,8 +513,11 @@ type Wallet struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
+	// Description Description of the wallet
+	Description string `json:"description"`
+
 	// Name Name of the wallet
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 
 	// Status Status of a wallet entity
 	Status WalletStatus `json:"status"`
