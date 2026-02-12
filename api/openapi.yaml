@@ -890,6 +890,11 @@ paths:
           schema:
             type: string
         - in: query
+          name: network_type
+          description: Filter by network type
+          schema:
+            $ref: "#/components/schemas/NetworkType"
+        - in: query
           name: status
           description: Filter by operation status. Multiple values allowed.
           schema:
@@ -934,6 +939,11 @@ paths:
           description: Filter by event name (applies to watcher.event type)
           schema:
             type: string
+        - in: query
+          name: category
+          description: Filter by event category
+          schema:
+            $ref: "#/components/schemas/EventCategory"
         - in: query
           name: service
           description: Filter by watcher service. Multiple values allowed.
@@ -1916,3 +1926,15 @@ components:
       enum:
         - active
         - inactive
+    NetworkType:
+      type: string
+      description: Type of blockchain network
+      enum:
+        - mainnet
+        - testnet
+    EventCategory:
+      type: string
+      description: Category of event
+      enum:
+        - verified
+        - status
