@@ -38,24 +38,12 @@ const (
 	EventABITypeEvent EventABIType = "event"
 )
 
-// Defines values for EventCategory.
-const (
-	Status   EventCategory = "status"
-	Verified EventCategory = "verified"
-)
-
 // Defines values for EventType.
 const (
 	EventTypeOperationStatus EventType = "operation.status"
 	EventTypeWalletStatus    EventType = "wallet.status"
 	EventTypeWatcherEvent    EventType = "watcher.event"
 	EventTypeWatcherStatus   EventType = "watcher.status"
-)
-
-// Defines values for NetworkType.
-const (
-	Mainnet NetworkType = "mainnet"
-	Testnet NetworkType = "testnet"
 )
 
 // Defines values for OperationStatus.
@@ -300,9 +288,6 @@ type EventABIInput struct {
 	Type string `json:"type"`
 }
 
-// EventCategory Category of event
-type EventCategory string
-
 // EventHeaders defines model for EventHeaders.
 type EventHeaders struct {
 	// Offset Unique offset for message ordering
@@ -368,9 +353,6 @@ type NetworkList struct {
 	// HasMore True if there are more networks to fetch
 	HasMore bool `json:"has_more"`
 }
-
-// NetworkType Type of blockchain network
-type NetworkType string
 
 // OCRProof defines model for OCRProof.
 type OCRProof struct {
@@ -774,10 +756,7 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
 
 	// ChainSelector Filter by chain selector
-	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
-
-	// NetworkType Filter by network type
-	NetworkType *NetworkType `form:"network_type,omitempty" json:"network_type,omitempty"`
+	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
@@ -799,9 +778,6 @@ type GetChannelsChannelIdEventsSearchParams struct {
 
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
-
-	// Category Filter by event category
-	Category *EventCategory `form:"category,omitempty" json:"category,omitempty"`
 
 	// Service Filter by watcher service. Multiple values allowed.
 	Service *[]string `form:"service,omitempty" json:"service,omitempty"`
@@ -1496,14 +1472,6 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 		return
 	}
 
-	// ------------- Optional query parameter "network_type" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "network_type", c.Request.URL.Query(), &params.NetworkType)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter network_type: %w", err), http.StatusBadRequest)
-		return
-	}
-
 	// ------------- Optional query parameter "status" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
@@ -1557,14 +1525,6 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(c *gin.Conte
 	err = runtime.BindQueryParameter("form", true, false, "event_name", c.Request.URL.Query(), &params.EventName)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter event_name: %w", err), http.StatusBadRequest)
-		return
-	}
-
-	// ------------- Optional query parameter "category" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "category", c.Request.URL.Query(), &params.Category)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter category: %w", err), http.StatusBadRequest)
 		return
 	}
 
