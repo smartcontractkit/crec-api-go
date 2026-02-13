@@ -744,7 +744,7 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	CreatedGte *int64 `form:"created.gte,omitempty" json:"created.gte,omitempty"`
 
 	// ChainSelector Filter by chain selector
-	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`

@@ -888,7 +888,11 @@ paths:
           name: chain_selector
           description: Filter by chain selector
           schema:
-            type: string
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
         - in: query
           name: status
           description: Filter by operation status. Multiple values allowed.
