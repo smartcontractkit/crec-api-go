@@ -217,11 +217,11 @@ type CreateWatcherWithABI struct {
 
 // CreateWatcherWithService defines model for CreateWatcherWithService.
 type CreateWatcherWithService struct {
-	// Address Smart contract address to watch for events
-	Address string `json:"address"`
-
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
+
+	// Contracts Map of contract name to address. Required contract names are defined by the extension (discoverable via GET /extensions).
+	Contracts map[string]string `json:"contracts"`
 
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
@@ -229,7 +229,7 @@ type CreateWatcherWithService struct {
 	// Name Name for the watcher to help identify it
 	Name *string `json:"name,omitempty"`
 
-	// Service Service service namespace (e.g., "dvp", "dta")
+	// Service Service namespace (e.g., "dvp", "dta")
 	Service string `json:"service"`
 }
 
@@ -313,6 +313,47 @@ type EventList struct {
 
 // EventType Type of event
 type EventType string
+
+// Extension defines model for Extension.
+type Extension struct {
+	// Contracts Contracts that need addresses when creating a watcher
+	Contracts *[]ExtensionContract `json:"contracts,omitempty"`
+
+	// Events Events available for subscription
+	Events *[]ExtensionEvent `json:"events,omitempty"`
+
+	// Service Service identifier (e.g., "dta", "dvp")
+	Service *string `json:"service,omitempty"`
+}
+
+// ExtensionContract defines model for ExtensionContract.
+type ExtensionContract struct {
+	// Name Contract name (used as key in CreateWatcher contracts map)
+	Name *string `json:"name,omitempty"`
+}
+
+// ExtensionEvent defines model for ExtensionEvent.
+type ExtensionEvent struct {
+	// DataSchema JSON Schema for enrichment data (reference data attached by the extension)
+	DataSchema *map[string]interface{} `json:"data_schema,omitempty"`
+
+	// Description Human-readable description
+	Description *string `json:"description,omitempty"`
+
+	// Name Event name (used in CreateWatcher events array)
+	Name *string `json:"name,omitempty"`
+
+	// ParamsSchema JSON Schema for chain_event.params (decoded Solidity event parameters)
+	ParamsSchema *map[string]interface{} `json:"params_schema,omitempty"`
+
+	// TriggerContract Which contract emits this event
+	TriggerContract *string `json:"trigger_contract,omitempty"`
+}
+
+// ExtensionList defines model for ExtensionList.
+type ExtensionList struct {
+	Data *[]Extension `json:"data,omitempty"`
+}
 
 // HealthCheck defines model for HealthCheck.
 type HealthCheck struct {
@@ -570,7 +611,7 @@ type Watcher struct {
 	// Abi ABI definitions for the events (if not using service-based events)
 	Abi *[]EventABI `json:"abi,omitempty"`
 
-	// Address Smart contract address being watched
+	// Address Trigger contract address being watched
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
@@ -578,6 +619,9 @@ type Watcher struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// Contracts Map of contract name to address (for service-based watchers)
+	Contracts *map[string]string `json:"contracts,omitempty"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
@@ -591,7 +635,7 @@ type Watcher struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Service Service service namespace (if using service-based events)
+	// Service Service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
@@ -665,7 +709,7 @@ type WatcherSummary struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Service Service service namespace (if using service-based events)
+	// Service Service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
@@ -1137,6 +1181,9 @@ type ServerInterface interface {
 	// Updates a watcher name.
 	// (PATCH /channels/{channel_id}/watchers/{watcher_id})
 	PatchChannelsChannelIdWatchersWatcherId(c *gin.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID)
+	// List available watcher extensions and their metadata
+	// (GET /extensions)
+	GetExtensions(c *gin.Context)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(c *gin.Context)
@@ -1913,6 +1960,21 @@ func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdWatchersWatcherId(c *gi
 	siw.Handler.PatchChannelsChannelIdWatchersWatcherId(c, channelId, watcherId)
 }
 
+// GetExtensions operation middleware
+func (siw *ServerInterfaceWrapper) GetExtensions(c *gin.Context) {
+
+	c.Set(ApiKeyAuthScopes, []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetExtensions(c)
+}
+
 // GetHealthCheck operation middleware
 func (siw *ServerInterfaceWrapper) GetHealthCheck(c *gin.Context) {
 
@@ -2163,6 +2225,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.DELETE(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.DeleteChannelsChannelIdWatchersWatcherId)
 	router.GET(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	router.PATCH(options.BaseURL+"/channels/:channel_id/watchers/:watcher_id", wrapper.PatchChannelsChannelIdWatchersWatcherId)
+	router.GET(options.BaseURL+"/extensions", wrapper.GetExtensions)
 	router.GET(options.BaseURL+"/health-check", wrapper.GetHealthCheck)
 	router.GET(options.BaseURL+"/networks", wrapper.GetNetworks)
 	router.GET(options.BaseURL+"/wallets", wrapper.GetWallets)
@@ -2788,6 +2851,31 @@ func (response PatchChannelsChannelIdWatchersWatcherId500JSONResponse) VisitPatc
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetExtensionsRequestObject struct {
+}
+
+type GetExtensionsResponseObject interface {
+	VisitGetExtensionsResponse(w http.ResponseWriter) error
+}
+
+type GetExtensions200JSONResponse ExtensionList
+
+func (response GetExtensions200JSONResponse) VisitGetExtensionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetExtensions500JSONResponse ApplicationError
+
+func (response GetExtensions500JSONResponse) VisitGetExtensionsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetHealthCheckRequestObject struct {
 }
 
@@ -3054,6 +3142,9 @@ type StrictServerInterface interface {
 	// Updates a watcher name.
 	// (PATCH /channels/{channel_id}/watchers/{watcher_id})
 	PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, request PatchChannelsChannelIdWatchersWatcherIdRequestObject) (PatchChannelsChannelIdWatchersWatcherIdResponseObject, error)
+	// List available watcher extensions and their metadata
+	// (GET /extensions)
+	GetExtensions(ctx context.Context, request GetExtensionsRequestObject) (GetExtensionsResponseObject, error)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(ctx context.Context, request GetHealthCheckRequestObject) (GetHealthCheckResponseObject, error)
@@ -3561,6 +3652,31 @@ func (sh *strictHandler) PatchChannelsChannelIdWatchersWatcherId(ctx *gin.Contex
 		ctx.Status(http.StatusInternalServerError)
 	} else if validResponse, ok := response.(PatchChannelsChannelIdWatchersWatcherIdResponseObject); ok {
 		if err := validResponse.VisitPatchChannelsChannelIdWatchersWatcherIdResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetExtensions operation middleware
+func (sh *strictHandler) GetExtensions(ctx *gin.Context) {
+	var request GetExtensionsRequestObject
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetExtensions(ctx, request.(GetExtensionsRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetExtensions")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetExtensionsResponseObject); ok {
+		if err := validResponse.VisitGetExtensionsResponse(ctx.Writer); err != nil {
 			ctx.Error(err)
 		}
 	} else if response != nil {
