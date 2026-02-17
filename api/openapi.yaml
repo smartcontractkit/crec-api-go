@@ -1009,6 +1009,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
 
+  /extensions:
+    get:
+      summary: List available watcher extensions and their metadata
+      description: Returns metadata for all registered extension bundles including available events, required contracts, and event payload schemas.
+      responses:
+        "200":
+          description: List of extensions
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExtensionList"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
 security:
   - ApiKeyAuth: []
 
@@ -1437,23 +1455,25 @@ components:
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
-        address:
-          type: string
-          description: Smart contract address to watch for events
         service:
           type: string
-          description: Service service namespace (e.g., "dvp", "dta")
+          description: Service namespace (e.g., "dvp", "dta")
         events:
           type: array
           items:
             type: string
           description: List of event names to watch for within the service
           minItems: 1
+        contracts:
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of contract name to address. Required contract names are defined by the extension (discoverable via GET /extensions).
       required:
         - chain_selector
-        - address
         - service
         - events
+        - contracts
     CreateWatcherWithABI:
       type: object
       properties:
@@ -1554,10 +1574,15 @@ components:
           description: The chain selector to identify the chain where the watcher will run
         address:
           type: string
-          description: Smart contract address being watched
+          description: Trigger contract address being watched
         service:
           type: string
-          description: Service service namespace (if using service-based events)
+          description: Service namespace (if using service-based events)
+        contracts:
+          type: object
+          additionalProperties:
+            type: string
+          description: Map of contract name to address (for service-based watchers)
         events:
           type: array
           items:
@@ -1611,7 +1636,7 @@ components:
           description: Smart contract address being watched
         service:
           type: string
-          description: Service service namespace (if using service-based events)
+          description: Service namespace (if using service-based events)
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
@@ -1920,3 +1945,50 @@ components:
       enum:
         - active
         - inactive
+    ExtensionList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Extension"
+    Extension:
+      type: object
+      properties:
+        service:
+          type: string
+          description: Service identifier (e.g., "dta", "dvp")
+        contracts:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExtensionContract"
+          description: Contracts that need addresses when creating a watcher
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExtensionEvent"
+          description: Events available for subscription
+    ExtensionContract:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Contract name (used as key in CreateWatcher contracts map)
+    ExtensionEvent:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Event name (used in CreateWatcher events array)
+        trigger_contract:
+          type: string
+          description: Which contract emits this event
+        description:
+          type: string
+          description: Human-readable description
+        params_schema:
+          type: object
+          description: JSON Schema for chain_event.params (decoded Solidity event parameters)
+        data_schema:
+          type: object
+          description: JSON Schema for enrichment data (reference data attached by the extension)
