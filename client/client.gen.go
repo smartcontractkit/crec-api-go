@@ -50,10 +50,11 @@ const (
 
 // Defines values for OperationStatus.
 const (
+	OperationStatusAccepted     OperationStatus = "accepted"
 	OperationStatusBroadcasting OperationStatus = "broadcasting"
 	OperationStatusConfirmed    OperationStatus = "confirmed"
 	OperationStatusFailed       OperationStatus = "failed"
-	OperationStatusPending      OperationStatus = "pending"
+	OperationStatusSending      OperationStatus = "sending"
 	OperationStatusSent         OperationStatus = "sent"
 )
 

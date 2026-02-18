@@ -1078,7 +1078,8 @@ components:
       type: string
       description: Status of an operation
       enum:
-        - pending
+        - accepted
+        - sending
         - sent
         - broadcasting
         - confirmed
