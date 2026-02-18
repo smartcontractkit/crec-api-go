@@ -1078,7 +1078,8 @@ components:
       type: string
       description: Status of an operation
       enum:
-        - pending
+        - accepted
+        - sending
         - sent
         - broadcasting
         - confirmed
@@ -1452,6 +1453,7 @@ components:
         name:
           type: string
           description: Name for the watcher to help identify it
+          minLength: 4
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
@@ -1470,6 +1472,7 @@ components:
             type: string
           description: Map of contract name to address. Required contract names are defined by the extension (discoverable via GET /extensions).
       required:
+        - name
         - chain_selector
         - service
         - events
@@ -1480,6 +1483,7 @@ components:
         name:
           type: string
           description: Name for the watcher to help identify it
+          minLength: 4
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
@@ -1499,6 +1503,7 @@ components:
           description: ABI definitions for the events to watch
           minItems: 1
       required:
+        - name
         - chain_selector
         - address
         - events

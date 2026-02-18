@@ -48,10 +48,11 @@ const (
 
 // Defines values for OperationStatus.
 const (
+	OperationStatusAccepted     OperationStatus = "accepted"
 	OperationStatusBroadcasting OperationStatus = "broadcasting"
 	OperationStatusConfirmed    OperationStatus = "confirmed"
 	OperationStatusFailed       OperationStatus = "failed"
-	OperationStatusPending      OperationStatus = "pending"
+	OperationStatusSending      OperationStatus = "sending"
 	OperationStatusSent         OperationStatus = "sent"
 )
 
@@ -215,7 +216,7 @@ type CreateWatcherWithABI struct {
 	Events []string `json:"events"`
 
 	// Name Name for the watcher to help identify it
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 }
 
 // CreateWatcherWithService defines model for CreateWatcherWithService.
@@ -230,7 +231,7 @@ type CreateWatcherWithService struct {
 	Events []string `json:"events"`
 
 	// Name Name for the watcher to help identify it
-	Name *string `json:"name,omitempty"`
+	Name string `json:"name"`
 
 	// Service Service namespace (e.g., "dvp", "dta")
 	Service string `json:"service"`
