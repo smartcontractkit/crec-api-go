@@ -62,6 +62,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
     get:
       summary: Retrieves wallets for the organization.
+      description: |
+        Returns wallets for the organization. Archived wallets are excluded by default.
+        To include archived wallets, explicitly specify the archived status in the status filter.
       parameters:
         - in: query
           name: name
@@ -90,7 +93,7 @@ paths:
             $ref: "#/components/schemas/WalletType"
         - in: query
           name: status
-          description: Filter wallets by status. Multiple values allowed.
+          description: Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.
           schema:
             type: array
             items:
@@ -195,30 +198,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-    delete:
-      summary: Remove a wallet.
-      parameters:
-        - in: path
-          name: wallet_id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "200":
-          description: Wallet removed successfully.
-        "404":
-          description: Wallet not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplicationError"
-        "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplicationError"
 
   /channels:
     post:
@@ -250,6 +229,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
     get:
       summary: Retrieves channels for the organization.
+      description: |
+        Returns channels for the organization. Archived channels are excluded by default.
+        To include archived channels, explicitly specify the archived status in the status filter.
       parameters:
         - in: query
           name: name
@@ -258,9 +240,13 @@ paths:
             type: string
         - in: query
           name: status
-          description: Filter channels by status.
+          description: Filter channels by status. Multiple values allowed. Archived channels are excluded by default when no status filter is specified.
           schema:
-            $ref: "#/components/schemas/ChannelStatus"
+            type: array
+            items:
+              $ref: "#/components/schemas/ChannelStatus"
+          style: form
+          explode: true
         - in: query
           name: limit
           description: Maximum number of channels to return
@@ -319,8 +305,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-    put:
+    patch:
       summary: Updates a channel.
+      description: |
+        Updates channel properties. Can be used to update the name, description, or to transition the channel status (e.g., to archived).
+        A channel cannot be archived if it has active watchers.
       parameters:
         - in: path
           name: channel_id
@@ -333,7 +322,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateChannel"
+              $ref: "#/components/schemas/PatchChannel"
       responses:
         "200":
           description: Channel updated successfully
@@ -347,30 +336,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-        "404":
-          description: Channel not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplicationError"
-        "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplicationError"
-    delete:
-      summary: Deletes a channel.
-      parameters:
-        - in: path
-          name: channel_id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "202":
-          description: Delete request accepted.
         "404":
           description: Channel not found
           content:
@@ -427,6 +392,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
     get:
       summary: Retrieves watchers for a channel.
+      description: |
+        Returns watchers for the specified channel. Archived watchers are excluded by default.
+        To include archived watchers, explicitly specify the archived status in the status filter.
       parameters:
         - in: path
           name: channel_id
@@ -457,7 +425,7 @@ paths:
             type: string
         - in: query
           name: status
-          description: Filter watchers by status. Multiple values allowed.
+          description: Filter watchers by status. Multiple values allowed. Archived watchers are excluded by default when no status filter is specified.
           schema:
             type: array
             items:
@@ -542,38 +510,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-    delete:
-      summary: Deletes a watcher.
-      parameters:
-        - in: path
-          name: channel_id
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - in: path
-          name: watcher_id
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        "202":
-          description: Delete request accepted.
-        "404":
-          description: Channel or watcher not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplicationError"
-        "500":
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApplicationError"
     patch:
-      summary: Updates a watcher name.
+      summary: Updates a watcher.
+      description: |
+        Updates watcher properties. Can be used to update the name or to transition the watcher status (e.g., to archived).
+        When transitioning to archived status, the operation is asynchronous and returns 202 with the watcher in archiving state.
       parameters:
         - in: path
           name: channel_id
@@ -596,6 +537,12 @@ paths:
       responses:
         "200":
           description: Watcher updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Watcher"
+        "202":
+          description: Archive request accepted. The watcher is transitioning to archived state asynchronously.
           content:
             application/json:
               schema:
@@ -1045,17 +992,17 @@ components:
         - pending
         - deploying
         - deployed
-        - deleted
+        - archived
         - failed
     WalletEventStatus:
       type: string
-      description: Status of a wallet in events (includes deleted state for filtering)
+      description: Status of a wallet in events (includes archived state for filtering)
       enum:
         - pending
         - deploying
         - deployed
         - failed
-        - deleted
+        - archived
     WatcherStatus:
       type: string
       description: Status of a watcher entity
@@ -1063,17 +1010,18 @@ components:
         - pending
         - active
         - failed
-        - deleting
+        - archiving
+        - archived
     WatcherEventStatus:
       type: string
-      description: Status of a watcher in events (includes transitional and deletion states for filtering)
+      description: Status of a watcher in events (includes transitional and archival states for filtering)
       enum:
         - pending
         - active
         - failed
-        - deleting
-        - deletion_failed
-        - deleted
+        - archiving
+        - archive_failed
+        - archived
     OperationStatus:
       type: string
       description: Status of an operation
@@ -1210,9 +1158,8 @@ components:
           minLength: 1
           maxLength: 255
           pattern: '^(?!\s*$).+'
-      required:
-        - name
-        - description
+        status:
+          $ref: "#/components/schemas/WalletStatus"
     UpdateWatcher:
       type: object
       properties:
@@ -1222,8 +1169,8 @@ components:
           minLength: 1
           maxLength: 255
           pattern: '^(?!\s*$).+'
-      required:
-        - name
+        status:
+          $ref: "#/components/schemas/WatcherStatus"
     Wallet:
       type: object
       properties:
@@ -1394,18 +1341,23 @@ components:
           description: Description of the channel
       required:
         - name
-    UpdateChannel:
+    PatchChannel:
       type: object
       properties:
         name:
           type: string
           description: New name for the channel
+          minLength: 1
+          maxLength: 255
+          pattern: '^(?!\s*$).+'
         description:
           type: string
           description: New description for the channel
-      required:
-        - name
-        - description
+          minLength: 1
+          maxLength: 255
+          pattern: '^(?!\s*$).+'
+        status:
+          $ref: "#/components/schemas/ChannelStatus"
     Channel:
       type: object
       properties:
@@ -1949,7 +1901,7 @@ components:
       description: Status of a channel
       enum:
         - active
-        - inactive
+        - archived
     ExtensionList:
       type: object
       properties:

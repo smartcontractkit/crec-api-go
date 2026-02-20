@@ -30,7 +30,7 @@ const (
 // Defines values for ChannelStatus.
 const (
 	ChannelStatusActive   ChannelStatus = "active"
-	ChannelStatusInactive ChannelStatus = "inactive"
+	ChannelStatusArchived ChannelStatus = "archived"
 )
 
 // Defines values for EventABIType.
@@ -58,7 +58,7 @@ const (
 
 // Defines values for WalletEventStatus.
 const (
-	WalletEventStatusDeleted   WalletEventStatus = "deleted"
+	WalletEventStatusArchived  WalletEventStatus = "archived"
 	WalletEventStatusDeployed  WalletEventStatus = "deployed"
 	WalletEventStatusDeploying WalletEventStatus = "deploying"
 	WalletEventStatusFailed    WalletEventStatus = "failed"
@@ -67,7 +67,7 @@ const (
 
 // Defines values for WalletStatus.
 const (
-	WalletStatusDeleted   WalletStatus = "deleted"
+	WalletStatusArchived  WalletStatus = "archived"
 	WalletStatusDeployed  WalletStatus = "deployed"
 	WalletStatusDeploying WalletStatus = "deploying"
 	WalletStatusFailed    WalletStatus = "failed"
@@ -82,20 +82,21 @@ const (
 
 // Defines values for WatcherEventStatus.
 const (
-	WatcherEventStatusActive         WatcherEventStatus = "active"
-	WatcherEventStatusDeleted        WatcherEventStatus = "deleted"
-	WatcherEventStatusDeleting       WatcherEventStatus = "deleting"
-	WatcherEventStatusDeletionFailed WatcherEventStatus = "deletion_failed"
-	WatcherEventStatusFailed         WatcherEventStatus = "failed"
-	WatcherEventStatusPending        WatcherEventStatus = "pending"
+	WatcherEventStatusActive        WatcherEventStatus = "active"
+	WatcherEventStatusArchiveFailed WatcherEventStatus = "archive_failed"
+	WatcherEventStatusArchived      WatcherEventStatus = "archived"
+	WatcherEventStatusArchiving     WatcherEventStatus = "archiving"
+	WatcherEventStatusFailed        WatcherEventStatus = "failed"
+	WatcherEventStatusPending       WatcherEventStatus = "pending"
 )
 
 // Defines values for WatcherStatus.
 const (
-	WatcherStatusActive   WatcherStatus = "active"
-	WatcherStatusDeleting WatcherStatus = "deleting"
-	WatcherStatusFailed   WatcherStatus = "failed"
-	WatcherStatusPending  WatcherStatus = "pending"
+	WatcherStatusActive    WatcherStatus = "active"
+	WatcherStatusArchived  WatcherStatus = "archived"
+	WatcherStatusArchiving WatcherStatus = "archiving"
+	WatcherStatusFailed    WatcherStatus = "failed"
+	WatcherStatusPending   WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -485,6 +486,18 @@ type OperationStatusPayload struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
+// PatchChannel defines model for PatchChannel.
+type PatchChannel struct {
+	// Description New description for the channel
+	Description *string `json:"description,omitempty"`
+
+	// Name New name for the channel
+	Name *string `json:"name,omitempty"`
+
+	// Status Status of a channel
+	Status *ChannelStatus `json:"status,omitempty"`
+}
+
 // RSAPublicKey RSA public key with exponent and modulus
 type RSAPublicKey struct {
 	// E RSA public exponent (hex encoded, 2-17 bytes)
@@ -512,28 +525,25 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
-// UpdateChannel defines model for UpdateChannel.
-type UpdateChannel struct {
-	// Description New description for the channel
-	Description string `json:"description"`
-
-	// Name New name for the channel
-	Name string `json:"name"`
-}
-
 // UpdateWallet defines model for UpdateWallet.
 type UpdateWallet struct {
 	// Description New description for the wallet
-	Description string `json:"description"`
+	Description *string `json:"description,omitempty"`
 
 	// Name New name for the wallet
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
+
+	// Status Status of a wallet entity
+	Status *WalletStatus `json:"status,omitempty"`
 }
 
 // UpdateWatcher defines model for UpdateWatcher.
 type UpdateWatcher struct {
 	// Name New name for the watcher
-	Name string `json:"name"`
+	Name *string `json:"name,omitempty"`
+
+	// Status Status of a watcher entity
+	Status *WatcherStatus `json:"status,omitempty"`
 }
 
 // Wallet defines model for Wallet.
@@ -578,7 +588,7 @@ type Wallet struct {
 	WorkflowId *string `json:"workflow_id,omitempty"`
 }
 
-// WalletEventStatus Status of a wallet in events (includes deleted state for filtering)
+// WalletEventStatus Status of a wallet in events (includes archived state for filtering)
 type WalletEventStatus string
 
 // WalletList defines model for WalletList.
@@ -600,7 +610,7 @@ type WalletStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
-	// Status Status of a wallet in events (includes deleted state for filtering)
+	// Status Status of a wallet in events (includes archived state for filtering)
 	Status WalletEventStatus `json:"status"`
 
 	// StatusReason Reason for the status
@@ -676,7 +686,7 @@ type WatcherEventPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
-// WatcherEventStatus Status of a watcher in events (includes transitional and deletion states for filtering)
+// WatcherEventStatus Status of a watcher in events (includes transitional and archival states for filtering)
 type WatcherEventStatus string
 
 // WatcherList defines model for WatcherList.
@@ -695,7 +705,7 @@ type WatcherStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
-	// Status Status of a watcher in events (includes transitional and deletion states for filtering)
+	// Status Status of a watcher in events (includes transitional and archival states for filtering)
 	Status WatcherEventStatus `json:"status"`
 
 	// StatusReason Reason for the status
@@ -746,8 +756,8 @@ type GetChannelsParams struct {
 	// Name Filter channels by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
-	// Status Filter channels by status.
-	Status *ChannelStatus `form:"status,omitempty" json:"status,omitempty"`
+	// Status Filter channels by status. Multiple values allowed. Archived channels are excluded by default when no status filter is specified.
+	Status *[]ChannelStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Limit Maximum number of channels to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -848,7 +858,7 @@ type GetChannelsChannelIdWatchersParams struct {
 	// Name Filter watchers by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
-	// Status Filter watchers by status. Multiple values allowed.
+	// Status Filter watchers by status. Multiple values allowed. Archived watchers are excluded by default when no status filter is specified.
 	Status *[]WatcherStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ChainSelector Filter watchers by chain selector
@@ -881,7 +891,7 @@ type GetWalletsParams struct {
 	// Type Filter wallets by type
 	Type *WalletType `form:"type,omitempty" json:"type,omitempty"`
 
-	// Status Filter wallets by status. Multiple values allowed.
+	// Status Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.
 	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// Limit Maximum number of wallets to return
@@ -894,8 +904,8 @@ type GetWalletsParams struct {
 // PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
 type PostChannelsJSONRequestBody = CreateChannel
 
-// PutChannelsChannelIdJSONRequestBody defines body for PutChannelsChannelId for application/json ContentType.
-type PutChannelsChannelIdJSONRequestBody = UpdateChannel
+// PatchChannelsChannelIdJSONRequestBody defines body for PatchChannelsChannelId for application/json ContentType.
+type PatchChannelsChannelIdJSONRequestBody = PatchChannel
 
 // PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
 type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
@@ -1158,15 +1168,12 @@ type ServerInterface interface {
 	// Creates a new channel.
 	// (POST /channels)
 	PostChannels(w http.ResponseWriter, r *http.Request)
-	// Deletes a channel.
-	// (DELETE /channels/{channel_id})
-	DeleteChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Retrieves a specific channel by ID.
 	// (GET /channels/{channel_id})
 	GetChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Updates a channel.
-	// (PUT /channels/{channel_id})
-	PutChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
+	// (PATCH /channels/{channel_id})
+	PatchChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Retrieves events from a channel.
 	// (GET /channels/{channel_id}/events)
 	GetChannelsChannelIdEvents(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams)
@@ -1191,13 +1198,10 @@ type ServerInterface interface {
 	// Creates a watcher in a channel.
 	// (POST /channels/{channel_id}/watchers)
 	PostChannelsChannelIdWatchers(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
-	// Deletes a watcher.
-	// (DELETE /channels/{channel_id}/watchers/{watcher_id})
-	DeleteChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
 	// Retrieves a specific watcher by ID.
 	// (GET /channels/{channel_id}/watchers/{watcher_id})
 	GetChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
-	// Updates a watcher name.
+	// Updates a watcher.
 	// (PATCH /channels/{channel_id}/watchers/{watcher_id})
 	PatchChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
 	// List available watcher extensions and their metadata
@@ -1215,9 +1219,6 @@ type ServerInterface interface {
 	// Creates a new wallet.
 	// (POST /wallets)
 	PostWallets(w http.ResponseWriter, r *http.Request)
-	// Remove a wallet.
-	// (DELETE /wallets/{wallet_id})
-	DeleteWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
 	// Retrieves a specific wallet by ID.
 	// (GET /wallets/{wallet_id})
 	GetWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
@@ -1312,37 +1313,6 @@ func (siw *ServerInterfaceWrapper) PostChannels(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteChannelsChannelId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteChannelsChannelId(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "channel_id" -------------
-	var channelId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteChannelsChannelId(w, r, channelId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // GetChannelsChannelId operation middleware
 func (siw *ServerInterfaceWrapper) GetChannelsChannelId(w http.ResponseWriter, r *http.Request) {
 
@@ -1374,8 +1344,8 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelId(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
-// PutChannelsChannelId operation middleware
-func (siw *ServerInterfaceWrapper) PutChannelsChannelId(w http.ResponseWriter, r *http.Request) {
+// PatchChannelsChannelId operation middleware
+func (siw *ServerInterfaceWrapper) PatchChannelsChannelId(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1395,7 +1365,7 @@ func (siw *ServerInterfaceWrapper) PutChannelsChannelId(w http.ResponseWriter, r
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PutChannelsChannelId(w, r, channelId)
+		siw.Handler.PatchChannelsChannelId(w, r, channelId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1939,46 +1909,6 @@ func (siw *ServerInterfaceWrapper) PostChannelsChannelIdWatchers(w http.Response
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteChannelsChannelIdWatchersWatcherId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "channel_id" -------------
-	var channelId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "watcher_id" -------------
-	var watcherId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "watcher_id", r.PathValue("watcher_id"), &watcherId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "watcher_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteChannelsChannelIdWatchersWatcherId(w, r, channelId, watcherId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // GetChannelsChannelIdWatchersWatcherId operation middleware
 func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request) {
 
@@ -2228,37 +2158,6 @@ func (siw *ServerInterfaceWrapper) PostWallets(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
-// DeleteWalletsWalletId operation middleware
-func (siw *ServerInterfaceWrapper) DeleteWalletsWalletId(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "wallet_id" -------------
-	var walletId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteWalletsWalletId(w, r, walletId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // GetWalletsWalletId operation middleware
 func (siw *ServerInterfaceWrapper) GetWalletsWalletId(w http.ResponseWriter, r *http.Request) {
 
@@ -2443,9 +2342,8 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 
 	m.HandleFunc("GET "+options.BaseURL+"/channels", wrapper.GetChannels)
 	m.HandleFunc("POST "+options.BaseURL+"/channels", wrapper.PostChannels)
-	m.HandleFunc("DELETE "+options.BaseURL+"/channels/{channel_id}", wrapper.DeleteChannelsChannelId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}", wrapper.GetChannelsChannelId)
-	m.HandleFunc("PUT "+options.BaseURL+"/channels/{channel_id}", wrapper.PutChannelsChannelId)
+	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}", wrapper.PatchChannelsChannelId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events", wrapper.GetChannelsChannelIdEvents)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search", wrapper.GetChannelsChannelIdEventsSearch)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search/{event_id}", wrapper.GetChannelsChannelIdEventsSearchEventId)
@@ -2454,7 +2352,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetChannelsChannelIdOperationsOperationId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.GetChannelsChannelIdWatchers)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.PostChannelsChannelIdWatchers)
-	m.HandleFunc("DELETE "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.DeleteChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.PatchChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("GET "+options.BaseURL+"/extensions", wrapper.GetExtensions)
@@ -2462,7 +2359,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/networks", wrapper.GetNetworks)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.GetWallets)
 	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.PostWallets)
-	m.HandleFunc("DELETE "+options.BaseURL+"/wallets/{wallet_id}", wrapper.DeleteWalletsWalletId)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}", wrapper.GetWalletsWalletId)
 	m.HandleFunc("PATCH "+options.BaseURL+"/wallets/{wallet_id}", wrapper.PatchWalletsWalletId)
 
