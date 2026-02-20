@@ -1142,7 +1142,6 @@ components:
         - wallet_owner_address
         - chain_selector
         - wallet_type
-        - description
     UpdateWallet:
       type: object
       properties:
@@ -1210,7 +1209,6 @@ components:
       required:
         - wallet_id
         - name
-        - description
         - address
         - chain_selector
         - wallet_type

@@ -184,7 +184,7 @@ type CreateWallet struct {
 	ChainSelector ChainSelector `json:"chain_selector"`
 
 	// Description Description of the wallet
-	Description string `json:"description"`
+	Description *string `json:"description,omitempty"`
 
 	// Name Name of the wallet
 	Name string `json:"name"`
@@ -566,7 +566,7 @@ type Wallet struct {
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
 	// Description Description of the wallet
-	Description string `json:"description"`
+	Description *string `json:"description,omitempty"`
 
 	// Name Name of the wallet
 	Name string `json:"name"`
