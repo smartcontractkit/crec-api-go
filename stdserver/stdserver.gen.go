@@ -222,11 +222,11 @@ type CreateWatcherWithABI struct {
 
 // CreateWatcherWithService defines model for CreateWatcherWithService.
 type CreateWatcherWithService struct {
+	// Address Smart contract address to watch for events
+	Address string `json:"address"`
+
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
-
-	// Contracts Map of contract name to address. Required contract names are defined by the extension (discoverable via GET /extensions).
-	Contracts map[string]string `json:"contracts"`
 
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
@@ -234,7 +234,7 @@ type CreateWatcherWithService struct {
 	// Name Name for the watcher to help identify it
 	Name string `json:"name"`
 
-	// Service Service namespace (e.g., "dvp", "dta")
+	// Service Service service namespace (e.g., "dvp", "dta")
 	Service string `json:"service"`
 }
 
@@ -318,47 +318,6 @@ type EventList struct {
 
 // EventType Type of event
 type EventType string
-
-// Extension defines model for Extension.
-type Extension struct {
-	// Contracts Contracts that need addresses when creating a watcher
-	Contracts *[]ExtensionContract `json:"contracts,omitempty"`
-
-	// Events Events available for subscription
-	Events *[]ExtensionEvent `json:"events,omitempty"`
-
-	// Service Service identifier (e.g., "dta", "dvp")
-	Service *string `json:"service,omitempty"`
-}
-
-// ExtensionContract defines model for ExtensionContract.
-type ExtensionContract struct {
-	// Name Contract name (used as key in CreateWatcher contracts map)
-	Name *string `json:"name,omitempty"`
-}
-
-// ExtensionEvent defines model for ExtensionEvent.
-type ExtensionEvent struct {
-	// DataSchema JSON Schema for enrichment data (reference data attached by the extension)
-	DataSchema *map[string]interface{} `json:"data_schema,omitempty"`
-
-	// Description Human-readable description
-	Description *string `json:"description,omitempty"`
-
-	// Name Event name (used in CreateWatcher events array)
-	Name *string `json:"name,omitempty"`
-
-	// ParamsSchema JSON Schema for chain_event.params (decoded Solidity event parameters)
-	ParamsSchema *map[string]interface{} `json:"params_schema,omitempty"`
-
-	// TriggerContract Which contract emits this event
-	TriggerContract *string `json:"trigger_contract,omitempty"`
-}
-
-// ExtensionList defines model for ExtensionList.
-type ExtensionList struct {
-	Data *[]Extension `json:"data,omitempty"`
-}
 
 // HealthCheck defines model for HealthCheck.
 type HealthCheck struct {
@@ -631,7 +590,7 @@ type Watcher struct {
 	// Abi ABI definitions for the events (if not using service-based events)
 	Abi *[]EventABI `json:"abi,omitempty"`
 
-	// Address Trigger contract address being watched
+	// Address Smart contract address being watched
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
@@ -639,9 +598,6 @@ type Watcher struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
-
-	// Contracts Map of contract name to address (for service-based watchers)
-	Contracts *map[string]string `json:"contracts,omitempty"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
@@ -655,7 +611,7 @@ type Watcher struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Service Service namespace (if using service-based events)
+	// Service Service service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
@@ -738,7 +694,7 @@ type WatcherSummary struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Service Service namespace (if using service-based events)
+	// Service Service service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
@@ -1204,9 +1160,6 @@ type ServerInterface interface {
 	// Updates a watcher.
 	// (PATCH /channels/{channel_id}/watchers/{watcher_id})
 	PatchChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
-	// List available watcher extensions and their metadata
-	// (GET /extensions)
-	GetExtensions(w http.ResponseWriter, r *http.Request)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(w http.ResponseWriter, r *http.Request)
@@ -1989,26 +1942,6 @@ func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdWatchersWatcherId(w htt
 	handler.ServeHTTP(w, r)
 }
 
-// GetExtensions operation middleware
-func (siw *ServerInterfaceWrapper) GetExtensions(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetExtensions(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // GetHealthCheck operation middleware
 func (siw *ServerInterfaceWrapper) GetHealthCheck(w http.ResponseWriter, r *http.Request) {
 
@@ -2354,7 +2287,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.PostChannelsChannelIdWatchers)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
 	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.PatchChannelsChannelIdWatchersWatcherId)
-	m.HandleFunc("GET "+options.BaseURL+"/extensions", wrapper.GetExtensions)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
 	m.HandleFunc("GET "+options.BaseURL+"/networks", wrapper.GetNetworks)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.GetWallets)

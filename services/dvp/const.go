@@ -1,9 +1,9 @@
 package dvp
 
 const (
-	TokenTypeNone    = 0
-	TokenTypeERC20   = 1
-	TokenTypeERC3643 = 2
+	TokenTypeNone = iota
+	TokenTypeERC20
+	TokenTypeERC3643
 )
 
 const (
@@ -17,10 +17,10 @@ const (
 )
 
 const (
-	SettlementStatusNew      = 0
-	SettlementStatusOpen     = 1
-	SettlementStatusAccepted = 2
-	SettlementStatusClosing  = 3
-	SettlementStatusSettled  = 4
-	SettlementStatusCanceled = 5
+	SettlementStatusNew = iota
+	SettlementStatusOpen
+	SettlementStatusAccepted
+	SettlementStatusClosing
+	SettlementStatusSettled
+	SettlementStatusCanceled
 )
