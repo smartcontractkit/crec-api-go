@@ -224,11 +224,11 @@ type CreateWatcherWithABI struct {
 
 // CreateWatcherWithService defines model for CreateWatcherWithService.
 type CreateWatcherWithService struct {
+	// Address Smart contract address to watch for events
+	Address string `json:"address"`
+
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
-
-	// Contracts Map of contract name to address. Required contract names are defined by the extension (discoverable via GET /extensions).
-	Contracts map[string]string `json:"contracts"`
 
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
@@ -236,7 +236,7 @@ type CreateWatcherWithService struct {
 	// Name Name for the watcher to help identify it
 	Name string `json:"name"`
 
-	// Service Service namespace (e.g., "dvp", "dta")
+	// Service Service service namespace (e.g., "dvp", "dta")
 	Service string `json:"service"`
 }
 
@@ -320,47 +320,6 @@ type EventList struct {
 
 // EventType Type of event
 type EventType string
-
-// Extension defines model for Extension.
-type Extension struct {
-	// Contracts Contracts that need addresses when creating a watcher
-	Contracts *[]ExtensionContract `json:"contracts,omitempty"`
-
-	// Events Events available for subscription
-	Events *[]ExtensionEvent `json:"events,omitempty"`
-
-	// Service Service identifier (e.g., "dta", "dvp")
-	Service *string `json:"service,omitempty"`
-}
-
-// ExtensionContract defines model for ExtensionContract.
-type ExtensionContract struct {
-	// Name Contract name (used as key in CreateWatcher contracts map)
-	Name *string `json:"name,omitempty"`
-}
-
-// ExtensionEvent defines model for ExtensionEvent.
-type ExtensionEvent struct {
-	// DataSchema JSON Schema for enrichment data (reference data attached by the extension)
-	DataSchema *map[string]interface{} `json:"data_schema,omitempty"`
-
-	// Description Human-readable description
-	Description *string `json:"description,omitempty"`
-
-	// Name Event name (used in CreateWatcher events array)
-	Name *string `json:"name,omitempty"`
-
-	// ParamsSchema JSON Schema for chain_event.params (decoded Solidity event parameters)
-	ParamsSchema *map[string]interface{} `json:"params_schema,omitempty"`
-
-	// TriggerContract Which contract emits this event
-	TriggerContract *string `json:"trigger_contract,omitempty"`
-}
-
-// ExtensionList defines model for ExtensionList.
-type ExtensionList struct {
-	Data *[]Extension `json:"data,omitempty"`
-}
 
 // HealthCheck defines model for HealthCheck.
 type HealthCheck struct {
@@ -633,7 +592,7 @@ type Watcher struct {
 	// Abi ABI definitions for the events (if not using service-based events)
 	Abi *[]EventABI `json:"abi,omitempty"`
 
-	// Address Trigger contract address being watched
+	// Address Smart contract address being watched
 	Address string `json:"address"`
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
@@ -641,9 +600,6 @@ type Watcher struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
-
-	// Contracts Map of contract name to address (for service-based watchers)
-	Contracts *map[string]string `json:"contracts,omitempty"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
@@ -657,7 +613,7 @@ type Watcher struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Service Service namespace (if using service-based events)
+	// Service Service service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
@@ -740,7 +696,7 @@ type WatcherSummary struct {
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
-	// Service Service namespace (if using service-based events)
+	// Service Service service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher entity
@@ -1287,9 +1243,6 @@ type ClientInterface interface {
 
 	PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetExtensions request
-	GetExtensions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -1531,18 +1484,6 @@ func (c *Client) PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx context.Con
 
 func (c *Client) PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPatchChannelsChannelIdWatchersWatcherIdRequest(c.Server, channelId, watcherId, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) GetExtensions(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetExtensionsRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -2810,33 +2751,6 @@ func NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody(server string, ch
 	return req, nil
 }
 
-// NewGetExtensionsRequest generates requests for GetExtensions
-func NewGetExtensionsRequest(server string) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/extensions")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("GET", queryURL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 // NewGetHealthCheckRequest generates requests for GetHealthCheck
 func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	var err error
@@ -3268,9 +3182,6 @@ type ClientWithResponsesInterface interface {
 
 	PatchChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error)
 
-	// GetExtensionsWithResponse request
-	GetExtensionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetExtensionsResponse, error)
-
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
 
@@ -3636,29 +3547,6 @@ func (r PatchChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
 	return 0
 }
 
-type GetExtensionsResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *ExtensionList
-	JSON500      *ApplicationError
-}
-
-// Status returns HTTPResponse.Status
-func (r GetExtensionsResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r GetExtensionsResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type GetHealthCheckResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -3964,15 +3852,6 @@ func (c *ClientWithResponses) PatchChannelsChannelIdWatchersWatcherIdWithRespons
 		return nil, err
 	}
 	return ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp)
-}
-
-// GetExtensionsWithResponse request returning *GetExtensionsResponse
-func (c *ClientWithResponses) GetExtensionsWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetExtensionsResponse, error) {
-	rsp, err := c.GetExtensions(ctx, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseGetExtensionsResponse(rsp)
 }
 
 // GetHealthCheckWithResponse request returning *GetHealthCheckResponse
@@ -4634,39 +4513,6 @@ func ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*
 			return nil, err
 		}
 		response.JSON404 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
-		var dest ApplicationError
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON500 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseGetExtensionsResponse parses an HTTP response from a GetExtensionsWithResponse call
-func ParseGetExtensionsResponse(rsp *http.Response) (*GetExtensionsResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &GetExtensionsResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest ExtensionList
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
