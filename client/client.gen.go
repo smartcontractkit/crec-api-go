@@ -233,14 +233,14 @@ type CreateWatcherWithService struct {
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
 
-	// ExtensionConfig Optional extension-specific configuration (e.g. secondary contract addresses)
-	ExtensionConfig *map[string]interface{} `json:"extension_config,omitempty"`
-
 	// Name Name for the watcher to help identify it
 	Name string `json:"name"`
 
 	// Service Service service namespace (e.g., "dvp", "dta")
 	Service string `json:"service"`
+
+	// ServiceConfig Optional service-specific configuration (e.g. secondary contract addresses)
+	ServiceConfig *map[string]interface{} `json:"service_config,omitempty"`
 }
 
 // ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
@@ -613,14 +613,14 @@ type Watcher struct {
 	// Events List of event names being watched
 	Events []string `json:"events"`
 
-	// ExtensionConfig Optional extension-specific configuration (e.g. secondary contract addresses)
-	ExtensionConfig *map[string]interface{} `json:"extension_config,omitempty"`
-
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
 
 	// Service Service service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
+
+	// ServiceConfig Optional service-specific configuration (e.g. secondary contract addresses)
+	ServiceConfig *map[string]interface{} `json:"service_config,omitempty"`
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`

@@ -1401,9 +1401,9 @@ components:
             type: string
           description: List of event names to watch for within the service
           minItems: 1
-        extension_config:
+        service_config:
           type: object
-          description: Optional extension-specific configuration (e.g. secondary contract addresses)
+          description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
       required:
         - name
@@ -1530,9 +1530,9 @@ components:
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
-        extension_config:
+        service_config:
           type: object
-          description: Optional extension-specific configuration (e.g. secondary contract addresses)
+          description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
       required:
         - watcher_id
