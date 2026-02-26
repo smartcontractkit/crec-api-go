@@ -1401,6 +1401,10 @@ components:
             type: string
           description: List of event names to watch for within the service
           minItems: 1
+        service_config:
+          type: object
+          description: Optional service-specific configuration (e.g. secondary contract addresses)
+          additionalProperties: true
       required:
         - name
         - chain_selector
@@ -1526,6 +1530,10 @@ components:
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
+        service_config:
+          type: object
+          description: Optional service-specific configuration (e.g. secondary contract addresses)
+          additionalProperties: true
       required:
         - watcher_id
         - channel_id

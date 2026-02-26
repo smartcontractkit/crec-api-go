@@ -238,6 +238,9 @@ type CreateWatcherWithService struct {
 
 	// Service Service service namespace (e.g., "dvp", "dta")
 	Service string `json:"service"`
+
+	// ServiceConfig Optional service-specific configuration (e.g. secondary contract addresses)
+	ServiceConfig *map[string]interface{} `json:"service_config,omitempty"`
 }
 
 // ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
@@ -615,6 +618,9 @@ type Watcher struct {
 
 	// Service Service service namespace (if using service-based events)
 	Service *string `json:"service,omitempty"`
+
+	// ServiceConfig Optional service-specific configuration (e.g. secondary contract addresses)
+	ServiceConfig *map[string]interface{} `json:"service_config,omitempty"`
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
