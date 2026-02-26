@@ -231,6 +231,9 @@ type CreateWatcherWithService struct {
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
 
+	// ExtensionConfig Optional extension-specific configuration (e.g. secondary contract addresses)
+	ExtensionConfig *map[string]interface{} `json:"extension_config,omitempty"`
+
 	// Name Name for the watcher to help identify it
 	Name string `json:"name"`
 
@@ -619,6 +622,9 @@ type Watcher struct {
 
 	// Events List of event names being watched
 	Events []string `json:"events"`
+
+	// ExtensionConfig Optional extension-specific configuration (e.g. secondary contract addresses)
+	ExtensionConfig *map[string]interface{} `json:"extension_config,omitempty"`
 
 	// Name Name of the watcher for identification
 	Name *string `json:"name,omitempty"`
