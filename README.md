@@ -1,23 +1,69 @@
-# CREC-API :: Golang Bindings
+# CREC API Go
 
-To regenerate the Golang bindings for the CREC API and models, run:
+Go client, server stubs, and shared models for the CREC (CRE Connect) API. Generated from OpenAPI specifications.
+
+## Overview
+
+This repository provides:
+
+- **client** — HTTP client for calling CREC API endpoints (channels, watchers, wallets, operations, events)
+- **models** — Shared types such as VerifiableEvent, EVMEvent, Channel, Wallet, and operation/event types
+- **ginserver** / **stdserver** — Generated server stubs for implementing the API (Gin or net/http)
+
+## Installation
+
+```bash
+go get github.com/smartcontractkit/crec-api-go/client
+go get github.com/smartcontractkit/crec-api-go/models
+```
+
+## Usage
+
+### Client
+
+```go
+import (
+    "context"
+    "log"
+    "github.com/smartcontractkit/crec-api-go/client"
+)
+
+func main() {
+    c, err := client.NewClient("https://api.example.com")
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    channels, err := c.GetChannels(context.Background(), nil)
+    if err != nil {
+        log.Fatal(err)
+    }
+    // Use channels...
+}
+```
+
+Use `client.WithRequestEditorFn` to add auth headers (e.g. API key) to requests.
+
+### Models
+
+The models package is used by crec-workflow-utils, crec-sdk-ext-dta, crec-sdk-ext-dvp, and other CREC components for VerifiableEvent, EVMEvent, and related types.
+
+## Regenerating Bindings
+
+After modifying `api/openapi.yaml` or `models/models.yaml`:
 
 ```bash
 make tools && make generate
 ```
 
-# Adding/Updating a Service
+This runs oapi-codegen for the client, server stubs, and models.
 
-1. Copy ABI file into `services/{service}/abi`
+## Validating the OpenAPI Spec
 
-2. Add `abigen` command to `Makefile`
-
-```
-abigen --abi services/{service}/abi/{contract}.abi.json --pkg {unique_package_name} --out services/{service}/gen/{unique_package_name}/{unique_package_name}.gen.go
-## be sure to create the new directory under the service's `gen` directory
-mkdir -p services/{service}/gen/{unique_package_name}
+```bash
+make validate-openapi
 ```
 
-3. Run `make generate`
+## License
 
-4. Create schema file (json) in `services/{service}/schema` that maps all contract events to the `verifiableEvent` model, which can be found an existing schemas.
+[MIT](LICENSE.md)
