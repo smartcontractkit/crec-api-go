@@ -17,6 +17,8 @@ go get github.com/smartcontractkit/crec-api-go/client
 go get github.com/smartcontractkit/crec-api-go/models
 ```
 
+> Most consumers should use [crec-sdk](https://github.com/smartcontractkit/crec-sdk) instead of this package directly.
+
 ## Usage
 
 ### Client
@@ -63,6 +65,11 @@ This runs oapi-codegen for the client, server stubs, and models.
 ```bash
 make validate-openapi
 ```
+
+## Related
+
+- [crec-sdk](https://github.com/smartcontractkit/crec-sdk) — High-level SDK (most consumers should use this instead of the raw client)
+- [crec-workflow-utils](https://github.com/smartcontractkit/crec-workflow-utils) — Shared utilities for event-listener workflows
 
 ## License
 
