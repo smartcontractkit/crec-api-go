@@ -1614,7 +1614,7 @@ components:
         deadline:
           type: integer
           format: int64
-          description: Unix timestamp deadline for the operation. A value of 0 means no expiration. This field is included in the EIP-712 signature.
+          description: Unix timestamp deadline for the operation. A value of 0 means no expiration.
         transactions:
           type: array
           items:
@@ -1651,7 +1651,7 @@ components:
         deadline:
           type: integer
           format: int64
-          description: Unix timestamp deadline for the operation. A value of 0 means no expiration. This field is included in the EIP-712 signature.
+          description: Unix timestamp deadline for the operation. A value of 0 means no expiration.
         transactions:
           type: array
           items:
