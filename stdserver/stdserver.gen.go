@@ -160,6 +160,9 @@ type CreateOperation struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
+	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration. This field is included in the EIP-712 signature.
+	Deadline int64 `json:"deadline"`
+
 	// Signature EIP-712 signature of the operation
 	Signature string `json:"signature"`
 
@@ -384,6 +387,9 @@ type Operation struct {
 
 	// CreatedAt Timestamp of when the operation was created
 	CreatedAt int64 `json:"created_at"`
+
+	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration. This field is included in the EIP-712 signature.
+	Deadline int64 `json:"deadline"`
 
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`

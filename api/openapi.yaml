@@ -1611,6 +1611,10 @@ components:
         wallet_operation_id:
           type: string
           description: Unique wallet operation identifier
+        deadline:
+          type: integer
+          format: int64
+          description: Unix timestamp deadline for the operation. A value of 0 means no expiration. This field is included in the EIP-712 signature.
         transactions:
           type: array
           items:
@@ -1624,6 +1628,7 @@ components:
         - chain_selector
         - address
         - wallet_operation_id
+        - deadline
         - transactions
         - signature
     Operation:
@@ -1643,6 +1648,10 @@ components:
         wallet_operation_id:
           type: string
           description: Unique wallet operation identifier
+        deadline:
+          type: integer
+          format: int64
+          description: Unix timestamp deadline for the operation. A value of 0 means no expiration. This field is included in the EIP-712 signature.
         transactions:
           type: array
           items:
@@ -1661,6 +1670,7 @@ components:
         - chain_selector
         - address
         - wallet_operation_id
+        - deadline
         - transactions
         - signature
         - created_at
