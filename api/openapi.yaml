@@ -1175,9 +1175,6 @@ components:
           $ref: "#/components/schemas/WalletType"
         status:
           $ref: "#/components/schemas/WalletStatus"
-        workflow_id:
-          type: string
-          description: Unique identifier for the workflow that created the wallet
         status_channel_id:
           type: string
           format: uuid
