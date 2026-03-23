@@ -1492,9 +1492,6 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the watcher
-        workflow_id:
-          type: string
-          description: Unique identifier for the workflow that created the watcher
         name:
           type: string
           description: Name of the watcher for identification
@@ -1542,7 +1539,6 @@ components:
         - chain_selector
         - address
         - events
-        - workflow_id
         - don_family
     WatcherSummary:
       type: object
@@ -1551,9 +1547,6 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the watcher
-        workflow_id:
-          type: string
-          description: Unique identifier for the workflow that created the watcher
         name:
           type: string
           description: Name of the watcher for identification
@@ -1585,7 +1578,6 @@ components:
         - status
         - chain_selector
         - address
-        - workflow_id
         - don_family
     WatcherList:
       type: object

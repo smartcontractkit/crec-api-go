@@ -633,9 +633,6 @@ type Watcher struct {
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
-
-	// WorkflowId Unique identifier for the workflow that created the watcher
-	WorkflowId string `json:"workflow_id"`
 }
 
 // WatcherEventPayload defines model for WatcherEventPayload.
@@ -716,9 +713,6 @@ type WatcherSummary struct {
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
-
-	// WorkflowId Unique identifier for the workflow that created the watcher
-	WorkflowId string `json:"workflow_id"`
 }
 
 // GetChannelsParams defines parameters for GetChannels.
