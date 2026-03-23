@@ -551,9 +551,6 @@ type Wallet struct {
 
 	// WalletType Type of wallet
 	WalletType WalletType `json:"wallet_type"`
-
-	// WorkflowId Unique identifier for the workflow that created the wallet
-	WorkflowId *string `json:"workflow_id,omitempty"`
 }
 
 // WalletEventStatus Status of a wallet in events (includes archived state for filtering)
