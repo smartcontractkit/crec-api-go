@@ -1,6 +1,6 @@
 # CREC API Go
 
-Go client, server stubs, and shared models for the CREC (CRE Connect) API. Generated from OpenAPI specifications.
+Go client, server stubs, and shared models for the CRE Connect API. Generated from OpenAPI specifications.
 
 ## Overview
 
@@ -73,4 +73,4 @@ make validate-openapi
 
 ## License
 
-[MIT](LICENSE.md)
+[BUSL](LICENSE)
