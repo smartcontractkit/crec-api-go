@@ -1825,7 +1825,6 @@ components:
         - watcher_id
         - chain_selector
         - timestamp
-        - service
     WatcherEventPayload:
       type: object
       properties:

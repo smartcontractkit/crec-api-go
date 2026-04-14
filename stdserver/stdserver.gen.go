@@ -668,7 +668,7 @@ type WatcherStatusPayload struct {
 	ChainSelector string `json:"chain_selector"`
 
 	// Service Service namespace of the watcher
-	Service string `json:"service"`
+	Service *string `json:"service,omitempty"`
 
 	// Status Status of a watcher in events (includes transitional and archival states for filtering)
 	Status WatcherEventStatus `json:"status"`
