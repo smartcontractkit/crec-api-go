@@ -1816,6 +1816,9 @@ components:
           type: integer
           format: int64
           description: Timestamp when the event was created
+        service:
+          type: string
+          description: Service namespace of the watcher
       required:
         - status
         - status_reason
