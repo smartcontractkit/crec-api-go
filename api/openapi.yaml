@@ -1402,6 +1402,8 @@ components:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
+        confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -1433,6 +1435,8 @@ components:
             $ref: "#/components/schemas/EventABI"
           description: ABI definitions for the events to watch
           minItems: 1
+        confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -1528,6 +1532,8 @@ components:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
+        confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - watcher_id
         - channel_id
@@ -1537,6 +1543,7 @@ components:
         - address
         - events
         - don_family
+        - confidence_level
     WatcherSummary:
       type: object
       properties:
@@ -1568,6 +1575,8 @@ components:
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
+        confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - watcher_id
         - channel_id
@@ -1576,6 +1585,7 @@ components:
         - chain_selector
         - address
         - don_family
+        - confidence_level
     WatcherList:
       type: object
       properties:
@@ -1885,3 +1895,10 @@ components:
       enum:
         - active
         - archived
+    ConfidenceLevel:
+      type: string
+      description: Confidence level
+      enum:
+        - "latest"
+        - "safe"
+        - "finalized"

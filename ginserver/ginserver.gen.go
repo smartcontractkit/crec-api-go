@@ -33,6 +33,13 @@ const (
 	ChannelStatusArchived ChannelStatus = "archived"
 )
 
+// Defines values for ConfidenceLevel.
+const (
+	Finalized ConfidenceLevel = "finalized"
+	Latest    ConfidenceLevel = "latest"
+	Safe      ConfidenceLevel = "safe"
+)
+
 // Defines values for EventABIType.
 const (
 	EventABITypeEvent EventABIType = "event"
@@ -143,6 +150,9 @@ type ChannelList struct {
 // ChannelStatus Status of a channel
 type ChannelStatus string
 
+// ConfidenceLevel Confidence level
+type ConfidenceLevel string
+
 // CreateChannel defines model for CreateChannel.
 type CreateChannel struct {
 	// Description Description of the channel
@@ -216,6 +226,9 @@ type CreateWatcherWithABI struct {
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
 
+	// ConfidenceLevel Confidence level
+	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
+
 	// Events List of event names to watch for
 	Events []string `json:"events"`
 
@@ -230,6 +243,9 @@ type CreateWatcherWithService struct {
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
+
+	// ConfidenceLevel Confidence level
+	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
 
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
@@ -617,6 +633,9 @@ type Watcher struct {
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
+	// ConfidenceLevel Confidence level
+	ConfidenceLevel ConfidenceLevel `json:"confidence_level"`
+
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
 
@@ -705,6 +724,9 @@ type WatcherSummary struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// ConfidenceLevel Confidence level
+	ConfidenceLevel ConfidenceLevel `json:"confidence_level"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
