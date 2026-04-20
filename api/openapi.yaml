@@ -1185,6 +1185,8 @@ components:
           $ref: "#/components/schemas/ECDSASignersList"
         created_at:
           $ref: "#/components/schemas/Timestamp"
+        confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - wallet_id
         - name
@@ -1236,6 +1238,11 @@ components:
           type: integer
           format: int64
           description: Timestamp of when the network was last updated
+        type:
+          $ref: "#/components/schemas/NetworkType"
+        default_confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
+
       required:
         - id
         - name
@@ -1402,8 +1409,6 @@ components:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -1435,8 +1440,6 @@ components:
             $ref: "#/components/schemas/EventABI"
           description: ABI definitions for the events to watch
           minItems: 1
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -1902,3 +1905,9 @@ components:
         - "latest"
         - "safe"
         - "finalized"
+    NetworkType:
+      type: string
+      description: Type of chain
+      enum:
+        - "mainnet"
+        - "testnet"

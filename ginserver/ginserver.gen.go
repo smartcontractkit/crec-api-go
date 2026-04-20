@@ -53,6 +53,12 @@ const (
 	EventTypeWatcherStatus   EventType = "watcher.status"
 )
 
+// Defines values for NetworkType.
+const (
+	Mainnet NetworkType = "mainnet"
+	Testnet NetworkType = "testnet"
+)
+
 // Defines values for OperationStatus.
 const (
 	OperationStatusAccepted     OperationStatus = "accepted"
@@ -226,9 +232,6 @@ type CreateWatcherWithABI struct {
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
 
-	// ConfidenceLevel Confidence level
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
-
 	// Events List of event names to watch for
 	Events []string `json:"events"`
 
@@ -243,9 +246,6 @@ type CreateWatcherWithService struct {
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
-
-	// ConfidenceLevel Confidence level
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
 
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
@@ -360,11 +360,17 @@ type Network struct {
 	// CreatedAt Timestamp of when the network was created
 	CreatedAt int64 `json:"created_at"`
 
+	// DefaultConfidenceLevel Confidence level
+	DefaultConfidenceLevel *ConfidenceLevel `json:"default_confidence_level,omitempty"`
+
 	// Id Unique identifier for the network
 	Id openapi_types.UUID `json:"id"`
 
 	// Name Name of the network
 	Name string `json:"name"`
+
+	// Type Type of chain
+	Type *NetworkType `json:"type,omitempty"`
 
 	// UpdatedAt Timestamp of when the network was last updated
 	UpdatedAt int64 `json:"updated_at"`
@@ -377,6 +383,9 @@ type NetworkList struct {
 	// HasMore True if there are more networks to fetch
 	HasMore bool `json:"has_more"`
 }
+
+// NetworkType Type of chain
+type NetworkType string
 
 // OCRProof defines model for OCRProof.
 type OCRProof struct {
@@ -555,6 +564,9 @@ type Wallet struct {
 
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// ConfidenceLevel Confidence level
+	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
 
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
