@@ -1242,7 +1242,6 @@ components:
           $ref: "#/components/schemas/NetworkType"
         default_confidence_level:
           $ref: "#/components/schemas/ConfidenceLevel"
-
       required:
         - id
         - name
@@ -1409,6 +1408,8 @@ components:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
+        confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -1440,6 +1441,8 @@ components:
             $ref: "#/components/schemas/EventABI"
           description: ABI definitions for the events to watch
           minItems: 1
+        confidence_level:
+          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -1900,7 +1903,7 @@ components:
         - archived
     ConfidenceLevel:
       type: string
-      description: Confidence level
+      description: Confidence level. If not specified, the default confidence level for the network will be used.
       enum:
         - "latest"
         - "safe"
