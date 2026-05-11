@@ -570,7 +570,7 @@ paths:
     post:
       summary: Creates a signed operation or draft request, scoped to a channel.
       description: |
-        Creates a signed operation first, and falls back to a draft when the signature is omitted.
+        Creates a signed or draft operation first, depending on the presence of a signature.
         Signed operations are relayed immediately. Drafts can be finalized or cancelled later.
         Each transaction may include an optional preview block.
         The operation is scoped to the channel, and will only be visible to the channel.
@@ -1750,7 +1750,7 @@ components:
         - has_more
     CreateOperation:
       type: object
-      description: Request body for creating a signed operation first, or a draft when the signature is omitted.
+      description: Request body for creating a signed operation or a draft when the signature is omitted.
       properties:
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
@@ -1861,7 +1861,7 @@ components:
     Subject:
       type: object
       additionalProperties: false
-      description: Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+      description: Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
       properties:
         subject_type:
           $ref: "#/components/schemas/SubjectType"
@@ -2012,7 +2012,7 @@ components:
         digest:
           type: string
           nullable: true
-          description: Canonical signing digest for the finalized operation.
+          description: Canonical signing digest for the operation.
         transactions:
           type: array
           nullable: true
