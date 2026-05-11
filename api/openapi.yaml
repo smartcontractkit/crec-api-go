@@ -12,19 +12,19 @@ servers:
 
 tags:
   - name: Health
-    description: Service health (typically unauthenticated).
+    description: Service health.
   - name: Networks
-    description: Supported blockchain networks.
+    description: Supported networks.
   - name: Wallets
-    description: Smart wallet lifecycle.
+    description: Wallet lifecycle.
   - name: Channels
-    description: Logical channels for watchers, events, and operations.
+    description: Channels for watchers, events, and operations.
   - name: Watchers
-    description: Contract/event watchers scoped to a channel.
+    description: Watchers scoped to a channel.
   - name: Operations
-    description: Wallet operations within a channel.
+    description: Operations within a channel.
   - name: Events
-    description: Channel events (poll and historical search).
+    description: Events (poll and historical search).
 
 paths:
   /health-check:
