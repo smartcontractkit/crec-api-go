@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -27,6 +28,11 @@ const (
 	BadRequest    ApplicationErrorType = "Bad request"
 	InternalError ApplicationErrorType = "Internal error"
 	NotFound      ApplicationErrorType = "Not found"
+)
+
+// Defines values for CancelOperationStatus.
+const (
+	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
 )
 
 // Defines values for ChannelStatus.
@@ -55,6 +61,11 @@ const (
 	EventTypeWatcherStatus   EventType = "watcher.status"
 )
 
+// Defines values for FinalizeOperationStatus.
+const (
+	Accepted FinalizeOperationStatus = "accepted"
+)
+
 // Defines values for NetworkType.
 const (
 	Mainnet NetworkType = "mainnet"
@@ -63,12 +74,21 @@ const (
 
 // Defines values for OperationStatus.
 const (
-	OperationStatusAccepted     OperationStatus = "accepted"
-	OperationStatusBroadcasting OperationStatus = "broadcasting"
-	OperationStatusConfirmed    OperationStatus = "confirmed"
-	OperationStatusFailed       OperationStatus = "failed"
-	OperationStatusSending      OperationStatus = "sending"
-	OperationStatusSent         OperationStatus = "sent"
+	OperationStatusAccepted         OperationStatus = "accepted"
+	OperationStatusBroadcasting     OperationStatus = "broadcasting"
+	OperationStatusCancelled        OperationStatus = "cancelled"
+	OperationStatusConfirmed        OperationStatus = "confirmed"
+	OperationStatusExpired          OperationStatus = "expired"
+	OperationStatusFailed           OperationStatus = "failed"
+	OperationStatusPendingSignature OperationStatus = "pending_signature"
+	OperationStatusSending          OperationStatus = "sending"
+	OperationStatusSent             OperationStatus = "sent"
+)
+
+// Defines values for SubjectType.
+const (
+	SubjectTypeApiKey SubjectType = "api_key"
+	SubjectTypeUser   SubjectType = "user"
 )
 
 // Defines values for WalletEventStatus.
@@ -107,11 +127,11 @@ const (
 
 // Defines values for WatcherStatus.
 const (
-	WatcherStatusActive    WatcherStatus = "active"
-	WatcherStatusArchived  WatcherStatus = "archived"
-	WatcherStatusArchiving WatcherStatus = "archiving"
-	WatcherStatusFailed    WatcherStatus = "failed"
-	WatcherStatusPending   WatcherStatus = "pending"
+	Active    WatcherStatus = "active"
+	Archived  WatcherStatus = "archived"
+	Archiving WatcherStatus = "archiving"
+	Failed    WatcherStatus = "failed"
+	Pending   WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -125,6 +145,15 @@ type ApplicationError struct {
 
 // ApplicationErrorType Error type
 type ApplicationErrorType string
+
+// CancelOperation PATCH body for cancelling a pending operation.
+type CancelOperation struct {
+	// Status Marks the operation as cancelled.
+	Status CancelOperationStatus `json:"status"`
+}
+
+// CancelOperationStatus Marks the operation as cancelled.
+type CancelOperationStatus string
 
 // ChainSelector Chain selector identifier for the blockchain network
 type ChainSelector = string
@@ -170,7 +199,7 @@ type CreateChannel struct {
 	Name string `json:"name"`
 }
 
-// CreateOperation defines model for CreateOperation.
+// CreateOperation Request body for creating a signed operation first, or a draft when the signature is omitted.
 type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -181,10 +210,10 @@ type CreateOperation struct {
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
-	// Signature EIP-712 signature of the operation
-	Signature string `json:"signature"`
+	// Signature EIP-712 signature of the operation. Optional for draft creation.
+	Signature *string `json:"signature,omitempty"`
 
-	// Transactions List of transactions to execute
+	// Transactions List of transactions to execute. Each transaction may include optional preview data.
 	Transactions []TransactionRequest `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
@@ -349,6 +378,21 @@ type EventList struct {
 // EventType Type of event
 type EventType string
 
+// FinalizeOperation PATCH body for finalizing a pending operation.
+type FinalizeOperation struct {
+	// Digest Digest associated with the finalized operation.
+	Digest string `json:"digest"`
+
+	// Signature Final signature returned by the signing flow.
+	Signature string `json:"signature"`
+
+	// Status Marks the operation as accepted/finalized.
+	Status FinalizeOperationStatus `json:"status"`
+}
+
+// FinalizeOperationStatus Marks the operation as accepted/finalized.
+type FinalizeOperationStatus string
+
 // HealthCheck defines model for HealthCheck.
 type HealthCheck struct {
 	Status string `json:"status"`
@@ -415,26 +459,44 @@ type Operation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
+	// CancelledAt Unix timestamp in seconds
+	CancelledAt *Timestamp `json:"cancelled_at,omitempty"`
+
+	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	Canceller *Subject `json:"canceller,omitempty"`
+
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// CreatedAt Timestamp of when the operation was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
 
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
+	// Digest Signing digest for the finalized operation.
+	Digest *string `json:"digest"`
+
+	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	Initiator Subject `json:"initiator"`
+
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Signature EIP-712 signature of the operation
-	Signature string `json:"signature"`
+	// Signature EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
+	Signature *string `json:"signature"`
+
+	// SignedAt Unix timestamp in seconds
+	SignedAt *Timestamp `json:"signed_at,omitempty"`
+
+	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	Signer *Subject `json:"signer,omitempty"`
 
 	// Status Status of an operation
 	Status OperationStatus `json:"status"`
 
-	// Transactions List of transactions to execute
-	Transactions []TransactionRequest `json:"transactions"`
+	// Transactions List of transactions associated with the operation.
+	Transactions []Transaction `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -465,6 +527,9 @@ type OperationStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
+	// Digest Canonical signing digest for the finalized operation.
+	Digest *string `json:"digest"`
+
 	// EventHash Verifiable event hash for reference (only present when status is confirmed)
 	EventHash *string `json:"event_hash,omitempty"`
 
@@ -479,6 +544,9 @@ type OperationStatusPayload struct {
 
 	// Timestamp Timestamp when the event was created
 	Timestamp int64 `json:"timestamp"`
+
+	// Transactions Transactions associated with the event.
+	Transactions *[]Transaction `json:"transactions"`
 
 	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
@@ -499,6 +567,11 @@ type PatchChannel struct {
 	Status *ChannelStatus `json:"status,omitempty"`
 }
 
+// PatchOperation PATCH body for finalizing or cancelling an operation.
+type PatchOperation struct {
+	union json.RawMessage
+}
+
 // RSAPublicKey RSA public key with exponent and modulus
 type RSAPublicKey struct {
 	// E RSA public exponent (hex encoded, 2-17 bytes)
@@ -511,13 +584,67 @@ type RSAPublicKey struct {
 // RSASignersList List of allowed RSA public signing keys
 type RSASignersList = []RSAPublicKey
 
+// Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+type Subject struct {
+	// SubjectId Stable subject identifier used for filtering and equality.
+	SubjectId string `json:"subject_id"`
+
+	// SubjectName Human-friendly subject name.
+	SubjectName string `json:"subject_name"`
+
+	// SubjectType Type of subject used for audit identity and filtering.
+	SubjectType SubjectType `json:"subject_type"`
+}
+
+// SubjectType Type of subject used for audit identity and filtering.
+type SubjectType string
+
 // Timestamp Unix timestamp in seconds
 type Timestamp = int64
 
-// TransactionRequest defines model for TransactionRequest.
+// Transaction Transaction payload returned by operation reads and events.
+type Transaction struct {
+	// Data Hex-encoded calldata for the transaction
+	Data string `json:"data"`
+
+	// PreviewSnapshot Snapshot of the preview captured after the operation is read back.
+	PreviewSnapshot *TransactionPreviewSnapshot `json:"preview_snapshot,omitempty"`
+
+	// To Address receiving the transaction
+	To string `json:"to"`
+
+	// Value Amount of native token value being sent in the transaction
+	Value string `json:"value"`
+}
+
+// TransactionPreview Preview metadata attached to a draft transaction before signing.
+type TransactionPreview struct {
+	// FunctionSignature Function signature used to build the transaction preview.
+	FunctionSignature string `json:"function_signature"`
+
+	// Metadata Optional arbitrary metadata attached to the preview.
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// TransactionPreviewSnapshot Snapshot of the preview captured after the operation is read back.
+type TransactionPreviewSnapshot struct {
+	// ExecutionValues Resolved execution values captured during previewing. It will be an empty map when the function has no parameters.
+	ExecutionValues map[string]interface{} `json:"execution_values"`
+
+	// FunctionSignature Function signature used to build the snapshot.
+	FunctionSignature string `json:"function_signature"`
+
+	// Metadata Optional arbitrary metadata captured with the snapshot.
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// TransactionRequest Transaction payload for operation creation.
 type TransactionRequest struct {
 	// Data Hex-encoded calldata for the transaction
 	Data string `json:"data"`
+
+	// Preview Preview metadata attached to a draft transaction before signing.
+	Preview *TransactionPreview `json:"preview,omitempty"`
 
 	// To Address receiving the transaction
 	To string `json:"to"`
@@ -849,6 +976,24 @@ type GetChannelsChannelIdOperationsParams struct {
 
 	// WalletId Filter operations by wallet ID
 	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
+
+	// InitiatorSubjectType Filter operations by initiator subject type.
+	InitiatorSubjectType *SubjectType `form:"initiator_subject_type,omitempty" json:"initiator_subject_type,omitempty"`
+
+	// InitiatorSubjectId Filter operations by initiator subject ID.
+	InitiatorSubjectId *string `form:"initiator_subject_id,omitempty" json:"initiator_subject_id,omitempty"`
+
+	// SignerSubjectType Filter operations by signer subject type.
+	SignerSubjectType *SubjectType `form:"signer_subject_type,omitempty" json:"signer_subject_type,omitempty"`
+
+	// SignerSubjectId Filter operations by signer subject ID.
+	SignerSubjectId *string `form:"signer_subject_id,omitempty" json:"signer_subject_id,omitempty"`
+
+	// CancellerSubjectType Filter operations by canceller subject type.
+	CancellerSubjectType *SubjectType `form:"canceller_subject_type,omitempty" json:"canceller_subject_type,omitempty"`
+
+	// CancellerSubjectId Filter operations by canceller subject ID.
+	CancellerSubjectId *string `form:"canceller_subject_id,omitempty" json:"canceller_subject_id,omitempty"`
 }
 
 // GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
@@ -913,6 +1058,9 @@ type PatchChannelsChannelIdJSONRequestBody = PatchChannel
 
 // PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
 type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
+
+// PatchChannelsChannelIdOperationsOperationIdJSONRequestBody defines body for PatchChannelsChannelIdOperationsOperationId for application/json ContentType.
+type PatchChannelsChannelIdOperationsOperationIdJSONRequestBody = PatchOperation
 
 // PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
 type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
@@ -1164,6 +1312,95 @@ func (t *EventHeaders_Proofs_Item) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsFinalizeOperation returns the union data inside the PatchOperation as a FinalizeOperation
+func (t PatchOperation) AsFinalizeOperation() (FinalizeOperation, error) {
+	var body FinalizeOperation
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFinalizeOperation overwrites any union data inside the PatchOperation as the provided FinalizeOperation
+func (t *PatchOperation) FromFinalizeOperation(v FinalizeOperation) error {
+	v.Status = "accepted"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFinalizeOperation performs a merge with any union data inside the PatchOperation, using the provided FinalizeOperation
+func (t *PatchOperation) MergeFinalizeOperation(v FinalizeOperation) error {
+	v.Status = "accepted"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCancelOperation returns the union data inside the PatchOperation as a CancelOperation
+func (t PatchOperation) AsCancelOperation() (CancelOperation, error) {
+	var body CancelOperation
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCancelOperation overwrites any union data inside the PatchOperation as the provided CancelOperation
+func (t *PatchOperation) FromCancelOperation(v CancelOperation) error {
+	v.Status = "cancelled"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCancelOperation performs a merge with any union data inside the PatchOperation, using the provided CancelOperation
+func (t *PatchOperation) MergeCancelOperation(v CancelOperation) error {
+	v.Status = "cancelled"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t PatchOperation) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"status"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t PatchOperation) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "accepted":
+		return t.AsFinalizeOperation()
+	case "cancelled":
+		return t.AsCancelOperation()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t PatchOperation) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PatchOperation) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -1272,6 +1509,11 @@ type ClientInterface interface {
 
 	// GetChannelsChannelIdOperationsOperationId request
 	GetChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// PatchChannelsChannelIdOperationsOperationIdWithBody request with any body
+	PatchChannelsChannelIdOperationsOperationIdWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	PatchChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetChannelsChannelIdWatchers request
 	GetChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1458,6 +1700,30 @@ func (c *Client) PostChannelsChannelIdOperations(ctx context.Context, channelId 
 
 func (c *Client) GetChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetChannelsChannelIdOperationsOperationIdRequest(c.Server, channelId, operationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchChannelsChannelIdOperationsOperationIdWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody(c.Server, channelId, operationId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) PatchChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewPatchChannelsChannelIdOperationsOperationIdRequest(c.Server, channelId, operationId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2388,6 +2654,102 @@ func NewGetChannelsChannelIdOperationsRequest(server string, channelId openapi_t
 
 		}
 
+		if params.InitiatorSubjectType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "initiator_subject_type", runtime.ParamLocationQuery, *params.InitiatorSubjectType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.InitiatorSubjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "initiator_subject_id", runtime.ParamLocationQuery, *params.InitiatorSubjectId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SignerSubjectType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "signer_subject_type", runtime.ParamLocationQuery, *params.SignerSubjectType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.SignerSubjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "signer_subject_id", runtime.ParamLocationQuery, *params.SignerSubjectId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CancellerSubjectType != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "canceller_subject_type", runtime.ParamLocationQuery, *params.CancellerSubjectType); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.CancellerSubjectId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "canceller_subject_id", runtime.ParamLocationQuery, *params.CancellerSubjectId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
 		queryURL.RawQuery = queryValues.Encode()
 	}
 
@@ -2483,6 +2845,60 @@ func NewGetChannelsChannelIdOperationsOperationIdRequest(server string, channelI
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewPatchChannelsChannelIdOperationsOperationIdRequest calls the generic PatchChannelsChannelIdOperationsOperationId builder with application/json body
+func NewPatchChannelsChannelIdOperationsOperationIdRequest(server string, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody(server, channelId, operationId, "application/json", bodyReader)
+}
+
+// NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody generates requests for PatchChannelsChannelIdOperationsOperationId with any type of body
+func NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody(server string, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "operation_id", runtime.ParamLocationPath, operationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/operations/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -3212,6 +3628,11 @@ type ClientWithResponsesInterface interface {
 	// GetChannelsChannelIdOperationsOperationIdWithResponse request
 	GetChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsOperationIdResponse, error)
 
+	// PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse request with any body
+	PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error)
+
+	PatchChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error)
+
 	// GetChannelsChannelIdWatchersWithResponse request
 	GetChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersResponse, error)
 
@@ -3488,6 +3909,31 @@ func (r GetChannelsChannelIdOperationsOperationIdResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r GetChannelsChannelIdOperationsOperationIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type PatchChannelsChannelIdOperationsOperationIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Operation
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON409      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r PatchChannelsChannelIdOperationsOperationIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r PatchChannelsChannelIdOperationsOperationIdResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3846,6 +4292,23 @@ func (c *ClientWithResponses) GetChannelsChannelIdOperationsOperationIdWithRespo
 		return nil, err
 	}
 	return ParseGetChannelsChannelIdOperationsOperationIdResponse(rsp)
+}
+
+// PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse request with arbitrary body returning *PatchChannelsChannelIdOperationsOperationIdResponse
+func (c *ClientWithResponses) PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error) {
+	rsp, err := c.PatchChannelsChannelIdOperationsOperationIdWithBody(ctx, channelId, operationId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp)
+}
+
+func (c *ClientWithResponses) PatchChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error) {
+	rsp, err := c.PatchChannelsChannelIdOperationsOperationId(ctx, channelId, operationId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp)
 }
 
 // GetChannelsChannelIdWatchersWithResponse request returning *GetChannelsChannelIdWatchersResponse
@@ -4385,6 +4848,53 @@ func ParseGetChannelsChannelIdOperationsOperationIdResponse(rsp *http.Response) 
 			return nil, err
 		}
 		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParsePatchChannelsChannelIdOperationsOperationIdResponse parses an HTTP response from a PatchChannelsChannelIdOperationsOperationIdWithResponse call
+func ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp *http.Response) (*PatchChannelsChannelIdOperationsOperationIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &PatchChannelsChannelIdOperationsOperationIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Operation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	}
 
