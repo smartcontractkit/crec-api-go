@@ -4,9 +4,34 @@ info:
   version: 0.4.0
   description: API specification for CRE Connect resources
 
+servers:
+  - url: https://cre-connect.api.chain.link/v1
+    description: CRE Connect base URL.
+  - url: http://localhost:8080
+    description: Local development.
+
+tags:
+  - name: Health
+    description: Service health.
+  - name: Networks
+    description: Supported networks.
+  - name: Wallets
+    description: Wallet lifecycle.
+  - name: Channels
+    description: Channels for watchers, events, and operations.
+  - name: Watchers
+    description: Watchers scoped to a channel.
+  - name: Operations
+    description: Operations within a channel.
+  - name: Events
+    description: Events (poll and historical search).
+
 paths:
   /health-check:
     get:
+      tags:
+        - Health
+      operationId: getHealthCheck
       summary: Health check endpoint
       responses:
         "200":
@@ -18,6 +43,9 @@ paths:
 
   /networks:
     get:
+      tags:
+        - Networks
+      operationId: listNetworks
       summary: Retrieves available networks.
       responses:
         "200":
@@ -34,6 +62,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
   /wallets:
     post:
+      tags:
+        - Wallets
+      operationId: createWallet
       summary: Creates a new wallet.
       requestBody:
         required: true
@@ -61,6 +92,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     get:
+      tags:
+        - Wallets
+      operationId: listWallets
       summary: Retrieves wallets for the organization.
       description: |
         Returns wallets for the organization. Archived wallets are excluded by default.
@@ -131,6 +165,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
   /wallets/{wallet_id}:
     get:
+      tags:
+        - Wallets
+      operationId: getWallet
       summary: Retrieves a specific wallet by ID.
       parameters:
         - in: path
@@ -159,6 +196,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     patch:
+      tags:
+        - Wallets
+      operationId: updateWallet
       summary: Updates a wallet name.
       parameters:
         - in: path
@@ -201,6 +241,9 @@ paths:
 
   /channels:
     post:
+      tags:
+        - Channels
+      operationId: createChannel
       summary: Creates a new channel.
       requestBody:
         required: true
@@ -228,6 +271,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     get:
+      tags:
+        - Channels
+      operationId: listChannels
       summary: Retrieves channels for the organization.
       description: |
         Returns channels for the organization. Archived channels are excluded by default.
@@ -278,6 +324,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
   /channels/{channel_id}:
     get:
+      tags:
+        - Channels
+      operationId: getChannel
       summary: Retrieves a specific channel by ID.
       parameters:
         - in: path
@@ -306,6 +355,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     patch:
+      tags:
+        - Channels
+      operationId: updateChannel
       summary: Updates a channel.
       description: |
         Updates channel properties. Can be used to update the name, description, or to transition the channel status (e.g., to archived).
@@ -351,6 +403,9 @@ paths:
 
   /channels/{channel_id}/watchers:
     post:
+      tags:
+        - Watchers
+      operationId: createWatcher
       summary: Creates a watcher in a channel.
       parameters:
         - in: path
@@ -391,6 +446,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     get:
+      tags:
+        - Watchers
+      operationId: listWatchers
       summary: Retrieves watchers for a channel.
       description: |
         Returns watchers for the specified channel. Archived watchers are excluded by default.
@@ -477,6 +535,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
   /channels/{channel_id}/watchers/{watcher_id}:
     get:
+      tags:
+        - Watchers
+      operationId: getWatcher
       summary: Retrieves a specific watcher by ID.
       parameters:
         - in: path
@@ -511,6 +572,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     patch:
+      tags:
+        - Watchers
+      operationId: updateWatcher
       summary: Updates a watcher.
       description: |
         Updates watcher properties. Can be used to update the name or to transition the watcher status (e.g., to archived).
@@ -568,6 +632,9 @@ paths:
 
   /channels/{channel_id}/operations:
     post:
+      tags:
+        - Operations
+      operationId: createOperation
       summary: Sends a CreateOperation request to a channel.
       parameters:
         - in: path
@@ -608,6 +675,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
     get:
+      tags:
+        - Operations
+      operationId: listOperations
       summary: Retrieves operations for a channel.
       parameters:
         - in: path
@@ -678,6 +748,9 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
   /channels/{channel_id}/operations/{operation_id}:
     get:
+      tags:
+        - Operations
+      operationId: getOperation
       summary: Gets Operation record for a specific operation.
       parameters:
         - in: path
@@ -714,6 +787,9 @@ paths:
 
   /channels/{channel_id}/events:
     get:
+      tags:
+        - Events
+      operationId: listChannelEvents
       summary: Retrieves events from a channel.
       parameters:
         - in: path
@@ -765,6 +841,9 @@ paths:
 
   /channels/{channel_id}/events/search:
     get:
+      tags:
+        - Events
+      operationId: searchChannelEvents
       summary: Query and search historical events from a channel.
       description: |
         Retrieves events with filtering capabilities. Use this endpoint for historical queries and searches. For real-time polling, use the /events endpoint.
@@ -922,6 +1001,9 @@ paths:
 
   /channels/{channel_id}/events/search/{event_id}:
     get:
+      tags:
+        - Events
+      operationId: getChannelEvent
       summary: Retrieves a specific event by ID from a channel.
       parameters:
         - in: path
@@ -964,8 +1046,9 @@ components:
     ApiKeyAuth:
       type: apiKey
       in: header
-      name: Api-Key
-      description: Public organisation API key.
+      name: Authorization
+      description: |
+        Send `Authorization: Apikey <api-key>`.
   schemas:
     WalletStatus:
       type: string
