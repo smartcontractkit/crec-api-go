@@ -199,7 +199,7 @@ type CreateChannel struct {
 	Name string `json:"name"`
 }
 
-// CreateOperation Request body for creating a signed operation first, or a draft when the signature is omitted.
+// CreateOperation Request body for creating a signed operation or a draft when the signature is omitted.
 type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -462,7 +462,7 @@ type Operation struct {
 	// CancelledAt Unix timestamp in seconds
 	CancelledAt *Timestamp `json:"cancelled_at,omitempty"`
 
-	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 	Canceller *Subject `json:"canceller,omitempty"`
 
 	// ChainSelector Chain selector identifier for the blockchain network
@@ -477,7 +477,7 @@ type Operation struct {
 	// Digest Signing digest for the finalized operation.
 	Digest *string `json:"digest"`
 
-	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 	Initiator Subject `json:"initiator"`
 
 	// OperationId Unique identifier for the operation
@@ -489,7 +489,7 @@ type Operation struct {
 	// SignedAt Unix timestamp in seconds
 	SignedAt *Timestamp `json:"signed_at,omitempty"`
 
-	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 	Signer *Subject `json:"signer,omitempty"`
 
 	// Status Status of an operation
@@ -527,7 +527,7 @@ type OperationStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
-	// Digest Canonical signing digest for the finalized operation.
+	// Digest Canonical signing digest for the operation.
 	Digest *string `json:"digest"`
 
 	// EventHash Verifiable event hash for reference (only present when status is confirmed)
@@ -584,7 +584,7 @@ type RSAPublicKey struct {
 // RSASignersList List of allowed RSA public signing keys
 type RSASignersList = []RSAPublicKey
 
-// Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+// Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 type Subject struct {
 	// SubjectId Stable subject identifier used for filtering and equality.
 	SubjectId string `json:"subject_id"`
@@ -882,8 +882,8 @@ type WatcherSummary struct {
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
 
-// GetChannelsParams defines parameters for GetChannels.
-type GetChannelsParams struct {
+// ListChannelsParams defines parameters for ListChannels.
+type ListChannelsParams struct {
 	// Name Filter channels by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
@@ -897,8 +897,8 @@ type GetChannelsParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetChannelsChannelIdEventsParams defines parameters for GetChannelsChannelIdEvents.
-type GetChannelsChannelIdEventsParams struct {
+// ListChannelEventsParams defines parameters for ListChannelEvents.
+type ListChannelEventsParams struct {
 	// Limit Maximum number of events to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -906,8 +906,8 @@ type GetChannelsChannelIdEventsParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetChannelsChannelIdEventsSearchParams defines parameters for GetChannelsChannelIdEventsSearch.
-type GetChannelsChannelIdEventsSearchParams struct {
+// SearchChannelEventsParams defines parameters for SearchChannelEvents.
+type SearchChannelEventsParams struct {
 	// Limit Maximum number of events to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -957,8 +957,8 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	Service *[]string `form:"service,omitempty" json:"service,omitempty"`
 }
 
-// GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
-type GetChannelsChannelIdOperationsParams struct {
+// ListOperationsParams defines parameters for ListOperations.
+type ListOperationsParams struct {
 	// Limit Maximum number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -996,8 +996,8 @@ type GetChannelsChannelIdOperationsParams struct {
 	CancellerSubjectId *string `form:"canceller_subject_id,omitempty" json:"canceller_subject_id,omitempty"`
 }
 
-// GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
-type GetChannelsChannelIdWatchersParams struct {
+// ListWatchersParams defines parameters for ListWatchers.
+type ListWatchersParams struct {
 	// Limit Maximum number of watchers to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -1023,8 +1023,8 @@ type GetChannelsChannelIdWatchersParams struct {
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
-// GetWalletsParams defines parameters for GetWallets.
-type GetWalletsParams struct {
+// ListWalletsParams defines parameters for ListWallets.
+type ListWalletsParams struct {
 	// Name Filter wallets by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
@@ -1050,29 +1050,29 @@ type GetWalletsParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
-type PostChannelsJSONRequestBody = CreateChannel
+// CreateChannelJSONRequestBody defines body for CreateChannel for application/json ContentType.
+type CreateChannelJSONRequestBody = CreateChannel
 
-// PatchChannelsChannelIdJSONRequestBody defines body for PatchChannelsChannelId for application/json ContentType.
-type PatchChannelsChannelIdJSONRequestBody = PatchChannel
+// UpdateChannelJSONRequestBody defines body for UpdateChannel for application/json ContentType.
+type UpdateChannelJSONRequestBody = PatchChannel
 
-// PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
-type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
+// CreateOperationJSONRequestBody defines body for CreateOperation for application/json ContentType.
+type CreateOperationJSONRequestBody = CreateOperation
 
 // PatchChannelsChannelIdOperationsOperationIdJSONRequestBody defines body for PatchChannelsChannelIdOperationsOperationId for application/json ContentType.
 type PatchChannelsChannelIdOperationsOperationIdJSONRequestBody = PatchOperation
 
-// PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
-type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+// CreateWatcherJSONRequestBody defines body for CreateWatcher for application/json ContentType.
+type CreateWatcherJSONRequestBody = CreateWatcher
 
-// PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody defines body for PatchChannelsChannelIdWatchersWatcherId for application/json ContentType.
-type PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody = UpdateWatcher
+// UpdateWatcherJSONRequestBody defines body for UpdateWatcher for application/json ContentType.
+type UpdateWatcherJSONRequestBody = UpdateWatcher
 
-// PostWalletsJSONRequestBody defines body for PostWallets for application/json ContentType.
-type PostWalletsJSONRequestBody = CreateWallet
+// CreateWalletJSONRequestBody defines body for CreateWallet for application/json ContentType.
+type CreateWalletJSONRequestBody = CreateWallet
 
-// PatchWalletsWalletIdJSONRequestBody defines body for PatchWalletsWalletId for application/json ContentType.
-type PatchWalletsWalletIdJSONRequestBody = UpdateWallet
+// UpdateWalletJSONRequestBody defines body for UpdateWallet for application/json ContentType.
+type UpdateWalletJSONRequestBody = UpdateWallet
 
 // AsCreateWatcherWithService returns the union data inside the CreateWatcher as a CreateWatcherWithService
 func (t CreateWatcher) AsCreateWatcherWithService() (CreateWatcherWithService, error) {
@@ -1474,88 +1474,88 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetChannels request
-	GetChannels(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListChannels request
+	ListChannels(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostChannelsWithBody request with any body
-	PostChannelsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateChannelWithBody request with any body
+	CreateChannelWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostChannels(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateChannel(ctx context.Context, body CreateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelId request
-	GetChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetChannel request
+	GetChannel(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PatchChannelsChannelIdWithBody request with any body
-	PatchChannelsChannelIdWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateChannelWithBody request with any body
+	UpdateChannelWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PatchChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, body PatchChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateChannel(ctx context.Context, channelId openapi_types.UUID, body UpdateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelIdEvents request
-	GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListChannelEvents request
+	ListChannelEvents(ctx context.Context, channelId openapi_types.UUID, params *ListChannelEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelIdEventsSearch request
-	GetChannelsChannelIdEventsSearch(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// SearchChannelEvents request
+	SearchChannelEvents(ctx context.Context, channelId openapi_types.UUID, params *SearchChannelEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelIdEventsSearchEventId request
-	GetChannelsChannelIdEventsSearchEventId(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetChannelEvent request
+	GetChannelEvent(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelIdOperations request
-	GetChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListOperations request
+	ListOperations(ctx context.Context, channelId openapi_types.UUID, params *ListOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostChannelsChannelIdOperationsWithBody request with any body
-	PostChannelsChannelIdOperationsWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateOperationWithBody request with any body
+	CreateOperationWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateOperation(ctx context.Context, channelId openapi_types.UUID, body CreateOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelIdOperationsOperationId request
-	GetChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetOperation request
+	GetOperation(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// PatchChannelsChannelIdOperationsOperationIdWithBody request with any body
 	PatchChannelsChannelIdOperationsOperationIdWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PatchChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelIdWatchers request
-	GetChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListWatchers request
+	ListWatchers(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostChannelsChannelIdWatchersWithBody request with any body
-	PostChannelsChannelIdWatchersWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateWatcherWithBody request with any body
+	CreateWatcherWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateWatcher(ctx context.Context, channelId openapi_types.UUID, body CreateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetChannelsChannelIdWatchersWatcherId request
-	GetChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetWatcher request
+	GetWatcher(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PatchChannelsChannelIdWatchersWatcherIdWithBody request with any body
-	PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateWatcherWithBody request with any body
+	UpdateWatcherWithBody(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWatcher(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body UpdateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetHealthCheck request
 	GetHealthCheck(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetNetworks request
-	GetNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListNetworks request
+	ListNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetWallets request
-	GetWallets(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// ListWallets request
+	ListWallets(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PostWalletsWithBody request with any body
-	PostWalletsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// CreateWalletWithBody request with any body
+	CreateWalletWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PostWallets(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	CreateWallet(ctx context.Context, body CreateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// GetWalletsWalletId request
-	GetWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// GetWallet request
+	GetWallet(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PatchWalletsWalletIdWithBody request with any body
-	PatchWalletsWalletIdWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// UpdateWalletWithBody request with any body
+	UpdateWalletWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PatchWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateWallet(ctx context.Context, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
-func (c *Client) GetChannels(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsRequest(c.Server, params)
+func (c *Client) ListChannels(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListChannelsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1566,8 +1566,8 @@ func (c *Client) GetChannels(ctx context.Context, params *GetChannelsParams, req
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostChannelsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostChannelsRequestWithBody(c.Server, contentType, body)
+func (c *Client) CreateChannelWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateChannelRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1578,8 +1578,8 @@ func (c *Client) PostChannelsWithBody(ctx context.Context, contentType string, b
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostChannels(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostChannelsRequest(c.Server, body)
+func (c *Client) CreateChannel(ctx context.Context, body CreateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateChannelRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1590,8 +1590,8 @@ func (c *Client) PostChannels(ctx context.Context, body PostChannelsJSONRequestB
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdRequest(c.Server, channelId)
+func (c *Client) GetChannel(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelRequest(c.Server, channelId)
 	if err != nil {
 		return nil, err
 	}
@@ -1602,8 +1602,8 @@ func (c *Client) GetChannelsChannelId(ctx context.Context, channelId openapi_typ
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchChannelsChannelIdWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchChannelsChannelIdRequestWithBody(c.Server, channelId, contentType, body)
+func (c *Client) UpdateChannelWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateChannelRequestWithBody(c.Server, channelId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1614,8 +1614,8 @@ func (c *Client) PatchChannelsChannelIdWithBody(ctx context.Context, channelId o
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchChannelsChannelId(ctx context.Context, channelId openapi_types.UUID, body PatchChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchChannelsChannelIdRequest(c.Server, channelId, body)
+func (c *Client) UpdateChannel(ctx context.Context, channelId openapi_types.UUID, body UpdateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateChannelRequest(c.Server, channelId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1626,8 +1626,8 @@ func (c *Client) PatchChannelsChannelId(ctx context.Context, channelId openapi_t
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelIdEvents(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdEventsRequest(c.Server, channelId, params)
+func (c *Client) ListChannelEvents(ctx context.Context, channelId openapi_types.UUID, params *ListChannelEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListChannelEventsRequest(c.Server, channelId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1638,8 +1638,8 @@ func (c *Client) GetChannelsChannelIdEvents(ctx context.Context, channelId opena
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelIdEventsSearch(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdEventsSearchRequest(c.Server, channelId, params)
+func (c *Client) SearchChannelEvents(ctx context.Context, channelId openapi_types.UUID, params *SearchChannelEventsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewSearchChannelEventsRequest(c.Server, channelId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1650,8 +1650,8 @@ func (c *Client) GetChannelsChannelIdEventsSearch(ctx context.Context, channelId
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelIdEventsSearchEventId(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdEventsSearchEventIdRequest(c.Server, channelId, eventId)
+func (c *Client) GetChannelEvent(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetChannelEventRequest(c.Server, channelId, eventId)
 	if err != nil {
 		return nil, err
 	}
@@ -1662,8 +1662,8 @@ func (c *Client) GetChannelsChannelIdEventsSearchEventId(ctx context.Context, ch
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdOperationsRequest(c.Server, channelId, params)
+func (c *Client) ListOperations(ctx context.Context, channelId openapi_types.UUID, params *ListOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListOperationsRequest(c.Server, channelId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1674,8 +1674,8 @@ func (c *Client) GetChannelsChannelIdOperations(ctx context.Context, channelId o
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostChannelsChannelIdOperationsWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostChannelsChannelIdOperationsRequestWithBody(c.Server, channelId, contentType, body)
+func (c *Client) CreateOperationWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOperationRequestWithBody(c.Server, channelId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1686,8 +1686,8 @@ func (c *Client) PostChannelsChannelIdOperationsWithBody(ctx context.Context, ch
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostChannelsChannelIdOperations(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostChannelsChannelIdOperationsRequest(c.Server, channelId, body)
+func (c *Client) CreateOperation(ctx context.Context, channelId openapi_types.UUID, body CreateOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateOperationRequest(c.Server, channelId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1698,8 +1698,8 @@ func (c *Client) PostChannelsChannelIdOperations(ctx context.Context, channelId 
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdOperationsOperationIdRequest(c.Server, channelId, operationId)
+func (c *Client) GetOperation(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetOperationRequest(c.Server, channelId, operationId)
 	if err != nil {
 		return nil, err
 	}
@@ -1734,8 +1734,8 @@ func (c *Client) PatchChannelsChannelIdOperationsOperationId(ctx context.Context
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdWatchersRequest(c.Server, channelId, params)
+func (c *Client) ListWatchers(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWatchersRequest(c.Server, channelId, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1746,8 +1746,8 @@ func (c *Client) GetChannelsChannelIdWatchers(ctx context.Context, channelId ope
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostChannelsChannelIdWatchersWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostChannelsChannelIdWatchersRequestWithBody(c.Server, channelId, contentType, body)
+func (c *Client) CreateWatcherWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWatcherRequestWithBody(c.Server, channelId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1758,8 +1758,8 @@ func (c *Client) PostChannelsChannelIdWatchersWithBody(ctx context.Context, chan
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostChannelsChannelIdWatchers(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostChannelsChannelIdWatchersRequest(c.Server, channelId, body)
+func (c *Client) CreateWatcher(ctx context.Context, channelId openapi_types.UUID, body CreateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWatcherRequest(c.Server, channelId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1770,8 +1770,8 @@ func (c *Client) PostChannelsChannelIdWatchers(ctx context.Context, channelId op
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetChannelsChannelIdWatchersWatcherIdRequest(c.Server, channelId, watcherId)
+func (c *Client) GetWatcher(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWatcherRequest(c.Server, channelId, watcherId)
 	if err != nil {
 		return nil, err
 	}
@@ -1782,8 +1782,8 @@ func (c *Client) GetChannelsChannelIdWatchersWatcherId(ctx context.Context, chan
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody(c.Server, channelId, watcherId, contentType, body)
+func (c *Client) UpdateWatcherWithBody(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWatcherRequestWithBody(c.Server, channelId, watcherId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1794,8 +1794,8 @@ func (c *Client) PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx context.Con
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchChannelsChannelIdWatchersWatcherId(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchChannelsChannelIdWatchersWatcherIdRequest(c.Server, channelId, watcherId, body)
+func (c *Client) UpdateWatcher(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body UpdateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWatcherRequest(c.Server, channelId, watcherId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1818,8 +1818,8 @@ func (c *Client) GetHealthCheck(ctx context.Context, reqEditors ...RequestEditor
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetNetworksRequest(c.Server)
+func (c *Client) ListNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListNetworksRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -1830,8 +1830,8 @@ func (c *Client) GetNetworks(ctx context.Context, reqEditors ...RequestEditorFn)
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetWallets(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWalletsRequest(c.Server, params)
+func (c *Client) ListWallets(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWalletsRequest(c.Server, params)
 	if err != nil {
 		return nil, err
 	}
@@ -1842,8 +1842,8 @@ func (c *Client) GetWallets(ctx context.Context, params *GetWalletsParams, reqEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostWalletsWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostWalletsRequestWithBody(c.Server, contentType, body)
+func (c *Client) CreateWalletWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWalletRequestWithBody(c.Server, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1854,8 +1854,8 @@ func (c *Client) PostWalletsWithBody(ctx context.Context, contentType string, bo
 	return c.Client.Do(req)
 }
 
-func (c *Client) PostWallets(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPostWalletsRequest(c.Server, body)
+func (c *Client) CreateWallet(ctx context.Context, body CreateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWalletRequest(c.Server, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1866,8 +1866,8 @@ func (c *Client) PostWallets(ctx context.Context, body PostWalletsJSONRequestBod
 	return c.Client.Do(req)
 }
 
-func (c *Client) GetWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetWalletsWalletIdRequest(c.Server, walletId)
+func (c *Client) GetWallet(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWalletRequest(c.Server, walletId)
 	if err != nil {
 		return nil, err
 	}
@@ -1878,8 +1878,8 @@ func (c *Client) GetWalletsWalletId(ctx context.Context, walletId openapi_types.
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchWalletsWalletIdWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchWalletsWalletIdRequestWithBody(c.Server, walletId, contentType, body)
+func (c *Client) UpdateWalletWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWalletRequestWithBody(c.Server, walletId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1890,8 +1890,8 @@ func (c *Client) PatchWalletsWalletIdWithBody(ctx context.Context, walletId open
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchWalletsWalletId(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchWalletsWalletIdRequest(c.Server, walletId, body)
+func (c *Client) UpdateWallet(ctx context.Context, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateWalletRequest(c.Server, walletId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1902,8 +1902,8 @@ func (c *Client) PatchWalletsWalletId(ctx context.Context, walletId openapi_type
 	return c.Client.Do(req)
 }
 
-// NewGetChannelsRequest generates requests for GetChannels
-func NewGetChannelsRequest(server string, params *GetChannelsParams) (*http.Request, error) {
+// NewListChannelsRequest generates requests for ListChannels
+func NewListChannelsRequest(server string, params *ListChannelsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -1999,19 +1999,19 @@ func NewGetChannelsRequest(server string, params *GetChannelsParams) (*http.Requ
 	return req, nil
 }
 
-// NewPostChannelsRequest calls the generic PostChannels builder with application/json body
-func NewPostChannelsRequest(server string, body PostChannelsJSONRequestBody) (*http.Request, error) {
+// NewCreateChannelRequest calls the generic CreateChannel builder with application/json body
+func NewCreateChannelRequest(server string, body CreateChannelJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostChannelsRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateChannelRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostChannelsRequestWithBody generates requests for PostChannels with any type of body
-func NewPostChannelsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateChannelRequestWithBody generates requests for CreateChannel with any type of body
+func NewCreateChannelRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -2039,8 +2039,8 @@ func NewPostChannelsRequestWithBody(server string, contentType string, body io.R
 	return req, nil
 }
 
-// NewGetChannelsChannelIdRequest generates requests for GetChannelsChannelId
-func NewGetChannelsChannelIdRequest(server string, channelId openapi_types.UUID) (*http.Request, error) {
+// NewGetChannelRequest generates requests for GetChannel
+func NewGetChannelRequest(server string, channelId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2073,19 +2073,19 @@ func NewGetChannelsChannelIdRequest(server string, channelId openapi_types.UUID)
 	return req, nil
 }
 
-// NewPatchChannelsChannelIdRequest calls the generic PatchChannelsChannelId builder with application/json body
-func NewPatchChannelsChannelIdRequest(server string, channelId openapi_types.UUID, body PatchChannelsChannelIdJSONRequestBody) (*http.Request, error) {
+// NewUpdateChannelRequest calls the generic UpdateChannel builder with application/json body
+func NewUpdateChannelRequest(server string, channelId openapi_types.UUID, body UpdateChannelJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPatchChannelsChannelIdRequestWithBody(server, channelId, "application/json", bodyReader)
+	return NewUpdateChannelRequestWithBody(server, channelId, "application/json", bodyReader)
 }
 
-// NewPatchChannelsChannelIdRequestWithBody generates requests for PatchChannelsChannelId with any type of body
-func NewPatchChannelsChannelIdRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+// NewUpdateChannelRequestWithBody generates requests for UpdateChannel with any type of body
+func NewUpdateChannelRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2120,8 +2120,8 @@ func NewPatchChannelsChannelIdRequestWithBody(server string, channelId openapi_t
 	return req, nil
 }
 
-// NewGetChannelsChannelIdEventsRequest generates requests for GetChannelsChannelIdEvents
-func NewGetChannelsChannelIdEventsRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams) (*http.Request, error) {
+// NewListChannelEventsRequest generates requests for ListChannelEvents
+func NewListChannelEventsRequest(server string, channelId openapi_types.UUID, params *ListChannelEventsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2192,8 +2192,8 @@ func NewGetChannelsChannelIdEventsRequest(server string, channelId openapi_types
 	return req, nil
 }
 
-// NewGetChannelsChannelIdEventsSearchRequest generates requests for GetChannelsChannelIdEventsSearch
-func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams) (*http.Request, error) {
+// NewSearchChannelEventsRequest generates requests for SearchChannelEvents
+func NewSearchChannelEventsRequest(server string, channelId openapi_types.UUID, params *SearchChannelEventsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2488,8 +2488,8 @@ func NewGetChannelsChannelIdEventsSearchRequest(server string, channelId openapi
 	return req, nil
 }
 
-// NewGetChannelsChannelIdEventsSearchEventIdRequest generates requests for GetChannelsChannelIdEventsSearchEventId
-func NewGetChannelsChannelIdEventsSearchEventIdRequest(server string, channelId openapi_types.UUID, eventId openapi_types.UUID) (*http.Request, error) {
+// NewGetChannelEventRequest generates requests for GetChannelEvent
+func NewGetChannelEventRequest(server string, channelId openapi_types.UUID, eventId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2529,8 +2529,8 @@ func NewGetChannelsChannelIdEventsSearchEventIdRequest(server string, channelId 
 	return req, nil
 }
 
-// NewGetChannelsChannelIdOperationsRequest generates requests for GetChannelsChannelIdOperations
-func NewGetChannelsChannelIdOperationsRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams) (*http.Request, error) {
+// NewListOperationsRequest generates requests for ListOperations
+func NewListOperationsRequest(server string, channelId openapi_types.UUID, params *ListOperationsParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2761,19 +2761,19 @@ func NewGetChannelsChannelIdOperationsRequest(server string, channelId openapi_t
 	return req, nil
 }
 
-// NewPostChannelsChannelIdOperationsRequest calls the generic PostChannelsChannelIdOperations builder with application/json body
-func NewPostChannelsChannelIdOperationsRequest(server string, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody) (*http.Request, error) {
+// NewCreateOperationRequest calls the generic CreateOperation builder with application/json body
+func NewCreateOperationRequest(server string, channelId openapi_types.UUID, body CreateOperationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostChannelsChannelIdOperationsRequestWithBody(server, channelId, "application/json", bodyReader)
+	return NewCreateOperationRequestWithBody(server, channelId, "application/json", bodyReader)
 }
 
-// NewPostChannelsChannelIdOperationsRequestWithBody generates requests for PostChannelsChannelIdOperations with any type of body
-func NewPostChannelsChannelIdOperationsRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateOperationRequestWithBody generates requests for CreateOperation with any type of body
+func NewCreateOperationRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2808,8 +2808,8 @@ func NewPostChannelsChannelIdOperationsRequestWithBody(server string, channelId 
 	return req, nil
 }
 
-// NewGetChannelsChannelIdOperationsOperationIdRequest generates requests for GetChannelsChannelIdOperationsOperationId
-func NewGetChannelsChannelIdOperationsOperationIdRequest(server string, channelId openapi_types.UUID, operationId openapi_types.UUID) (*http.Request, error) {
+// NewGetOperationRequest generates requests for GetOperation
+func NewGetOperationRequest(server string, channelId openapi_types.UUID, operationId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2903,8 +2903,8 @@ func NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody(server string
 	return req, nil
 }
 
-// NewGetChannelsChannelIdWatchersRequest generates requests for GetChannelsChannelIdWatchers
-func NewGetChannelsChannelIdWatchersRequest(server string, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams) (*http.Request, error) {
+// NewListWatchersRequest generates requests for ListWatchers
+func NewListWatchersRequest(server string, channelId openapi_types.UUID, params *ListWatchersParams) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3071,19 +3071,19 @@ func NewGetChannelsChannelIdWatchersRequest(server string, channelId openapi_typ
 	return req, nil
 }
 
-// NewPostChannelsChannelIdWatchersRequest calls the generic PostChannelsChannelIdWatchers builder with application/json body
-func NewPostChannelsChannelIdWatchersRequest(server string, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody) (*http.Request, error) {
+// NewCreateWatcherRequest calls the generic CreateWatcher builder with application/json body
+func NewCreateWatcherRequest(server string, channelId openapi_types.UUID, body CreateWatcherJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostChannelsChannelIdWatchersRequestWithBody(server, channelId, "application/json", bodyReader)
+	return NewCreateWatcherRequestWithBody(server, channelId, "application/json", bodyReader)
 }
 
-// NewPostChannelsChannelIdWatchersRequestWithBody generates requests for PostChannelsChannelIdWatchers with any type of body
-func NewPostChannelsChannelIdWatchersRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateWatcherRequestWithBody generates requests for CreateWatcher with any type of body
+func NewCreateWatcherRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3118,8 +3118,8 @@ func NewPostChannelsChannelIdWatchersRequestWithBody(server string, channelId op
 	return req, nil
 }
 
-// NewGetChannelsChannelIdWatchersWatcherIdRequest generates requests for GetChannelsChannelIdWatchersWatcherId
-func NewGetChannelsChannelIdWatchersWatcherIdRequest(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID) (*http.Request, error) {
+// NewGetWatcherRequest generates requests for GetWatcher
+func NewGetWatcherRequest(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3159,19 +3159,19 @@ func NewGetChannelsChannelIdWatchersWatcherIdRequest(server string, channelId op
 	return req, nil
 }
 
-// NewPatchChannelsChannelIdWatchersWatcherIdRequest calls the generic PatchChannelsChannelIdWatchersWatcherId builder with application/json body
-func NewPatchChannelsChannelIdWatchersWatcherIdRequest(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody) (*http.Request, error) {
+// NewUpdateWatcherRequest calls the generic UpdateWatcher builder with application/json body
+func NewUpdateWatcherRequest(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID, body UpdateWatcherJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody(server, channelId, watcherId, "application/json", bodyReader)
+	return NewUpdateWatcherRequestWithBody(server, channelId, watcherId, "application/json", bodyReader)
 }
 
-// NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody generates requests for PatchChannelsChannelIdWatchersWatcherId with any type of body
-func NewPatchChannelsChannelIdWatchersWatcherIdRequestWithBody(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+// NewUpdateWatcherRequestWithBody generates requests for UpdateWatcher with any type of body
+func NewUpdateWatcherRequestWithBody(server string, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3240,8 +3240,8 @@ func NewGetHealthCheckRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetNetworksRequest generates requests for GetNetworks
-func NewGetNetworksRequest(server string) (*http.Request, error) {
+// NewListNetworksRequest generates requests for ListNetworks
+func NewListNetworksRequest(server string) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3267,8 +3267,8 @@ func NewGetNetworksRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
-// NewGetWalletsRequest generates requests for GetWallets
-func NewGetWalletsRequest(server string, params *GetWalletsParams) (*http.Request, error) {
+// NewListWalletsRequest generates requests for ListWallets
+func NewListWalletsRequest(server string, params *ListWalletsParams) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3428,19 +3428,19 @@ func NewGetWalletsRequest(server string, params *GetWalletsParams) (*http.Reques
 	return req, nil
 }
 
-// NewPostWalletsRequest calls the generic PostWallets builder with application/json body
-func NewPostWalletsRequest(server string, body PostWalletsJSONRequestBody) (*http.Request, error) {
+// NewCreateWalletRequest calls the generic CreateWallet builder with application/json body
+func NewCreateWalletRequest(server string, body CreateWalletJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPostWalletsRequestWithBody(server, "application/json", bodyReader)
+	return NewCreateWalletRequestWithBody(server, "application/json", bodyReader)
 }
 
-// NewPostWalletsRequestWithBody generates requests for PostWallets with any type of body
-func NewPostWalletsRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
+// NewCreateWalletRequestWithBody generates requests for CreateWallet with any type of body
+func NewCreateWalletRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	serverURL, err := url.Parse(server)
@@ -3468,8 +3468,8 @@ func NewPostWalletsRequestWithBody(server string, contentType string, body io.Re
 	return req, nil
 }
 
-// NewGetWalletsWalletIdRequest generates requests for GetWalletsWalletId
-func NewGetWalletsWalletIdRequest(server string, walletId openapi_types.UUID) (*http.Request, error) {
+// NewGetWalletRequest generates requests for GetWallet
+func NewGetWalletRequest(server string, walletId openapi_types.UUID) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3502,19 +3502,19 @@ func NewGetWalletsWalletIdRequest(server string, walletId openapi_types.UUID) (*
 	return req, nil
 }
 
-// NewPatchWalletsWalletIdRequest calls the generic PatchWalletsWalletId builder with application/json body
-func NewPatchWalletsWalletIdRequest(server string, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody) (*http.Request, error) {
+// NewUpdateWalletRequest calls the generic UpdateWallet builder with application/json body
+func NewUpdateWalletRequest(server string, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPatchWalletsWalletIdRequestWithBody(server, walletId, "application/json", bodyReader)
+	return NewUpdateWalletRequestWithBody(server, walletId, "application/json", bodyReader)
 }
 
-// NewPatchWalletsWalletIdRequestWithBody generates requests for PatchWalletsWalletId with any type of body
-func NewPatchWalletsWalletIdRequestWithBody(server string, walletId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+// NewUpdateWalletRequestWithBody generates requests for UpdateWallet with any type of body
+func NewUpdateWalletRequestWithBody(server string, walletId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3592,87 +3592,87 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetChannelsWithResponse request
-	GetChannelsWithResponse(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*GetChannelsResponse, error)
+	// ListChannelsWithResponse request
+	ListChannelsWithResponse(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*ListChannelsResponse, error)
 
-	// PostChannelsWithBodyWithResponse request with any body
-	PostChannelsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error)
+	// CreateChannelWithBodyWithResponse request with any body
+	CreateChannelWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateChannelResponse, error)
 
-	PostChannelsWithResponse(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error)
+	CreateChannelWithResponse(ctx context.Context, body CreateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateChannelResponse, error)
 
-	// GetChannelsChannelIdWithResponse request
-	GetChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdResponse, error)
+	// GetChannelWithResponse request
+	GetChannelWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelResponse, error)
 
-	// PatchChannelsChannelIdWithBodyWithResponse request with any body
-	PatchChannelsChannelIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdResponse, error)
+	// UpdateChannelWithBodyWithResponse request with any body
+	UpdateChannelWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateChannelResponse, error)
 
-	PatchChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, body PatchChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdResponse, error)
+	UpdateChannelWithResponse(ctx context.Context, channelId openapi_types.UUID, body UpdateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateChannelResponse, error)
 
-	// GetChannelsChannelIdEventsWithResponse request
-	GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error)
+	// ListChannelEventsWithResponse request
+	ListChannelEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListChannelEventsParams, reqEditors ...RequestEditorFn) (*ListChannelEventsResponse, error)
 
-	// GetChannelsChannelIdEventsSearchWithResponse request
-	GetChannelsChannelIdEventsSearchWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchResponse, error)
+	// SearchChannelEventsWithResponse request
+	SearchChannelEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *SearchChannelEventsParams, reqEditors ...RequestEditorFn) (*SearchChannelEventsResponse, error)
 
-	// GetChannelsChannelIdEventsSearchEventIdWithResponse request
-	GetChannelsChannelIdEventsSearchEventIdWithResponse(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchEventIdResponse, error)
+	// GetChannelEventWithResponse request
+	GetChannelEventWithResponse(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelEventResponse, error)
 
-	// GetChannelsChannelIdOperationsWithResponse request
-	GetChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsResponse, error)
+	// ListOperationsWithResponse request
+	ListOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListOperationsParams, reqEditors ...RequestEditorFn) (*ListOperationsResponse, error)
 
-	// PostChannelsChannelIdOperationsWithBodyWithResponse request with any body
-	PostChannelsChannelIdOperationsWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error)
+	// CreateOperationWithBodyWithResponse request with any body
+	CreateOperationWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOperationResponse, error)
 
-	PostChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error)
+	CreateOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, body CreateOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOperationResponse, error)
 
-	// GetChannelsChannelIdOperationsOperationIdWithResponse request
-	GetChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsOperationIdResponse, error)
+	// GetOperationWithResponse request
+	GetOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetOperationResponse, error)
 
 	// PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse request with any body
 	PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error)
 
 	PatchChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error)
 
-	// GetChannelsChannelIdWatchersWithResponse request
-	GetChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersResponse, error)
+	// ListWatchersWithResponse request
+	ListWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*ListWatchersResponse, error)
 
-	// PostChannelsChannelIdWatchersWithBodyWithResponse request with any body
-	PostChannelsChannelIdWatchersWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error)
+	// CreateWatcherWithBodyWithResponse request with any body
+	CreateWatcherWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWatcherResponse, error)
 
-	PostChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error)
+	CreateWatcherWithResponse(ctx context.Context, channelId openapi_types.UUID, body CreateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWatcherResponse, error)
 
-	// GetChannelsChannelIdWatchersWatcherIdWithResponse request
-	GetChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersWatcherIdResponse, error)
+	// GetWatcherWithResponse request
+	GetWatcherWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWatcherResponse, error)
 
-	// PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse request with any body
-	PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error)
+	// UpdateWatcherWithBodyWithResponse request with any body
+	UpdateWatcherWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWatcherResponse, error)
 
-	PatchChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error)
+	UpdateWatcherWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body UpdateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWatcherResponse, error)
 
 	// GetHealthCheckWithResponse request
 	GetHealthCheckWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetHealthCheckResponse, error)
 
-	// GetNetworksWithResponse request
-	GetNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNetworksResponse, error)
+	// ListNetworksWithResponse request
+	ListNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListNetworksResponse, error)
 
-	// GetWalletsWithResponse request
-	GetWalletsWithResponse(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*GetWalletsResponse, error)
+	// ListWalletsWithResponse request
+	ListWalletsWithResponse(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*ListWalletsResponse, error)
 
-	// PostWalletsWithBodyWithResponse request with any body
-	PostWalletsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error)
+	// CreateWalletWithBodyWithResponse request with any body
+	CreateWalletWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWalletResponse, error)
 
-	PostWalletsWithResponse(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error)
+	CreateWalletWithResponse(ctx context.Context, body CreateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWalletResponse, error)
 
-	// GetWalletsWalletIdWithResponse request
-	GetWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletsWalletIdResponse, error)
+	// GetWalletWithResponse request
+	GetWalletWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletResponse, error)
 
-	// PatchWalletsWalletIdWithBodyWithResponse request with any body
-	PatchWalletsWalletIdWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error)
+	// UpdateWalletWithBodyWithResponse request with any body
+	UpdateWalletWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWalletResponse, error)
 
-	PatchWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error)
+	UpdateWalletWithResponse(ctx context.Context, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWalletResponse, error)
 }
 
-type GetChannelsResponse struct {
+type ListChannelsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *ChannelList
@@ -3680,7 +3680,7 @@ type GetChannelsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsResponse) Status() string {
+func (r ListChannelsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3688,14 +3688,14 @@ func (r GetChannelsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsResponse) StatusCode() int {
+func (r ListChannelsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostChannelsResponse struct {
+type CreateChannelResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *Channel
@@ -3704,7 +3704,7 @@ type PostChannelsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PostChannelsResponse) Status() string {
+func (r CreateChannelResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3712,14 +3712,14 @@ func (r PostChannelsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostChannelsResponse) StatusCode() int {
+func (r CreateChannelResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetChannelsChannelIdResponse struct {
+type GetChannelResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Channel
@@ -3728,7 +3728,7 @@ type GetChannelsChannelIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdResponse) Status() string {
+func (r GetChannelResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3736,14 +3736,14 @@ func (r GetChannelsChannelIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdResponse) StatusCode() int {
+func (r GetChannelResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PatchChannelsChannelIdResponse struct {
+type UpdateChannelResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Channel
@@ -3753,7 +3753,7 @@ type PatchChannelsChannelIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PatchChannelsChannelIdResponse) Status() string {
+func (r UpdateChannelResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3761,14 +3761,14 @@ func (r PatchChannelsChannelIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PatchChannelsChannelIdResponse) StatusCode() int {
+func (r UpdateChannelResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetChannelsChannelIdEventsResponse struct {
+type ListChannelEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *EventList
@@ -3778,7 +3778,7 @@ type GetChannelsChannelIdEventsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdEventsResponse) Status() string {
+func (r ListChannelEventsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3786,14 +3786,14 @@ func (r GetChannelsChannelIdEventsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdEventsResponse) StatusCode() int {
+func (r ListChannelEventsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetChannelsChannelIdEventsSearchResponse struct {
+type SearchChannelEventsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *EventList
@@ -3803,7 +3803,7 @@ type GetChannelsChannelIdEventsSearchResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdEventsSearchResponse) Status() string {
+func (r SearchChannelEventsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3811,14 +3811,14 @@ func (r GetChannelsChannelIdEventsSearchResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdEventsSearchResponse) StatusCode() int {
+func (r SearchChannelEventsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetChannelsChannelIdEventsSearchEventIdResponse struct {
+type GetChannelEventResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Event
@@ -3827,7 +3827,7 @@ type GetChannelsChannelIdEventsSearchEventIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdEventsSearchEventIdResponse) Status() string {
+func (r GetChannelEventResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3835,14 +3835,14 @@ func (r GetChannelsChannelIdEventsSearchEventIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdEventsSearchEventIdResponse) StatusCode() int {
+func (r GetChannelEventResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetChannelsChannelIdOperationsResponse struct {
+type ListOperationsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *OperationList
@@ -3851,7 +3851,7 @@ type GetChannelsChannelIdOperationsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdOperationsResponse) Status() string {
+func (r ListOperationsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3859,14 +3859,14 @@ func (r GetChannelsChannelIdOperationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdOperationsResponse) StatusCode() int {
+func (r ListOperationsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostChannelsChannelIdOperationsResponse struct {
+type CreateOperationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *OperationResponse
@@ -3876,7 +3876,7 @@ type PostChannelsChannelIdOperationsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PostChannelsChannelIdOperationsResponse) Status() string {
+func (r CreateOperationResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3884,14 +3884,14 @@ func (r PostChannelsChannelIdOperationsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostChannelsChannelIdOperationsResponse) StatusCode() int {
+func (r CreateOperationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetChannelsChannelIdOperationsOperationIdResponse struct {
+type GetOperationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Operation
@@ -3900,7 +3900,7 @@ type GetChannelsChannelIdOperationsOperationIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdOperationsOperationIdResponse) Status() string {
+func (r GetOperationResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3908,7 +3908,7 @@ func (r GetChannelsChannelIdOperationsOperationIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdOperationsOperationIdResponse) StatusCode() int {
+func (r GetOperationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -3940,7 +3940,7 @@ func (r PatchChannelsChannelIdOperationsOperationIdResponse) StatusCode() int {
 	return 0
 }
 
-type GetChannelsChannelIdWatchersResponse struct {
+type ListWatchersResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *WatcherList
@@ -3949,7 +3949,7 @@ type GetChannelsChannelIdWatchersResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdWatchersResponse) Status() string {
+func (r ListWatchersResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3957,14 +3957,14 @@ func (r GetChannelsChannelIdWatchersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdWatchersResponse) StatusCode() int {
+func (r ListWatchersResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostChannelsChannelIdWatchersResponse struct {
+type CreateWatcherResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *Watcher
@@ -3974,7 +3974,7 @@ type PostChannelsChannelIdWatchersResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PostChannelsChannelIdWatchersResponse) Status() string {
+func (r CreateWatcherResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3982,14 +3982,14 @@ func (r PostChannelsChannelIdWatchersResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostChannelsChannelIdWatchersResponse) StatusCode() int {
+func (r CreateWatcherResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetChannelsChannelIdWatchersWatcherIdResponse struct {
+type GetWatcherResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Watcher
@@ -3998,7 +3998,7 @@ type GetChannelsChannelIdWatchersWatcherIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetChannelsChannelIdWatchersWatcherIdResponse) Status() string {
+func (r GetWatcherResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4006,14 +4006,14 @@ func (r GetChannelsChannelIdWatchersWatcherIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
+func (r GetWatcherResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PatchChannelsChannelIdWatchersWatcherIdResponse struct {
+type UpdateWatcherResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Watcher
@@ -4024,7 +4024,7 @@ type PatchChannelsChannelIdWatchersWatcherIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PatchChannelsChannelIdWatchersWatcherIdResponse) Status() string {
+func (r UpdateWatcherResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4032,7 +4032,7 @@ func (r PatchChannelsChannelIdWatchersWatcherIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PatchChannelsChannelIdWatchersWatcherIdResponse) StatusCode() int {
+func (r UpdateWatcherResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4061,7 +4061,7 @@ func (r GetHealthCheckResponse) StatusCode() int {
 	return 0
 }
 
-type GetNetworksResponse struct {
+type ListNetworksResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *NetworkList
@@ -4069,7 +4069,7 @@ type GetNetworksResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetNetworksResponse) Status() string {
+func (r ListNetworksResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4077,14 +4077,14 @@ func (r GetNetworksResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetNetworksResponse) StatusCode() int {
+func (r ListNetworksResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetWalletsResponse struct {
+type ListWalletsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *WalletList
@@ -4092,7 +4092,7 @@ type GetWalletsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetWalletsResponse) Status() string {
+func (r ListWalletsResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4100,14 +4100,14 @@ func (r GetWalletsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetWalletsResponse) StatusCode() int {
+func (r ListWalletsResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PostWalletsResponse struct {
+type CreateWalletResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON201      *Wallet
@@ -4116,7 +4116,7 @@ type PostWalletsResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PostWalletsResponse) Status() string {
+func (r CreateWalletResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4124,14 +4124,14 @@ func (r PostWalletsResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PostWalletsResponse) StatusCode() int {
+func (r CreateWalletResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type GetWalletsWalletIdResponse struct {
+type GetWalletResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Wallet
@@ -4140,7 +4140,7 @@ type GetWalletsWalletIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r GetWalletsWalletIdResponse) Status() string {
+func (r GetWalletResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4148,14 +4148,14 @@ func (r GetWalletsWalletIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r GetWalletsWalletIdResponse) StatusCode() int {
+func (r GetWalletResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-type PatchWalletsWalletIdResponse struct {
+type UpdateWalletResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Wallet
@@ -4165,7 +4165,7 @@ type PatchWalletsWalletIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PatchWalletsWalletIdResponse) Status() string {
+func (r UpdateWalletResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -4173,125 +4173,125 @@ func (r PatchWalletsWalletIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PatchWalletsWalletIdResponse) StatusCode() int {
+func (r UpdateWalletResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
 	return 0
 }
 
-// GetChannelsWithResponse request returning *GetChannelsResponse
-func (c *ClientWithResponses) GetChannelsWithResponse(ctx context.Context, params *GetChannelsParams, reqEditors ...RequestEditorFn) (*GetChannelsResponse, error) {
-	rsp, err := c.GetChannels(ctx, params, reqEditors...)
+// ListChannelsWithResponse request returning *ListChannelsResponse
+func (c *ClientWithResponses) ListChannelsWithResponse(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*ListChannelsResponse, error) {
+	rsp, err := c.ListChannels(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsResponse(rsp)
+	return ParseListChannelsResponse(rsp)
 }
 
-// PostChannelsWithBodyWithResponse request with arbitrary body returning *PostChannelsResponse
-func (c *ClientWithResponses) PostChannelsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error) {
-	rsp, err := c.PostChannelsWithBody(ctx, contentType, body, reqEditors...)
+// CreateChannelWithBodyWithResponse request with arbitrary body returning *CreateChannelResponse
+func (c *ClientWithResponses) CreateChannelWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateChannelResponse, error) {
+	rsp, err := c.CreateChannelWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostChannelsResponse(rsp)
+	return ParseCreateChannelResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostChannelsWithResponse(ctx context.Context, body PostChannelsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsResponse, error) {
-	rsp, err := c.PostChannels(ctx, body, reqEditors...)
+func (c *ClientWithResponses) CreateChannelWithResponse(ctx context.Context, body CreateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateChannelResponse, error) {
+	rsp, err := c.CreateChannel(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostChannelsResponse(rsp)
+	return ParseCreateChannelResponse(rsp)
 }
 
-// GetChannelsChannelIdWithResponse request returning *GetChannelsChannelIdResponse
-func (c *ClientWithResponses) GetChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdResponse, error) {
-	rsp, err := c.GetChannelsChannelId(ctx, channelId, reqEditors...)
+// GetChannelWithResponse request returning *GetChannelResponse
+func (c *ClientWithResponses) GetChannelWithResponse(ctx context.Context, channelId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelResponse, error) {
+	rsp, err := c.GetChannel(ctx, channelId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdResponse(rsp)
+	return ParseGetChannelResponse(rsp)
 }
 
-// PatchChannelsChannelIdWithBodyWithResponse request with arbitrary body returning *PatchChannelsChannelIdResponse
-func (c *ClientWithResponses) PatchChannelsChannelIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdResponse, error) {
-	rsp, err := c.PatchChannelsChannelIdWithBody(ctx, channelId, contentType, body, reqEditors...)
+// UpdateChannelWithBodyWithResponse request with arbitrary body returning *UpdateChannelResponse
+func (c *ClientWithResponses) UpdateChannelWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateChannelResponse, error) {
+	rsp, err := c.UpdateChannelWithBody(ctx, channelId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchChannelsChannelIdResponse(rsp)
+	return ParseUpdateChannelResponse(rsp)
 }
 
-func (c *ClientWithResponses) PatchChannelsChannelIdWithResponse(ctx context.Context, channelId openapi_types.UUID, body PatchChannelsChannelIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdResponse, error) {
-	rsp, err := c.PatchChannelsChannelId(ctx, channelId, body, reqEditors...)
+func (c *ClientWithResponses) UpdateChannelWithResponse(ctx context.Context, channelId openapi_types.UUID, body UpdateChannelJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateChannelResponse, error) {
+	rsp, err := c.UpdateChannel(ctx, channelId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchChannelsChannelIdResponse(rsp)
+	return ParseUpdateChannelResponse(rsp)
 }
 
-// GetChannelsChannelIdEventsWithResponse request returning *GetChannelsChannelIdEventsResponse
-func (c *ClientWithResponses) GetChannelsChannelIdEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsResponse, error) {
-	rsp, err := c.GetChannelsChannelIdEvents(ctx, channelId, params, reqEditors...)
+// ListChannelEventsWithResponse request returning *ListChannelEventsResponse
+func (c *ClientWithResponses) ListChannelEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListChannelEventsParams, reqEditors ...RequestEditorFn) (*ListChannelEventsResponse, error) {
+	rsp, err := c.ListChannelEvents(ctx, channelId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdEventsResponse(rsp)
+	return ParseListChannelEventsResponse(rsp)
 }
 
-// GetChannelsChannelIdEventsSearchWithResponse request returning *GetChannelsChannelIdEventsSearchResponse
-func (c *ClientWithResponses) GetChannelsChannelIdEventsSearchWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdEventsSearchParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchResponse, error) {
-	rsp, err := c.GetChannelsChannelIdEventsSearch(ctx, channelId, params, reqEditors...)
+// SearchChannelEventsWithResponse request returning *SearchChannelEventsResponse
+func (c *ClientWithResponses) SearchChannelEventsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *SearchChannelEventsParams, reqEditors ...RequestEditorFn) (*SearchChannelEventsResponse, error) {
+	rsp, err := c.SearchChannelEvents(ctx, channelId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdEventsSearchResponse(rsp)
+	return ParseSearchChannelEventsResponse(rsp)
 }
 
-// GetChannelsChannelIdEventsSearchEventIdWithResponse request returning *GetChannelsChannelIdEventsSearchEventIdResponse
-func (c *ClientWithResponses) GetChannelsChannelIdEventsSearchEventIdWithResponse(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdEventsSearchEventIdResponse, error) {
-	rsp, err := c.GetChannelsChannelIdEventsSearchEventId(ctx, channelId, eventId, reqEditors...)
+// GetChannelEventWithResponse request returning *GetChannelEventResponse
+func (c *ClientWithResponses) GetChannelEventWithResponse(ctx context.Context, channelId openapi_types.UUID, eventId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelEventResponse, error) {
+	rsp, err := c.GetChannelEvent(ctx, channelId, eventId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdEventsSearchEventIdResponse(rsp)
+	return ParseGetChannelEventResponse(rsp)
 }
 
-// GetChannelsChannelIdOperationsWithResponse request returning *GetChannelsChannelIdOperationsResponse
-func (c *ClientWithResponses) GetChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdOperationsParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsResponse, error) {
-	rsp, err := c.GetChannelsChannelIdOperations(ctx, channelId, params, reqEditors...)
+// ListOperationsWithResponse request returning *ListOperationsResponse
+func (c *ClientWithResponses) ListOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListOperationsParams, reqEditors ...RequestEditorFn) (*ListOperationsResponse, error) {
+	rsp, err := c.ListOperations(ctx, channelId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdOperationsResponse(rsp)
+	return ParseListOperationsResponse(rsp)
 }
 
-// PostChannelsChannelIdOperationsWithBodyWithResponse request with arbitrary body returning *PostChannelsChannelIdOperationsResponse
-func (c *ClientWithResponses) PostChannelsChannelIdOperationsWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error) {
-	rsp, err := c.PostChannelsChannelIdOperationsWithBody(ctx, channelId, contentType, body, reqEditors...)
+// CreateOperationWithBodyWithResponse request with arbitrary body returning *CreateOperationResponse
+func (c *ClientWithResponses) CreateOperationWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateOperationResponse, error) {
+	rsp, err := c.CreateOperationWithBody(ctx, channelId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostChannelsChannelIdOperationsResponse(rsp)
+	return ParseCreateOperationResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostChannelsChannelIdOperationsWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdOperationsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdOperationsResponse, error) {
-	rsp, err := c.PostChannelsChannelIdOperations(ctx, channelId, body, reqEditors...)
+func (c *ClientWithResponses) CreateOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, body CreateOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateOperationResponse, error) {
+	rsp, err := c.CreateOperation(ctx, channelId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostChannelsChannelIdOperationsResponse(rsp)
+	return ParseCreateOperationResponse(rsp)
 }
 
-// GetChannelsChannelIdOperationsOperationIdWithResponse request returning *GetChannelsChannelIdOperationsOperationIdResponse
-func (c *ClientWithResponses) GetChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdOperationsOperationIdResponse, error) {
-	rsp, err := c.GetChannelsChannelIdOperationsOperationId(ctx, channelId, operationId, reqEditors...)
+// GetOperationWithResponse request returning *GetOperationResponse
+func (c *ClientWithResponses) GetOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetOperationResponse, error) {
+	rsp, err := c.GetOperation(ctx, channelId, operationId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdOperationsOperationIdResponse(rsp)
+	return ParseGetOperationResponse(rsp)
 }
 
 // PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse request with arbitrary body returning *PatchChannelsChannelIdOperationsOperationIdResponse
@@ -4311,56 +4311,56 @@ func (c *ClientWithResponses) PatchChannelsChannelIdOperationsOperationIdWithRes
 	return ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp)
 }
 
-// GetChannelsChannelIdWatchersWithResponse request returning *GetChannelsChannelIdWatchersResponse
-func (c *ClientWithResponses) GetChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *GetChannelsChannelIdWatchersParams, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersResponse, error) {
-	rsp, err := c.GetChannelsChannelIdWatchers(ctx, channelId, params, reqEditors...)
+// ListWatchersWithResponse request returning *ListWatchersResponse
+func (c *ClientWithResponses) ListWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*ListWatchersResponse, error) {
+	rsp, err := c.ListWatchers(ctx, channelId, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdWatchersResponse(rsp)
+	return ParseListWatchersResponse(rsp)
 }
 
-// PostChannelsChannelIdWatchersWithBodyWithResponse request with arbitrary body returning *PostChannelsChannelIdWatchersResponse
-func (c *ClientWithResponses) PostChannelsChannelIdWatchersWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error) {
-	rsp, err := c.PostChannelsChannelIdWatchersWithBody(ctx, channelId, contentType, body, reqEditors...)
+// CreateWatcherWithBodyWithResponse request with arbitrary body returning *CreateWatcherResponse
+func (c *ClientWithResponses) CreateWatcherWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWatcherResponse, error) {
+	rsp, err := c.CreateWatcherWithBody(ctx, channelId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostChannelsChannelIdWatchersResponse(rsp)
+	return ParseCreateWatcherResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostChannelsChannelIdWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, body PostChannelsChannelIdWatchersJSONRequestBody, reqEditors ...RequestEditorFn) (*PostChannelsChannelIdWatchersResponse, error) {
-	rsp, err := c.PostChannelsChannelIdWatchers(ctx, channelId, body, reqEditors...)
+func (c *ClientWithResponses) CreateWatcherWithResponse(ctx context.Context, channelId openapi_types.UUID, body CreateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWatcherResponse, error) {
+	rsp, err := c.CreateWatcher(ctx, channelId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostChannelsChannelIdWatchersResponse(rsp)
+	return ParseCreateWatcherResponse(rsp)
 }
 
-// GetChannelsChannelIdWatchersWatcherIdWithResponse request returning *GetChannelsChannelIdWatchersWatcherIdResponse
-func (c *ClientWithResponses) GetChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetChannelsChannelIdWatchersWatcherIdResponse, error) {
-	rsp, err := c.GetChannelsChannelIdWatchersWatcherId(ctx, channelId, watcherId, reqEditors...)
+// GetWatcherWithResponse request returning *GetWatcherResponse
+func (c *ClientWithResponses) GetWatcherWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWatcherResponse, error) {
+	rsp, err := c.GetWatcher(ctx, channelId, watcherId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp)
+	return ParseGetWatcherResponse(rsp)
 }
 
-// PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse request with arbitrary body returning *PatchChannelsChannelIdWatchersWatcherIdResponse
-func (c *ClientWithResponses) PatchChannelsChannelIdWatchersWatcherIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error) {
-	rsp, err := c.PatchChannelsChannelIdWatchersWatcherIdWithBody(ctx, channelId, watcherId, contentType, body, reqEditors...)
+// UpdateWatcherWithBodyWithResponse request with arbitrary body returning *UpdateWatcherResponse
+func (c *ClientWithResponses) UpdateWatcherWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWatcherResponse, error) {
+	rsp, err := c.UpdateWatcherWithBody(ctx, channelId, watcherId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp)
+	return ParseUpdateWatcherResponse(rsp)
 }
 
-func (c *ClientWithResponses) PatchChannelsChannelIdWatchersWatcherIdWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error) {
-	rsp, err := c.PatchChannelsChannelIdWatchersWatcherId(ctx, channelId, watcherId, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWatcherWithResponse(ctx context.Context, channelId openapi_types.UUID, watcherId openapi_types.UUID, body UpdateWatcherJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWatcherResponse, error) {
+	rsp, err := c.UpdateWatcher(ctx, channelId, watcherId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp)
+	return ParseUpdateWatcherResponse(rsp)
 }
 
 // GetHealthCheckWithResponse request returning *GetHealthCheckResponse
@@ -4372,76 +4372,76 @@ func (c *ClientWithResponses) GetHealthCheckWithResponse(ctx context.Context, re
 	return ParseGetHealthCheckResponse(rsp)
 }
 
-// GetNetworksWithResponse request returning *GetNetworksResponse
-func (c *ClientWithResponses) GetNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetNetworksResponse, error) {
-	rsp, err := c.GetNetworks(ctx, reqEditors...)
+// ListNetworksWithResponse request returning *ListNetworksResponse
+func (c *ClientWithResponses) ListNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListNetworksResponse, error) {
+	rsp, err := c.ListNetworks(ctx, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetNetworksResponse(rsp)
+	return ParseListNetworksResponse(rsp)
 }
 
-// GetWalletsWithResponse request returning *GetWalletsResponse
-func (c *ClientWithResponses) GetWalletsWithResponse(ctx context.Context, params *GetWalletsParams, reqEditors ...RequestEditorFn) (*GetWalletsResponse, error) {
-	rsp, err := c.GetWallets(ctx, params, reqEditors...)
+// ListWalletsWithResponse request returning *ListWalletsResponse
+func (c *ClientWithResponses) ListWalletsWithResponse(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*ListWalletsResponse, error) {
+	rsp, err := c.ListWallets(ctx, params, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetWalletsResponse(rsp)
+	return ParseListWalletsResponse(rsp)
 }
 
-// PostWalletsWithBodyWithResponse request with arbitrary body returning *PostWalletsResponse
-func (c *ClientWithResponses) PostWalletsWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error) {
-	rsp, err := c.PostWalletsWithBody(ctx, contentType, body, reqEditors...)
+// CreateWalletWithBodyWithResponse request with arbitrary body returning *CreateWalletResponse
+func (c *ClientWithResponses) CreateWalletWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWalletResponse, error) {
+	rsp, err := c.CreateWalletWithBody(ctx, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostWalletsResponse(rsp)
+	return ParseCreateWalletResponse(rsp)
 }
 
-func (c *ClientWithResponses) PostWalletsWithResponse(ctx context.Context, body PostWalletsJSONRequestBody, reqEditors ...RequestEditorFn) (*PostWalletsResponse, error) {
-	rsp, err := c.PostWallets(ctx, body, reqEditors...)
+func (c *ClientWithResponses) CreateWalletWithResponse(ctx context.Context, body CreateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWalletResponse, error) {
+	rsp, err := c.CreateWallet(ctx, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePostWalletsResponse(rsp)
+	return ParseCreateWalletResponse(rsp)
 }
 
-// GetWalletsWalletIdWithResponse request returning *GetWalletsWalletIdResponse
-func (c *ClientWithResponses) GetWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletsWalletIdResponse, error) {
-	rsp, err := c.GetWalletsWalletId(ctx, walletId, reqEditors...)
+// GetWalletWithResponse request returning *GetWalletResponse
+func (c *ClientWithResponses) GetWalletWithResponse(ctx context.Context, walletId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletResponse, error) {
+	rsp, err := c.GetWallet(ctx, walletId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParseGetWalletsWalletIdResponse(rsp)
+	return ParseGetWalletResponse(rsp)
 }
 
-// PatchWalletsWalletIdWithBodyWithResponse request with arbitrary body returning *PatchWalletsWalletIdResponse
-func (c *ClientWithResponses) PatchWalletsWalletIdWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error) {
-	rsp, err := c.PatchWalletsWalletIdWithBody(ctx, walletId, contentType, body, reqEditors...)
+// UpdateWalletWithBodyWithResponse request with arbitrary body returning *UpdateWalletResponse
+func (c *ClientWithResponses) UpdateWalletWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWalletResponse, error) {
+	rsp, err := c.UpdateWalletWithBody(ctx, walletId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchWalletsWalletIdResponse(rsp)
+	return ParseUpdateWalletResponse(rsp)
 }
 
-func (c *ClientWithResponses) PatchWalletsWalletIdWithResponse(ctx context.Context, walletId openapi_types.UUID, body PatchWalletsWalletIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchWalletsWalletIdResponse, error) {
-	rsp, err := c.PatchWalletsWalletId(ctx, walletId, body, reqEditors...)
+func (c *ClientWithResponses) UpdateWalletWithResponse(ctx context.Context, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWalletResponse, error) {
+	rsp, err := c.UpdateWallet(ctx, walletId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchWalletsWalletIdResponse(rsp)
+	return ParseUpdateWalletResponse(rsp)
 }
 
-// ParseGetChannelsResponse parses an HTTP response from a GetChannelsWithResponse call
-func ParseGetChannelsResponse(rsp *http.Response) (*GetChannelsResponse, error) {
+// ParseListChannelsResponse parses an HTTP response from a ListChannelsWithResponse call
+func ParseListChannelsResponse(rsp *http.Response) (*ListChannelsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsResponse{
+	response := &ListChannelsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4466,15 +4466,15 @@ func ParseGetChannelsResponse(rsp *http.Response) (*GetChannelsResponse, error) 
 	return response, nil
 }
 
-// ParsePostChannelsResponse parses an HTTP response from a PostChannelsWithResponse call
-func ParsePostChannelsResponse(rsp *http.Response) (*PostChannelsResponse, error) {
+// ParseCreateChannelResponse parses an HTTP response from a CreateChannelWithResponse call
+func ParseCreateChannelResponse(rsp *http.Response) (*CreateChannelResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostChannelsResponse{
+	response := &CreateChannelResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4506,15 +4506,15 @@ func ParsePostChannelsResponse(rsp *http.Response) (*PostChannelsResponse, error
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdResponse parses an HTTP response from a GetChannelsChannelIdWithResponse call
-func ParseGetChannelsChannelIdResponse(rsp *http.Response) (*GetChannelsChannelIdResponse, error) {
+// ParseGetChannelResponse parses an HTTP response from a GetChannelWithResponse call
+func ParseGetChannelResponse(rsp *http.Response) (*GetChannelResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdResponse{
+	response := &GetChannelResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4546,15 +4546,15 @@ func ParseGetChannelsChannelIdResponse(rsp *http.Response) (*GetChannelsChannelI
 	return response, nil
 }
 
-// ParsePatchChannelsChannelIdResponse parses an HTTP response from a PatchChannelsChannelIdWithResponse call
-func ParsePatchChannelsChannelIdResponse(rsp *http.Response) (*PatchChannelsChannelIdResponse, error) {
+// ParseUpdateChannelResponse parses an HTTP response from a UpdateChannelWithResponse call
+func ParseUpdateChannelResponse(rsp *http.Response) (*UpdateChannelResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PatchChannelsChannelIdResponse{
+	response := &UpdateChannelResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4593,15 +4593,15 @@ func ParsePatchChannelsChannelIdResponse(rsp *http.Response) (*PatchChannelsChan
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdEventsResponse parses an HTTP response from a GetChannelsChannelIdEventsWithResponse call
-func ParseGetChannelsChannelIdEventsResponse(rsp *http.Response) (*GetChannelsChannelIdEventsResponse, error) {
+// ParseListChannelEventsResponse parses an HTTP response from a ListChannelEventsWithResponse call
+func ParseListChannelEventsResponse(rsp *http.Response) (*ListChannelEventsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdEventsResponse{
+	response := &ListChannelEventsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4640,15 +4640,15 @@ func ParseGetChannelsChannelIdEventsResponse(rsp *http.Response) (*GetChannelsCh
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdEventsSearchResponse parses an HTTP response from a GetChannelsChannelIdEventsSearchWithResponse call
-func ParseGetChannelsChannelIdEventsSearchResponse(rsp *http.Response) (*GetChannelsChannelIdEventsSearchResponse, error) {
+// ParseSearchChannelEventsResponse parses an HTTP response from a SearchChannelEventsWithResponse call
+func ParseSearchChannelEventsResponse(rsp *http.Response) (*SearchChannelEventsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdEventsSearchResponse{
+	response := &SearchChannelEventsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4687,15 +4687,15 @@ func ParseGetChannelsChannelIdEventsSearchResponse(rsp *http.Response) (*GetChan
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdEventsSearchEventIdResponse parses an HTTP response from a GetChannelsChannelIdEventsSearchEventIdWithResponse call
-func ParseGetChannelsChannelIdEventsSearchEventIdResponse(rsp *http.Response) (*GetChannelsChannelIdEventsSearchEventIdResponse, error) {
+// ParseGetChannelEventResponse parses an HTTP response from a GetChannelEventWithResponse call
+func ParseGetChannelEventResponse(rsp *http.Response) (*GetChannelEventResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdEventsSearchEventIdResponse{
+	response := &GetChannelEventResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4727,15 +4727,15 @@ func ParseGetChannelsChannelIdEventsSearchEventIdResponse(rsp *http.Response) (*
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdOperationsResponse parses an HTTP response from a GetChannelsChannelIdOperationsWithResponse call
-func ParseGetChannelsChannelIdOperationsResponse(rsp *http.Response) (*GetChannelsChannelIdOperationsResponse, error) {
+// ParseListOperationsResponse parses an HTTP response from a ListOperationsWithResponse call
+func ParseListOperationsResponse(rsp *http.Response) (*ListOperationsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdOperationsResponse{
+	response := &ListOperationsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4767,15 +4767,15 @@ func ParseGetChannelsChannelIdOperationsResponse(rsp *http.Response) (*GetChanne
 	return response, nil
 }
 
-// ParsePostChannelsChannelIdOperationsResponse parses an HTTP response from a PostChannelsChannelIdOperationsWithResponse call
-func ParsePostChannelsChannelIdOperationsResponse(rsp *http.Response) (*PostChannelsChannelIdOperationsResponse, error) {
+// ParseCreateOperationResponse parses an HTTP response from a CreateOperationWithResponse call
+func ParseCreateOperationResponse(rsp *http.Response) (*CreateOperationResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostChannelsChannelIdOperationsResponse{
+	response := &CreateOperationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4814,15 +4814,15 @@ func ParsePostChannelsChannelIdOperationsResponse(rsp *http.Response) (*PostChan
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdOperationsOperationIdResponse parses an HTTP response from a GetChannelsChannelIdOperationsOperationIdWithResponse call
-func ParseGetChannelsChannelIdOperationsOperationIdResponse(rsp *http.Response) (*GetChannelsChannelIdOperationsOperationIdResponse, error) {
+// ParseGetOperationResponse parses an HTTP response from a GetOperationWithResponse call
+func ParseGetOperationResponse(rsp *http.Response) (*GetOperationResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdOperationsOperationIdResponse{
+	response := &GetOperationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4901,15 +4901,15 @@ func ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp *http.Response
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdWatchersResponse parses an HTTP response from a GetChannelsChannelIdWatchersWithResponse call
-func ParseGetChannelsChannelIdWatchersResponse(rsp *http.Response) (*GetChannelsChannelIdWatchersResponse, error) {
+// ParseListWatchersResponse parses an HTTP response from a ListWatchersWithResponse call
+func ParseListWatchersResponse(rsp *http.Response) (*ListWatchersResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdWatchersResponse{
+	response := &ListWatchersResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4941,15 +4941,15 @@ func ParseGetChannelsChannelIdWatchersResponse(rsp *http.Response) (*GetChannels
 	return response, nil
 }
 
-// ParsePostChannelsChannelIdWatchersResponse parses an HTTP response from a PostChannelsChannelIdWatchersWithResponse call
-func ParsePostChannelsChannelIdWatchersResponse(rsp *http.Response) (*PostChannelsChannelIdWatchersResponse, error) {
+// ParseCreateWatcherResponse parses an HTTP response from a CreateWatcherWithResponse call
+func ParseCreateWatcherResponse(rsp *http.Response) (*CreateWatcherResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostChannelsChannelIdWatchersResponse{
+	response := &CreateWatcherResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -4988,15 +4988,15 @@ func ParsePostChannelsChannelIdWatchersResponse(rsp *http.Response) (*PostChanne
 	return response, nil
 }
 
-// ParseGetChannelsChannelIdWatchersWatcherIdResponse parses an HTTP response from a GetChannelsChannelIdWatchersWatcherIdWithResponse call
-func ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*GetChannelsChannelIdWatchersWatcherIdResponse, error) {
+// ParseGetWatcherResponse parses an HTTP response from a GetWatcherWithResponse call
+func ParseGetWatcherResponse(rsp *http.Response) (*GetWatcherResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetChannelsChannelIdWatchersWatcherIdResponse{
+	response := &GetWatcherResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5028,15 +5028,15 @@ func ParseGetChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*Ge
 	return response, nil
 }
 
-// ParsePatchChannelsChannelIdWatchersWatcherIdResponse parses an HTTP response from a PatchChannelsChannelIdWatchersWatcherIdWithResponse call
-func ParsePatchChannelsChannelIdWatchersWatcherIdResponse(rsp *http.Response) (*PatchChannelsChannelIdWatchersWatcherIdResponse, error) {
+// ParseUpdateWatcherResponse parses an HTTP response from a UpdateWatcherWithResponse call
+func ParseUpdateWatcherResponse(rsp *http.Response) (*UpdateWatcherResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PatchChannelsChannelIdWatchersWatcherIdResponse{
+	response := &UpdateWatcherResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5108,15 +5108,15 @@ func ParseGetHealthCheckResponse(rsp *http.Response) (*GetHealthCheckResponse, e
 	return response, nil
 }
 
-// ParseGetNetworksResponse parses an HTTP response from a GetNetworksWithResponse call
-func ParseGetNetworksResponse(rsp *http.Response) (*GetNetworksResponse, error) {
+// ParseListNetworksResponse parses an HTTP response from a ListNetworksWithResponse call
+func ParseListNetworksResponse(rsp *http.Response) (*ListNetworksResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetNetworksResponse{
+	response := &ListNetworksResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5141,15 +5141,15 @@ func ParseGetNetworksResponse(rsp *http.Response) (*GetNetworksResponse, error) 
 	return response, nil
 }
 
-// ParseGetWalletsResponse parses an HTTP response from a GetWalletsWithResponse call
-func ParseGetWalletsResponse(rsp *http.Response) (*GetWalletsResponse, error) {
+// ParseListWalletsResponse parses an HTTP response from a ListWalletsWithResponse call
+func ParseListWalletsResponse(rsp *http.Response) (*ListWalletsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetWalletsResponse{
+	response := &ListWalletsResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5174,15 +5174,15 @@ func ParseGetWalletsResponse(rsp *http.Response) (*GetWalletsResponse, error) {
 	return response, nil
 }
 
-// ParsePostWalletsResponse parses an HTTP response from a PostWalletsWithResponse call
-func ParsePostWalletsResponse(rsp *http.Response) (*PostWalletsResponse, error) {
+// ParseCreateWalletResponse parses an HTTP response from a CreateWalletWithResponse call
+func ParseCreateWalletResponse(rsp *http.Response) (*CreateWalletResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PostWalletsResponse{
+	response := &CreateWalletResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5214,15 +5214,15 @@ func ParsePostWalletsResponse(rsp *http.Response) (*PostWalletsResponse, error) 
 	return response, nil
 }
 
-// ParseGetWalletsWalletIdResponse parses an HTTP response from a GetWalletsWalletIdWithResponse call
-func ParseGetWalletsWalletIdResponse(rsp *http.Response) (*GetWalletsWalletIdResponse, error) {
+// ParseGetWalletResponse parses an HTTP response from a GetWalletWithResponse call
+func ParseGetWalletResponse(rsp *http.Response) (*GetWalletResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &GetWalletsWalletIdResponse{
+	response := &GetWalletResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}
@@ -5254,15 +5254,15 @@ func ParseGetWalletsWalletIdResponse(rsp *http.Response) (*GetWalletsWalletIdRes
 	return response, nil
 }
 
-// ParsePatchWalletsWalletIdResponse parses an HTTP response from a PatchWalletsWalletIdWithResponse call
-func ParsePatchWalletsWalletIdResponse(rsp *http.Response) (*PatchWalletsWalletIdResponse, error) {
+// ParseUpdateWalletResponse parses an HTTP response from a UpdateWalletWithResponse call
+func ParseUpdateWalletResponse(rsp *http.Response) (*UpdateWalletResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PatchWalletsWalletIdResponse{
+	response := &UpdateWalletResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

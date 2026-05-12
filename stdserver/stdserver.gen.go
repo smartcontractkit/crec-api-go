@@ -197,7 +197,7 @@ type CreateChannel struct {
 	Name string `json:"name"`
 }
 
-// CreateOperation Request body for creating a signed operation first, or a draft when the signature is omitted.
+// CreateOperation Request body for creating a signed operation or a draft when the signature is omitted.
 type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -460,7 +460,7 @@ type Operation struct {
 	// CancelledAt Unix timestamp in seconds
 	CancelledAt *Timestamp `json:"cancelled_at,omitempty"`
 
-	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 	Canceller *Subject `json:"canceller,omitempty"`
 
 	// ChainSelector Chain selector identifier for the blockchain network
@@ -475,7 +475,7 @@ type Operation struct {
 	// Digest Signing digest for the finalized operation.
 	Digest *string `json:"digest"`
 
-	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 	Initiator Subject `json:"initiator"`
 
 	// OperationId Unique identifier for the operation
@@ -487,7 +487,7 @@ type Operation struct {
 	// SignedAt Unix timestamp in seconds
 	SignedAt *Timestamp `json:"signed_at,omitempty"`
 
-	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 	Signer *Subject `json:"signer,omitempty"`
 
 	// Status Status of an operation
@@ -525,7 +525,7 @@ type OperationStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
-	// Digest Canonical signing digest for the finalized operation.
+	// Digest Canonical signing digest for the operation.
 	Digest *string `json:"digest"`
 
 	// EventHash Verifiable event hash for reference (only present when status is confirmed)
@@ -582,7 +582,7 @@ type RSAPublicKey struct {
 // RSASignersList List of allowed RSA public signing keys
 type RSASignersList = []RSAPublicKey
 
-// Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational and intended for UX rendering; `subject_id` remains the stable identifier for filtering and equality.
+// Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 type Subject struct {
 	// SubjectId Stable subject identifier used for filtering and equality.
 	SubjectId string `json:"subject_id"`
@@ -880,8 +880,8 @@ type WatcherSummary struct {
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
 
-// GetChannelsParams defines parameters for GetChannels.
-type GetChannelsParams struct {
+// ListChannelsParams defines parameters for ListChannels.
+type ListChannelsParams struct {
 	// Name Filter channels by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
@@ -895,8 +895,8 @@ type GetChannelsParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetChannelsChannelIdEventsParams defines parameters for GetChannelsChannelIdEvents.
-type GetChannelsChannelIdEventsParams struct {
+// ListChannelEventsParams defines parameters for ListChannelEvents.
+type ListChannelEventsParams struct {
 	// Limit Maximum number of events to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -904,8 +904,8 @@ type GetChannelsChannelIdEventsParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// GetChannelsChannelIdEventsSearchParams defines parameters for GetChannelsChannelIdEventsSearch.
-type GetChannelsChannelIdEventsSearchParams struct {
+// SearchChannelEventsParams defines parameters for SearchChannelEvents.
+type SearchChannelEventsParams struct {
 	// Limit Maximum number of events to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -955,8 +955,8 @@ type GetChannelsChannelIdEventsSearchParams struct {
 	Service *[]string `form:"service,omitempty" json:"service,omitempty"`
 }
 
-// GetChannelsChannelIdOperationsParams defines parameters for GetChannelsChannelIdOperations.
-type GetChannelsChannelIdOperationsParams struct {
+// ListOperationsParams defines parameters for ListOperations.
+type ListOperationsParams struct {
 	// Limit Maximum number of operations to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -994,8 +994,8 @@ type GetChannelsChannelIdOperationsParams struct {
 	CancellerSubjectId *string `form:"canceller_subject_id,omitempty" json:"canceller_subject_id,omitempty"`
 }
 
-// GetChannelsChannelIdWatchersParams defines parameters for GetChannelsChannelIdWatchers.
-type GetChannelsChannelIdWatchersParams struct {
+// ListWatchersParams defines parameters for ListWatchers.
+type ListWatchersParams struct {
 	// Limit Maximum number of watchers to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
@@ -1021,8 +1021,8 @@ type GetChannelsChannelIdWatchersParams struct {
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
-// GetWalletsParams defines parameters for GetWallets.
-type GetWalletsParams struct {
+// ListWalletsParams defines parameters for ListWallets.
+type ListWalletsParams struct {
 	// Name Filter wallets by name (case-insensitive partial match)
 	Name *string `form:"name,omitempty" json:"name,omitempty"`
 
@@ -1048,29 +1048,29 @@ type GetWalletsParams struct {
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 }
 
-// PostChannelsJSONRequestBody defines body for PostChannels for application/json ContentType.
-type PostChannelsJSONRequestBody = CreateChannel
+// CreateChannelJSONRequestBody defines body for CreateChannel for application/json ContentType.
+type CreateChannelJSONRequestBody = CreateChannel
 
-// PatchChannelsChannelIdJSONRequestBody defines body for PatchChannelsChannelId for application/json ContentType.
-type PatchChannelsChannelIdJSONRequestBody = PatchChannel
+// UpdateChannelJSONRequestBody defines body for UpdateChannel for application/json ContentType.
+type UpdateChannelJSONRequestBody = PatchChannel
 
-// PostChannelsChannelIdOperationsJSONRequestBody defines body for PostChannelsChannelIdOperations for application/json ContentType.
-type PostChannelsChannelIdOperationsJSONRequestBody = CreateOperation
+// CreateOperationJSONRequestBody defines body for CreateOperation for application/json ContentType.
+type CreateOperationJSONRequestBody = CreateOperation
 
 // PatchChannelsChannelIdOperationsOperationIdJSONRequestBody defines body for PatchChannelsChannelIdOperationsOperationId for application/json ContentType.
 type PatchChannelsChannelIdOperationsOperationIdJSONRequestBody = PatchOperation
 
-// PostChannelsChannelIdWatchersJSONRequestBody defines body for PostChannelsChannelIdWatchers for application/json ContentType.
-type PostChannelsChannelIdWatchersJSONRequestBody = CreateWatcher
+// CreateWatcherJSONRequestBody defines body for CreateWatcher for application/json ContentType.
+type CreateWatcherJSONRequestBody = CreateWatcher
 
-// PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody defines body for PatchChannelsChannelIdWatchersWatcherId for application/json ContentType.
-type PatchChannelsChannelIdWatchersWatcherIdJSONRequestBody = UpdateWatcher
+// UpdateWatcherJSONRequestBody defines body for UpdateWatcher for application/json ContentType.
+type UpdateWatcherJSONRequestBody = UpdateWatcher
 
-// PostWalletsJSONRequestBody defines body for PostWallets for application/json ContentType.
-type PostWalletsJSONRequestBody = CreateWallet
+// CreateWalletJSONRequestBody defines body for CreateWallet for application/json ContentType.
+type CreateWalletJSONRequestBody = CreateWallet
 
-// PatchWalletsWalletIdJSONRequestBody defines body for PatchWalletsWalletId for application/json ContentType.
-type PatchWalletsWalletIdJSONRequestBody = UpdateWallet
+// UpdateWalletJSONRequestBody defines body for UpdateWallet for application/json ContentType.
+type UpdateWalletJSONRequestBody = UpdateWallet
 
 // AsCreateWatcherWithService returns the union data inside the CreateWatcher as a CreateWatcherWithService
 func (t CreateWatcher) AsCreateWatcherWithService() (CreateWatcherWithService, error) {
@@ -1403,67 +1403,67 @@ func (t *PatchOperation) UnmarshalJSON(b []byte) error {
 type ServerInterface interface {
 	// Retrieves channels for the organization.
 	// (GET /channels)
-	GetChannels(w http.ResponseWriter, r *http.Request, params GetChannelsParams)
+	ListChannels(w http.ResponseWriter, r *http.Request, params ListChannelsParams)
 	// Creates a new channel.
 	// (POST /channels)
-	PostChannels(w http.ResponseWriter, r *http.Request)
+	CreateChannel(w http.ResponseWriter, r *http.Request)
 	// Retrieves a specific channel by ID.
 	// (GET /channels/{channel_id})
-	GetChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
+	GetChannel(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Updates a channel.
 	// (PATCH /channels/{channel_id})
-	PatchChannelsChannelId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
+	UpdateChannel(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Retrieves events from a channel.
 	// (GET /channels/{channel_id}/events)
-	GetChannelsChannelIdEvents(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdEventsParams)
+	ListChannelEvents(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListChannelEventsParams)
 	// Query and search historical events from a channel.
 	// (GET /channels/{channel_id}/events/search)
-	GetChannelsChannelIdEventsSearch(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdEventsSearchParams)
+	SearchChannelEvents(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params SearchChannelEventsParams)
 	// Retrieves a specific event by ID from a channel.
 	// (GET /channels/{channel_id}/events/search/{event_id})
-	GetChannelsChannelIdEventsSearchEventId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, eventId openapi_types.UUID)
+	GetChannelEvent(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, eventId openapi_types.UUID)
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
-	GetChannelsChannelIdOperations(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdOperationsParams)
+	ListOperations(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListOperationsParams)
 	// Creates a signed operation or draft request, scoped to a channel.
 	// (POST /channels/{channel_id}/operations)
-	PostChannelsChannelIdOperations(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
+	CreateOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Gets Operation record for a specific operation.
 	// (GET /channels/{channel_id}/operations/{operation_id})
-	GetChannelsChannelIdOperationsOperationId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
+	GetOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
 	// Finalizes or cancels an operation.
 	// (PATCH /channels/{channel_id}/operations/{operation_id})
 	PatchChannelsChannelIdOperationsOperationId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
 	// Retrieves watchers for a channel.
 	// (GET /channels/{channel_id}/watchers)
-	GetChannelsChannelIdWatchers(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params GetChannelsChannelIdWatchersParams)
+	ListWatchers(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListWatchersParams)
 	// Creates a watcher in a channel.
 	// (POST /channels/{channel_id}/watchers)
-	PostChannelsChannelIdWatchers(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
+	CreateWatcher(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Retrieves a specific watcher by ID.
 	// (GET /channels/{channel_id}/watchers/{watcher_id})
-	GetChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
+	GetWatcher(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
 	// Updates a watcher.
 	// (PATCH /channels/{channel_id}/watchers/{watcher_id})
-	PatchChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
+	UpdateWatcher(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, watcherId openapi_types.UUID)
 	// Health check endpoint
 	// (GET /health-check)
 	GetHealthCheck(w http.ResponseWriter, r *http.Request)
 	// Retrieves available networks.
 	// (GET /networks)
-	GetNetworks(w http.ResponseWriter, r *http.Request)
+	ListNetworks(w http.ResponseWriter, r *http.Request)
 	// Retrieves wallets for the organization.
 	// (GET /wallets)
-	GetWallets(w http.ResponseWriter, r *http.Request, params GetWalletsParams)
+	ListWallets(w http.ResponseWriter, r *http.Request, params ListWalletsParams)
 	// Creates a new wallet.
 	// (POST /wallets)
-	PostWallets(w http.ResponseWriter, r *http.Request)
+	CreateWallet(w http.ResponseWriter, r *http.Request)
 	// Retrieves a specific wallet by ID.
 	// (GET /wallets/{wallet_id})
-	GetWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
+	GetWallet(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
 	// Updates a wallet name.
 	// (PATCH /wallets/{wallet_id})
-	PatchWalletsWalletId(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
+	UpdateWallet(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -1475,8 +1475,8 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetChannels operation middleware
-func (siw *ServerInterfaceWrapper) GetChannels(w http.ResponseWriter, r *http.Request) {
+// ListChannels operation middleware
+func (siw *ServerInterfaceWrapper) ListChannels(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1487,7 +1487,7 @@ func (siw *ServerInterfaceWrapper) GetChannels(w http.ResponseWriter, r *http.Re
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetChannelsParams
+	var params ListChannelsParams
 
 	// ------------- Optional query parameter "name" -------------
 
@@ -1522,7 +1522,7 @@ func (siw *ServerInterfaceWrapper) GetChannels(w http.ResponseWriter, r *http.Re
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannels(w, r, params)
+		siw.Handler.ListChannels(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1532,8 +1532,8 @@ func (siw *ServerInterfaceWrapper) GetChannels(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
-// PostChannels operation middleware
-func (siw *ServerInterfaceWrapper) PostChannels(w http.ResponseWriter, r *http.Request) {
+// CreateChannel operation middleware
+func (siw *ServerInterfaceWrapper) CreateChannel(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
@@ -1542,7 +1542,7 @@ func (siw *ServerInterfaceWrapper) PostChannels(w http.ResponseWriter, r *http.R
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostChannels(w, r)
+		siw.Handler.CreateChannel(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1552,8 +1552,8 @@ func (siw *ServerInterfaceWrapper) PostChannels(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelId operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelId(w http.ResponseWriter, r *http.Request) {
+// GetChannel operation middleware
+func (siw *ServerInterfaceWrapper) GetChannel(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1573,7 +1573,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelId(w http.ResponseWriter, r
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelId(w, r, channelId)
+		siw.Handler.GetChannel(w, r, channelId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1583,8 +1583,8 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelId(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
-// PatchChannelsChannelId operation middleware
-func (siw *ServerInterfaceWrapper) PatchChannelsChannelId(w http.ResponseWriter, r *http.Request) {
+// UpdateChannel operation middleware
+func (siw *ServerInterfaceWrapper) UpdateChannel(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1604,7 +1604,7 @@ func (siw *ServerInterfaceWrapper) PatchChannelsChannelId(w http.ResponseWriter,
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PatchChannelsChannelId(w, r, channelId)
+		siw.Handler.UpdateChannel(w, r, channelId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1614,8 +1614,8 @@ func (siw *ServerInterfaceWrapper) PatchChannelsChannelId(w http.ResponseWriter,
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelIdEvents operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(w http.ResponseWriter, r *http.Request) {
+// ListChannelEvents operation middleware
+func (siw *ServerInterfaceWrapper) ListChannelEvents(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1635,7 +1635,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(w http.ResponseWri
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetChannelsChannelIdEventsParams
+	var params ListChannelEventsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -1654,7 +1654,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(w http.ResponseWri
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelIdEvents(w, r, channelId, params)
+		siw.Handler.ListChannelEvents(w, r, channelId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1664,8 +1664,8 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEvents(w http.ResponseWri
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelIdEventsSearch operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(w http.ResponseWriter, r *http.Request) {
+// SearchChannelEvents operation middleware
+func (siw *ServerInterfaceWrapper) SearchChannelEvents(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1685,7 +1685,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(w http.Respo
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetChannelsChannelIdEventsSearchParams
+	var params SearchChannelEventsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -1816,7 +1816,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(w http.Respo
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelIdEventsSearch(w, r, channelId, params)
+		siw.Handler.SearchChannelEvents(w, r, channelId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1826,8 +1826,8 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearch(w http.Respo
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelIdEventsSearchEventId operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearchEventId(w http.ResponseWriter, r *http.Request) {
+// GetChannelEvent operation middleware
+func (siw *ServerInterfaceWrapper) GetChannelEvent(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1856,7 +1856,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearchEventId(w htt
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelIdEventsSearchEventId(w, r, channelId, eventId)
+		siw.Handler.GetChannelEvent(w, r, channelId, eventId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1866,8 +1866,8 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdEventsSearchEventId(w htt
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelIdOperations operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperations(w http.ResponseWriter, r *http.Request) {
+// ListOperations operation middleware
+func (siw *ServerInterfaceWrapper) ListOperations(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -1887,7 +1887,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperations(w http.Respons
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetChannelsChannelIdOperationsParams
+	var params ListOperationsParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -1986,7 +1986,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperations(w http.Respons
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelIdOperations(w, r, channelId, params)
+		siw.Handler.ListOperations(w, r, channelId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -1996,8 +1996,8 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperations(w http.Respons
 	handler.ServeHTTP(w, r)
 }
 
-// PostChannelsChannelIdOperations operation middleware
-func (siw *ServerInterfaceWrapper) PostChannelsChannelIdOperations(w http.ResponseWriter, r *http.Request) {
+// CreateOperation operation middleware
+func (siw *ServerInterfaceWrapper) CreateOperation(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2017,7 +2017,7 @@ func (siw *ServerInterfaceWrapper) PostChannelsChannelIdOperations(w http.Respon
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostChannelsChannelIdOperations(w, r, channelId)
+		siw.Handler.CreateOperation(w, r, channelId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2027,8 +2027,8 @@ func (siw *ServerInterfaceWrapper) PostChannelsChannelIdOperations(w http.Respon
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelIdOperationsOperationId operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperationsOperationId(w http.ResponseWriter, r *http.Request) {
+// GetOperation operation middleware
+func (siw *ServerInterfaceWrapper) GetOperation(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2057,7 +2057,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdOperationsOperationId(w h
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelIdOperationsOperationId(w, r, channelId, operationId)
+		siw.Handler.GetOperation(w, r, channelId, operationId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2107,8 +2107,8 @@ func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdOperationsOperationId(w
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelIdWatchers operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(w http.ResponseWriter, r *http.Request) {
+// ListWatchers operation middleware
+func (siw *ServerInterfaceWrapper) ListWatchers(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2128,7 +2128,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(w http.ResponseW
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetChannelsChannelIdWatchersParams
+	var params ListWatchersParams
 
 	// ------------- Optional query parameter "limit" -------------
 
@@ -2195,7 +2195,7 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(w http.ResponseW
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelIdWatchers(w, r, channelId, params)
+		siw.Handler.ListWatchers(w, r, channelId, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2205,8 +2205,8 @@ func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchers(w http.ResponseW
 	handler.ServeHTTP(w, r)
 }
 
-// PostChannelsChannelIdWatchers operation middleware
-func (siw *ServerInterfaceWrapper) PostChannelsChannelIdWatchers(w http.ResponseWriter, r *http.Request) {
+// CreateWatcher operation middleware
+func (siw *ServerInterfaceWrapper) CreateWatcher(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2226,7 +2226,7 @@ func (siw *ServerInterfaceWrapper) PostChannelsChannelIdWatchers(w http.Response
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostChannelsChannelIdWatchers(w, r, channelId)
+		siw.Handler.CreateWatcher(w, r, channelId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2236,48 +2236,8 @@ func (siw *ServerInterfaceWrapper) PostChannelsChannelIdWatchers(w http.Response
 	handler.ServeHTTP(w, r)
 }
 
-// GetChannelsChannelIdWatchersWatcherId operation middleware
-func (siw *ServerInterfaceWrapper) GetChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "channel_id" -------------
-	var channelId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "watcher_id" -------------
-	var watcherId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "watcher_id", r.PathValue("watcher_id"), &watcherId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "watcher_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetChannelsChannelIdWatchersWatcherId(w, r, channelId, watcherId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// PatchChannelsChannelIdWatchersWatcherId operation middleware
-func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdWatchersWatcherId(w http.ResponseWriter, r *http.Request) {
+// GetWatcher operation middleware
+func (siw *ServerInterfaceWrapper) GetWatcher(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2306,7 +2266,47 @@ func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdWatchersWatcherId(w htt
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PatchChannelsChannelIdWatchersWatcherId(w, r, channelId, watcherId)
+		siw.Handler.GetWatcher(w, r, channelId, watcherId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// UpdateWatcher operation middleware
+func (siw *ServerInterfaceWrapper) UpdateWatcher(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "watcher_id" -------------
+	var watcherId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "watcher_id", r.PathValue("watcher_id"), &watcherId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "watcher_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.UpdateWatcher(w, r, channelId, watcherId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2336,8 +2336,8 @@ func (siw *ServerInterfaceWrapper) GetHealthCheck(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
-// GetNetworks operation middleware
-func (siw *ServerInterfaceWrapper) GetNetworks(w http.ResponseWriter, r *http.Request) {
+// ListNetworks operation middleware
+func (siw *ServerInterfaceWrapper) ListNetworks(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
@@ -2346,7 +2346,7 @@ func (siw *ServerInterfaceWrapper) GetNetworks(w http.ResponseWriter, r *http.Re
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetNetworks(w, r)
+		siw.Handler.ListNetworks(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2356,8 +2356,8 @@ func (siw *ServerInterfaceWrapper) GetNetworks(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
-// GetWallets operation middleware
-func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Request) {
+// ListWallets operation middleware
+func (siw *ServerInterfaceWrapper) ListWallets(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2368,7 +2368,7 @@ func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Req
 	r = r.WithContext(ctx)
 
 	// Parameter object where we will unmarshal all parameters from the context
-	var params GetWalletsParams
+	var params ListWalletsParams
 
 	// ------------- Optional query parameter "name" -------------
 
@@ -2435,7 +2435,7 @@ func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Req
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetWallets(w, r, params)
+		siw.Handler.ListWallets(w, r, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2445,8 +2445,8 @@ func (siw *ServerInterfaceWrapper) GetWallets(w http.ResponseWriter, r *http.Req
 	handler.ServeHTTP(w, r)
 }
 
-// PostWallets operation middleware
-func (siw *ServerInterfaceWrapper) PostWallets(w http.ResponseWriter, r *http.Request) {
+// CreateWallet operation middleware
+func (siw *ServerInterfaceWrapper) CreateWallet(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 
@@ -2455,7 +2455,7 @@ func (siw *ServerInterfaceWrapper) PostWallets(w http.ResponseWriter, r *http.Re
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PostWallets(w, r)
+		siw.Handler.CreateWallet(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2465,8 +2465,8 @@ func (siw *ServerInterfaceWrapper) PostWallets(w http.ResponseWriter, r *http.Re
 	handler.ServeHTTP(w, r)
 }
 
-// GetWalletsWalletId operation middleware
-func (siw *ServerInterfaceWrapper) GetWalletsWalletId(w http.ResponseWriter, r *http.Request) {
+// GetWallet operation middleware
+func (siw *ServerInterfaceWrapper) GetWallet(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2486,7 +2486,7 @@ func (siw *ServerInterfaceWrapper) GetWalletsWalletId(w http.ResponseWriter, r *
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetWalletsWalletId(w, r, walletId)
+		siw.Handler.GetWallet(w, r, walletId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2496,8 +2496,8 @@ func (siw *ServerInterfaceWrapper) GetWalletsWalletId(w http.ResponseWriter, r *
 	handler.ServeHTTP(w, r)
 }
 
-// PatchWalletsWalletId operation middleware
-func (siw *ServerInterfaceWrapper) PatchWalletsWalletId(w http.ResponseWriter, r *http.Request) {
+// UpdateWallet operation middleware
+func (siw *ServerInterfaceWrapper) UpdateWallet(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2517,7 +2517,7 @@ func (siw *ServerInterfaceWrapper) PatchWalletsWalletId(w http.ResponseWriter, r
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PatchWalletsWalletId(w, r, walletId)
+		siw.Handler.UpdateWallet(w, r, walletId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2647,27 +2647,27 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	m.HandleFunc("GET "+options.BaseURL+"/channels", wrapper.GetChannels)
-	m.HandleFunc("POST "+options.BaseURL+"/channels", wrapper.PostChannels)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}", wrapper.GetChannelsChannelId)
-	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}", wrapper.PatchChannelsChannelId)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events", wrapper.GetChannelsChannelIdEvents)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search", wrapper.GetChannelsChannelIdEventsSearch)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search/{event_id}", wrapper.GetChannelsChannelIdEventsSearchEventId)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.GetChannelsChannelIdOperations)
-	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.PostChannelsChannelIdOperations)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetChannelsChannelIdOperationsOperationId)
+	m.HandleFunc("GET "+options.BaseURL+"/channels", wrapper.ListChannels)
+	m.HandleFunc("POST "+options.BaseURL+"/channels", wrapper.CreateChannel)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}", wrapper.GetChannel)
+	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}", wrapper.UpdateChannel)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events", wrapper.ListChannelEvents)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search", wrapper.SearchChannelEvents)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/events/search/{event_id}", wrapper.GetChannelEvent)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.ListOperations)
+	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.CreateOperation)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetOperation)
 	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.PatchChannelsChannelIdOperationsOperationId)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.GetChannelsChannelIdWatchers)
-	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.PostChannelsChannelIdWatchers)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetChannelsChannelIdWatchersWatcherId)
-	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.PatchChannelsChannelIdWatchersWatcherId)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.ListWatchers)
+	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.CreateWatcher)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetWatcher)
+	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.UpdateWatcher)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
-	m.HandleFunc("GET "+options.BaseURL+"/networks", wrapper.GetNetworks)
-	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.GetWallets)
-	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.PostWallets)
-	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}", wrapper.GetWalletsWalletId)
-	m.HandleFunc("PATCH "+options.BaseURL+"/wallets/{wallet_id}", wrapper.PatchWalletsWalletId)
+	m.HandleFunc("GET "+options.BaseURL+"/networks", wrapper.ListNetworks)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.ListWallets)
+	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.CreateWallet)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}", wrapper.GetWallet)
+	m.HandleFunc("PATCH "+options.BaseURL+"/wallets/{wallet_id}", wrapper.UpdateWallet)
 
 	return m
 }
