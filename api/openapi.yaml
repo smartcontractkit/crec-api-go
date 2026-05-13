@@ -635,7 +635,13 @@ paths:
       tags:
         - Operations
       operationId: createOperation
-      summary: Sends a CreateOperation request to a channel.
+      summary: Creates a signed operation or draft request, scoped to a channel.
+      description: |
+        Creates a signed or draft operation first, depending on the presence of a signature.
+        Signed operations are relayed immediately. Drafts can be finalized or cancelled later.
+        Each transaction may include an optional preview block.
+        The operation is scoped to the channel, and will only be visible to the channel.
+
       parameters:
         - in: path
           name: channel_id
@@ -679,6 +685,8 @@ paths:
         - Operations
       operationId: listOperations
       summary: Retrieves operations for a channel.
+      description: |
+        Returns operation records for the channel, including audit subjects and preview snapshots when available.
       parameters:
         - in: path
           name: channel_id
@@ -727,6 +735,36 @@ paths:
           schema:
             type: string
             format: uuid
+        - in: query
+          name: initiator_subject_type
+          description: Filter operations by initiator subject type.
+          schema:
+            $ref: "#/components/schemas/SubjectType"
+        - in: query
+          name: initiator_subject_id
+          description: Filter operations by initiator subject ID.
+          schema:
+            type: string
+        - in: query
+          name: signer_subject_type
+          description: Filter operations by signer subject type.
+          schema:
+            $ref: "#/components/schemas/SubjectType"
+        - in: query
+          name: signer_subject_id
+          description: Filter operations by signer subject ID.
+          schema:
+            type: string
+        - in: query
+          name: canceller_subject_type
+          description: Filter operations by canceller subject type.
+          schema:
+            $ref: "#/components/schemas/SubjectType"
+        - in: query
+          name: canceller_subject_id
+          description: Filter operations by canceller subject ID.
+          schema:
+            type: string
       responses:
         "200":
           description: Successful operation
@@ -752,6 +790,8 @@ paths:
         - Operations
       operationId: getOperation
       summary: Gets Operation record for a specific operation.
+      description: |
+        Returns the operation record.
       parameters:
         - in: path
           name: channel_id
@@ -780,6 +820,56 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
         "500":
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    patch:
+      summary: Finalizes or cancels an operation.
+      description: |
+        Finalize by sending status accepted with signature and digest.
+        Cancel by sending status cancelled with no additional fields.
+        The request body is a oneOf with closed branches so invalid combinations and extra fields are rejected.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: operation_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchOperation"
+      responses:
+        "200":
+          description: Operation updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Operation"
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Channel or operation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "409":
+          description: Operation could not be finalized or cancelled because.
           content:
             application/json:
               schema:
@@ -1092,11 +1182,23 @@ components:
       description: Status of an operation
       enum:
         - accepted
+        - pending_signature
         - sending
         - sent
         - broadcasting
         - confirmed
+        - cancelled
+        - expired
         - failed
+    SubjectType:
+      type: string
+      description: Type of subject used for audit identity and filtering.
+      enum:
+        - api_key
+        - user
+      x-enum-varnames:
+        - SubjectTypeApiKey
+        - SubjectTypeUser
     WalletType:
       type: string
       description: Type of wallet
@@ -1347,8 +1449,44 @@ components:
         - data
         - has_more
 
+    TransactionPreview:
+      type: object
+      additionalProperties: false
+      description: Preview metadata attached to a draft transaction before signing.
+      properties:
+        function_signature:
+          type: string
+          description: Function signature used to build the transaction preview.
+        metadata:
+          type: object
+          description: Optional arbitrary metadata attached to the preview.
+          additionalProperties: true
+      required:
+        - function_signature
+
+    TransactionPreviewSnapshot:
+      type: object
+      additionalProperties: false
+      description: Snapshot of the preview captured after the operation is read back.
+      properties:
+        function_signature:
+          type: string
+          description: Function signature used to build the snapshot.
+        execution_values:
+          type: object
+          description: Resolved execution values captured during previewing. It will be an empty map when the function has no parameters.
+          additionalProperties: true
+        metadata:
+          type: object
+          description: Optional arbitrary metadata captured with the snapshot.
+          additionalProperties: true
+      required:
+        - function_signature
+        - execution_values
+
     TransactionRequest:
       type: object
+      description: Transaction payload for operation creation.
       properties:
         to:
           type: string
@@ -1359,12 +1497,16 @@ components:
         data:
           type: string
           description: Hex-encoded calldata for the transaction
+        preview:
+          $ref: "#/components/schemas/TransactionPreview"
       required:
         - to
         - value
         - data
+
     Transaction:
       type: object
+      description: Transaction payload returned by operation reads and events.
       properties:
         to:
           type: string
@@ -1375,6 +1517,8 @@ components:
         data:
           type: string
           description: Hex-encoded calldata for the transaction
+        preview_snapshot:
+          $ref: "#/components/schemas/TransactionPreviewSnapshot"
       required:
         - to
         - value
@@ -1690,6 +1834,7 @@ components:
         - has_more
     CreateOperation:
       type: object
+      description: Request body for creating a signed operation or a draft when the signature is omitted.
       properties:
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
@@ -1707,18 +1852,17 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TransactionRequest"
-          description: List of transactions to execute
+          description: List of transactions to execute. Each transaction may include optional preview data.
           minItems: 1
         signature:
           type: string
-          description: EIP-712 signature of the operation
+          description: EIP-712 signature of the operation. Optional for draft creation.
       required:
         - chain_selector
         - address
         - wallet_operation_id
         - deadline
         - transactions
-        - signature
     Operation:
       type: object
       properties:
@@ -1743,15 +1887,28 @@ components:
         transactions:
           type: array
           items:
-            $ref: "#/components/schemas/TransactionRequest"
-          description: List of transactions to execute
+            $ref: "#/components/schemas/Transaction"
+          description: List of transactions associated with the operation.
         signature:
           type: string
-          description: EIP-712 signature of the operation
+          nullable: true
+          description: EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
+        digest:
+          type: string
+          nullable: true
+          description: Signing digest for the finalized operation.
+        initiator:
+          $ref: "#/components/schemas/Subject"
+        signer:
+          $ref: "#/components/schemas/Subject"
+        canceller:
+          $ref: "#/components/schemas/Subject"
+        signed_at:
+          $ref: "#/components/schemas/Timestamp"
+        cancelled_at:
+          $ref: "#/components/schemas/Timestamp"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the operation was created
+          $ref: "#/components/schemas/Timestamp"
       required:
         - operation_id
         - status
@@ -1760,6 +1917,7 @@ components:
         - wallet_operation_id
         - deadline
         - transactions
+        - initiator
         - signature
         - created_at
     OperationResponse:
@@ -1784,6 +1942,65 @@ components:
       required:
         - data
         - has_more
+    Subject:
+      type: object
+      additionalProperties: false
+      description: Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+      properties:
+        subject_type:
+          $ref: "#/components/schemas/SubjectType"
+        subject_id:
+          type: string
+          description: Stable subject identifier used for filtering and equality.
+        subject_name:
+          type: string
+          description: Human-friendly subject name.
+      required:
+        - subject_type
+        - subject_id
+        - subject_name
+    FinalizeOperation:
+      type: object
+      additionalProperties: false
+      description: PATCH body for finalizing a pending operation.
+      properties:
+        status:
+          type: string
+          enum:
+            - accepted
+          description: Marks the operation as accepted/finalized.
+        signature:
+          type: string
+          description: Final signature returned by the signing flow.
+        digest:
+          type: string
+          description: Digest associated with the finalized operation.
+      required:
+        - status
+        - signature
+        - digest
+    CancelOperation:
+      type: object
+      additionalProperties: false
+      description: PATCH body for cancelling a pending operation.
+      properties:
+        status:
+          type: string
+          enum:
+            - cancelled
+          description: Marks the operation as cancelled.
+      required:
+        - status
+    PatchOperation:
+      oneOf:
+        - $ref: "#/components/schemas/FinalizeOperation"
+        - $ref: "#/components/schemas/CancelOperation"
+      discriminator:
+        propertyName: status
+        mapping:
+          accepted: "#/components/schemas/FinalizeOperation"
+          cancelled: "#/components/schemas/CancelOperation"
+      description: PATCH body for finalizing or cancelling an operation.
     EventList:
       type: object
       properties:
@@ -1876,6 +2093,16 @@ components:
         address:
           type: string
           description: Wallet address performing the operation
+        digest:
+          type: string
+          nullable: true
+          description: Canonical signing digest for the operation.
+        transactions:
+          type: array
+          nullable: true
+          items:
+            $ref: "#/components/schemas/Transaction"
+          description: Transactions associated with the event.
         event_hash:
           type: string
           description: Verifiable event hash for reference (only present when status is confirmed)

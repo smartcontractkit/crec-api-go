@@ -8,6 +8,7 @@ package stdserver
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -25,6 +26,11 @@ const (
 	BadRequest    ApplicationErrorType = "Bad request"
 	InternalError ApplicationErrorType = "Internal error"
 	NotFound      ApplicationErrorType = "Not found"
+)
+
+// Defines values for CancelOperationStatus.
+const (
+	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
 )
 
 // Defines values for ChannelStatus.
@@ -53,6 +59,11 @@ const (
 	EventTypeWatcherStatus   EventType = "watcher.status"
 )
 
+// Defines values for FinalizeOperationStatus.
+const (
+	Accepted FinalizeOperationStatus = "accepted"
+)
+
 // Defines values for NetworkType.
 const (
 	Mainnet NetworkType = "mainnet"
@@ -61,12 +72,21 @@ const (
 
 // Defines values for OperationStatus.
 const (
-	OperationStatusAccepted     OperationStatus = "accepted"
-	OperationStatusBroadcasting OperationStatus = "broadcasting"
-	OperationStatusConfirmed    OperationStatus = "confirmed"
-	OperationStatusFailed       OperationStatus = "failed"
-	OperationStatusSending      OperationStatus = "sending"
-	OperationStatusSent         OperationStatus = "sent"
+	OperationStatusAccepted         OperationStatus = "accepted"
+	OperationStatusBroadcasting     OperationStatus = "broadcasting"
+	OperationStatusCancelled        OperationStatus = "cancelled"
+	OperationStatusConfirmed        OperationStatus = "confirmed"
+	OperationStatusExpired          OperationStatus = "expired"
+	OperationStatusFailed           OperationStatus = "failed"
+	OperationStatusPendingSignature OperationStatus = "pending_signature"
+	OperationStatusSending          OperationStatus = "sending"
+	OperationStatusSent             OperationStatus = "sent"
+)
+
+// Defines values for SubjectType.
+const (
+	SubjectTypeApiKey SubjectType = "api_key"
+	SubjectTypeUser   SubjectType = "user"
 )
 
 // Defines values for WalletEventStatus.
@@ -105,11 +125,11 @@ const (
 
 // Defines values for WatcherStatus.
 const (
-	WatcherStatusActive    WatcherStatus = "active"
-	WatcherStatusArchived  WatcherStatus = "archived"
-	WatcherStatusArchiving WatcherStatus = "archiving"
-	WatcherStatusFailed    WatcherStatus = "failed"
-	WatcherStatusPending   WatcherStatus = "pending"
+	Active    WatcherStatus = "active"
+	Archived  WatcherStatus = "archived"
+	Archiving WatcherStatus = "archiving"
+	Failed    WatcherStatus = "failed"
+	Pending   WatcherStatus = "pending"
 )
 
 // ApplicationError defines model for ApplicationError.
@@ -123,6 +143,15 @@ type ApplicationError struct {
 
 // ApplicationErrorType Error type
 type ApplicationErrorType string
+
+// CancelOperation PATCH body for cancelling a pending operation.
+type CancelOperation struct {
+	// Status Marks the operation as cancelled.
+	Status CancelOperationStatus `json:"status"`
+}
+
+// CancelOperationStatus Marks the operation as cancelled.
+type CancelOperationStatus string
 
 // ChainSelector Chain selector identifier for the blockchain network
 type ChainSelector = string
@@ -168,7 +197,7 @@ type CreateChannel struct {
 	Name string `json:"name"`
 }
 
-// CreateOperation defines model for CreateOperation.
+// CreateOperation Request body for creating a signed operation or a draft when the signature is omitted.
 type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -179,10 +208,10 @@ type CreateOperation struct {
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
-	// Signature EIP-712 signature of the operation
-	Signature string `json:"signature"`
+	// Signature EIP-712 signature of the operation. Optional for draft creation.
+	Signature *string `json:"signature,omitempty"`
 
-	// Transactions List of transactions to execute
+	// Transactions List of transactions to execute. Each transaction may include optional preview data.
 	Transactions []TransactionRequest `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
@@ -347,6 +376,21 @@ type EventList struct {
 // EventType Type of event
 type EventType string
 
+// FinalizeOperation PATCH body for finalizing a pending operation.
+type FinalizeOperation struct {
+	// Digest Digest associated with the finalized operation.
+	Digest string `json:"digest"`
+
+	// Signature Final signature returned by the signing flow.
+	Signature string `json:"signature"`
+
+	// Status Marks the operation as accepted/finalized.
+	Status FinalizeOperationStatus `json:"status"`
+}
+
+// FinalizeOperationStatus Marks the operation as accepted/finalized.
+type FinalizeOperationStatus string
+
 // HealthCheck defines model for HealthCheck.
 type HealthCheck struct {
 	Status string `json:"status"`
@@ -413,26 +457,44 @@ type Operation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
+	// CancelledAt Unix timestamp in seconds
+	CancelledAt *Timestamp `json:"cancelled_at,omitempty"`
+
+	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+	Canceller *Subject `json:"canceller,omitempty"`
+
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// CreatedAt Timestamp of when the operation was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
 
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
+	// Digest Signing digest for the finalized operation.
+	Digest *string `json:"digest"`
+
+	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+	Initiator Subject `json:"initiator"`
+
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Signature EIP-712 signature of the operation
-	Signature string `json:"signature"`
+	// Signature EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
+	Signature *string `json:"signature"`
+
+	// SignedAt Unix timestamp in seconds
+	SignedAt *Timestamp `json:"signed_at,omitempty"`
+
+	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+	Signer *Subject `json:"signer,omitempty"`
 
 	// Status Status of an operation
 	Status OperationStatus `json:"status"`
 
-	// Transactions List of transactions to execute
-	Transactions []TransactionRequest `json:"transactions"`
+	// Transactions List of transactions associated with the operation.
+	Transactions []Transaction `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -463,6 +525,9 @@ type OperationStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
+	// Digest Canonical signing digest for the operation.
+	Digest *string `json:"digest"`
+
 	// EventHash Verifiable event hash for reference (only present when status is confirmed)
 	EventHash *string `json:"event_hash,omitempty"`
 
@@ -477,6 +542,9 @@ type OperationStatusPayload struct {
 
 	// Timestamp Timestamp when the event was created
 	Timestamp int64 `json:"timestamp"`
+
+	// Transactions Transactions associated with the event.
+	Transactions *[]Transaction `json:"transactions"`
 
 	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
@@ -497,6 +565,11 @@ type PatchChannel struct {
 	Status *ChannelStatus `json:"status,omitempty"`
 }
 
+// PatchOperation PATCH body for finalizing or cancelling an operation.
+type PatchOperation struct {
+	union json.RawMessage
+}
+
 // RSAPublicKey RSA public key with exponent and modulus
 type RSAPublicKey struct {
 	// E RSA public exponent (hex encoded, 2-17 bytes)
@@ -509,13 +582,67 @@ type RSAPublicKey struct {
 // RSASignersList List of allowed RSA public signing keys
 type RSASignersList = []RSAPublicKey
 
+// Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+type Subject struct {
+	// SubjectId Stable subject identifier used for filtering and equality.
+	SubjectId string `json:"subject_id"`
+
+	// SubjectName Human-friendly subject name.
+	SubjectName string `json:"subject_name"`
+
+	// SubjectType Type of subject used for audit identity and filtering.
+	SubjectType SubjectType `json:"subject_type"`
+}
+
+// SubjectType Type of subject used for audit identity and filtering.
+type SubjectType string
+
 // Timestamp Unix timestamp in seconds
 type Timestamp = int64
 
-// TransactionRequest defines model for TransactionRequest.
+// Transaction Transaction payload returned by operation reads and events.
+type Transaction struct {
+	// Data Hex-encoded calldata for the transaction
+	Data string `json:"data"`
+
+	// PreviewSnapshot Snapshot of the preview captured after the operation is read back.
+	PreviewSnapshot *TransactionPreviewSnapshot `json:"preview_snapshot,omitempty"`
+
+	// To Address receiving the transaction
+	To string `json:"to"`
+
+	// Value Amount of native token value being sent in the transaction
+	Value string `json:"value"`
+}
+
+// TransactionPreview Preview metadata attached to a draft transaction before signing.
+type TransactionPreview struct {
+	// FunctionSignature Function signature used to build the transaction preview.
+	FunctionSignature string `json:"function_signature"`
+
+	// Metadata Optional arbitrary metadata attached to the preview.
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// TransactionPreviewSnapshot Snapshot of the preview captured after the operation is read back.
+type TransactionPreviewSnapshot struct {
+	// ExecutionValues Resolved execution values captured during previewing. It will be an empty map when the function has no parameters.
+	ExecutionValues map[string]interface{} `json:"execution_values"`
+
+	// FunctionSignature Function signature used to build the snapshot.
+	FunctionSignature string `json:"function_signature"`
+
+	// Metadata Optional arbitrary metadata captured with the snapshot.
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// TransactionRequest Transaction payload for operation creation.
 type TransactionRequest struct {
 	// Data Hex-encoded calldata for the transaction
 	Data string `json:"data"`
+
+	// Preview Preview metadata attached to a draft transaction before signing.
+	Preview *TransactionPreview `json:"preview,omitempty"`
 
 	// To Address receiving the transaction
 	To string `json:"to"`
@@ -847,6 +974,24 @@ type ListOperationsParams struct {
 
 	// WalletId Filter operations by wallet ID
 	WalletId *openapi_types.UUID `form:"wallet_id,omitempty" json:"wallet_id,omitempty"`
+
+	// InitiatorSubjectType Filter operations by initiator subject type.
+	InitiatorSubjectType *SubjectType `form:"initiator_subject_type,omitempty" json:"initiator_subject_type,omitempty"`
+
+	// InitiatorSubjectId Filter operations by initiator subject ID.
+	InitiatorSubjectId *string `form:"initiator_subject_id,omitempty" json:"initiator_subject_id,omitempty"`
+
+	// SignerSubjectType Filter operations by signer subject type.
+	SignerSubjectType *SubjectType `form:"signer_subject_type,omitempty" json:"signer_subject_type,omitempty"`
+
+	// SignerSubjectId Filter operations by signer subject ID.
+	SignerSubjectId *string `form:"signer_subject_id,omitempty" json:"signer_subject_id,omitempty"`
+
+	// CancellerSubjectType Filter operations by canceller subject type.
+	CancellerSubjectType *SubjectType `form:"canceller_subject_type,omitempty" json:"canceller_subject_type,omitempty"`
+
+	// CancellerSubjectId Filter operations by canceller subject ID.
+	CancellerSubjectId *string `form:"canceller_subject_id,omitempty" json:"canceller_subject_id,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -911,6 +1056,9 @@ type UpdateChannelJSONRequestBody = PatchChannel
 
 // CreateOperationJSONRequestBody defines body for CreateOperation for application/json ContentType.
 type CreateOperationJSONRequestBody = CreateOperation
+
+// PatchChannelsChannelIdOperationsOperationIdJSONRequestBody defines body for PatchChannelsChannelIdOperationsOperationId for application/json ContentType.
+type PatchChannelsChannelIdOperationsOperationIdJSONRequestBody = PatchOperation
 
 // CreateWatcherJSONRequestBody defines body for CreateWatcher for application/json ContentType.
 type CreateWatcherJSONRequestBody = CreateWatcher
@@ -1162,6 +1310,95 @@ func (t *EventHeaders_Proofs_Item) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsFinalizeOperation returns the union data inside the PatchOperation as a FinalizeOperation
+func (t PatchOperation) AsFinalizeOperation() (FinalizeOperation, error) {
+	var body FinalizeOperation
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFinalizeOperation overwrites any union data inside the PatchOperation as the provided FinalizeOperation
+func (t *PatchOperation) FromFinalizeOperation(v FinalizeOperation) error {
+	v.Status = "accepted"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFinalizeOperation performs a merge with any union data inside the PatchOperation, using the provided FinalizeOperation
+func (t *PatchOperation) MergeFinalizeOperation(v FinalizeOperation) error {
+	v.Status = "accepted"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsCancelOperation returns the union data inside the PatchOperation as a CancelOperation
+func (t PatchOperation) AsCancelOperation() (CancelOperation, error) {
+	var body CancelOperation
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromCancelOperation overwrites any union data inside the PatchOperation as the provided CancelOperation
+func (t *PatchOperation) FromCancelOperation(v CancelOperation) error {
+	v.Status = "cancelled"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeCancelOperation performs a merge with any union data inside the PatchOperation, using the provided CancelOperation
+func (t *PatchOperation) MergeCancelOperation(v CancelOperation) error {
+	v.Status = "cancelled"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t PatchOperation) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"status"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t PatchOperation) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "accepted":
+		return t.AsFinalizeOperation()
+	case "cancelled":
+		return t.AsCancelOperation()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t PatchOperation) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *PatchOperation) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Retrieves channels for the organization.
@@ -1188,12 +1425,15 @@ type ServerInterface interface {
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	ListOperations(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListOperationsParams)
-	// Sends a CreateOperation request to a channel.
+	// Creates a signed operation or draft request, scoped to a channel.
 	// (POST /channels/{channel_id}/operations)
 	CreateOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Gets Operation record for a specific operation.
 	// (GET /channels/{channel_id}/operations/{operation_id})
 	GetOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
+	// Finalizes or cancels an operation.
+	// (PATCH /channels/{channel_id}/operations/{operation_id})
+	PatchChannelsChannelIdOperationsOperationId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
 	// Retrieves watchers for a channel.
 	// (GET /channels/{channel_id}/watchers)
 	ListWatchers(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListWatchersParams)
@@ -1697,6 +1937,54 @@ func (siw *ServerInterfaceWrapper) ListOperations(w http.ResponseWriter, r *http
 		return
 	}
 
+	// ------------- Optional query parameter "initiator_subject_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "initiator_subject_type", r.URL.Query(), &params.InitiatorSubjectType)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "initiator_subject_type", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "initiator_subject_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "initiator_subject_id", r.URL.Query(), &params.InitiatorSubjectId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "initiator_subject_id", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "signer_subject_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "signer_subject_type", r.URL.Query(), &params.SignerSubjectType)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "signer_subject_type", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "signer_subject_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "signer_subject_id", r.URL.Query(), &params.SignerSubjectId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "signer_subject_id", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "canceller_subject_type" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "canceller_subject_type", r.URL.Query(), &params.CancellerSubjectType)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "canceller_subject_type", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "canceller_subject_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "canceller_subject_id", r.URL.Query(), &params.CancellerSubjectId)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "canceller_subject_id", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListOperations(w, r, channelId, params)
 	}))
@@ -1770,6 +2058,46 @@ func (siw *ServerInterfaceWrapper) GetOperation(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetOperation(w, r, channelId, operationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PatchChannelsChannelIdOperationsOperationId operation middleware
+func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdOperationsOperationId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "operation_id" -------------
+	var operationId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "operation_id", r.PathValue("operation_id"), &operationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "operation_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PatchChannelsChannelIdOperationsOperationId(w, r, channelId, operationId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -2329,6 +2657,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.ListOperations)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.CreateOperation)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetOperation)
+	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.PatchChannelsChannelIdOperationsOperationId)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.ListWatchers)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.CreateWatcher)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetWatcher)
