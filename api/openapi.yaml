@@ -23,6 +23,8 @@ tags:
     description: Watchers scoped to a channel.
   - name: Operations
     description: Operations within a channel.
+  - name: Queries
+    description: Asynchronous chain queries scoped to a channel.
   - name: Events
     description: Events (poll and historical search).
 
@@ -390,6 +392,166 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
         "404":
           description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+
+  /channels/{channel_id}/queries:
+    post:
+      tags:
+        - Queries
+      operationId: createQuery
+      summary: Creates an asynchronous chain query under a channel.
+      description: |
+        Creates a channel-scoped Chain Query Request. New queries are rejected for archived channels.
+        The customer-provided idempotency_key is scoped to the organization and channel.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateQuery"
+      responses:
+        "202":
+          description: Query accepted for asynchronous execution.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryAcceptedResponse"
+        "400":
+          description: Invalid request data, unsupported query kind, invalid params, invalid calldata, invalid block selection, or archived channel.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "409":
+          description: Idempotency key reused with a different canonical request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "429":
+          description: Query create quota or workflow admission rate limit exceeded.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+    get:
+      tags:
+        - Queries
+      operationId: listQueries
+      summary: Lists chain queries for a channel.
+      description: |
+        Returns request and lifecycle-focused query records for the channel.
+        OCR proof material and opaque verifiable results are only returned by the individual query resource.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: status
+          description: Filter queries by status. Multiple values allowed.
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/QueryStatus"
+          style: form
+          explode: true
+        - in: query
+          name: limit
+          description: Maximum number of queries to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          description: Number of queries to skip for pagination
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+            default: 0
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryList"
+        "404":
+          description: Channel not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+  /channels/{channel_id}/queries/{query_id}:
+    get:
+      tags:
+        - Queries
+      operationId: getQuery
+      summary: Retrieves a specific chain query by ID.
+      description: |
+        Returns request, lifecycle, expiration, and terminal verifiable fields from the query resource.
+        Implementations must not hydrate terminal query details by querying channel events.
+      parameters:
+        - in: path
+          name: channel_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: query_id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Query found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Query"
+        "404":
+          description: Channel or query not found
           content:
             application/json:
               schema:
@@ -940,11 +1102,13 @@ paths:
 
         Note: Some query parameters only apply to specific event types. Invalid parameter combinations for a given event type will result in a 400 Bad Request response:
         - operation.status: status, chain_selector, address, wallet_operation_id
+        - query.status: status
         - watcher.status: watcher_id, status, chain_selector
         - watcher.event: watcher_id, chain_selector, address, event_name, service
         - wallet.status: wallet_id, status, chain_selector, address
 
         Universal parameters (apply to all types): type, limit, offset, created.*
+        Query event payload filtering by query_id is not supported; fetch /channels/{channel_id}/queries/{query_id} when a query_id is already known.
       parameters:
         - in: path
           name: channel_id
@@ -1011,7 +1175,7 @@ paths:
           explode: true
         - in: query
           name: status
-          description: Filter by operation status. Multiple values allowed.
+          description: Filter by lifecycle/status. Multiple values allowed. Applies to operation.status, query.status, watcher.status, and wallet.status.
           schema:
             type: array
             items:
@@ -1190,6 +1354,30 @@ components:
         - cancelled
         - expired
         - failed
+    QueryStatus:
+      type: string
+      description: Lifecycle status of a chain query.
+      enum:
+        - accepted
+        - sending
+        - sent
+        - completed
+        - failed
+        - expired
+      x-enum-varnames:
+        - QueryStatusAccepted
+        - QueryStatusSending
+        - QueryStatusSent
+        - QueryStatusCompleted
+        - QueryStatusFailed
+        - QueryStatusExpired
+    QueryKind:
+      type: string
+      description: Kind of chain query.
+      enum:
+        - evm_call
+      x-enum-varnames:
+        - QueryKindEVMCall
     SubjectType:
       type: string
       description: Type of subject used for audit identity and filtering.
@@ -1210,12 +1398,14 @@ components:
       description: Type of event
       enum:
         - operation.status
+        - query.status
         - watcher.status
         - watcher.event
         - wallet.status
       # Custom varnames to avoid Go naming collision with OperationStatus, WatcherStatus, WalletStatus types
       x-enum-varnames:
         - EventTypeOperationStatus
+        - EventTypeQueryStatus
         - EventTypeWatcherStatus
         - EventTypeWatcherEvent
         - EventTypeWalletStatus
@@ -1534,6 +1724,8 @@ components:
             - "Internal error"
             - "Not found"
             - "Bad request"
+            - "Conflict"
+            - "Rate limit exceeded"
         message:
           type: string
           description: Error message describing the issue
@@ -1605,6 +1797,246 @@ components:
       required:
         - data
         - has_more
+
+    CreateQuery:
+      type: object
+      additionalProperties: false
+      description: Request body for creating an asynchronous chain query.
+      properties:
+        idempotency_key:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Customer-provided idempotency key scoped to organization and channel.
+        query_kind:
+          $ref: "#/components/schemas/QueryKind"
+        chain_selector:
+          $ref: "#/components/schemas/ChainSelector"
+        params:
+          $ref: "#/components/schemas/EVMCallQueryParams"
+        metadata:
+          type: object
+          description: Optional customer metadata. Not part of the signed query unless explicitly copied into verifiable_result by the workflow.
+          additionalProperties: true
+      required:
+        - idempotency_key
+        - query_kind
+        - chain_selector
+        - params
+
+    EVMCallQueryParams:
+      type: object
+      additionalProperties: false
+      description: Parameters for an evm_call chain query.
+      properties:
+        contract_address:
+          $ref: "#/components/schemas/EthereumAddress"
+        call_data:
+          type: string
+          description: 0x-prefixed even-length hex calldata bytes, including the function selector.
+          pattern: "^0x([a-fA-F0-9]{2})*$"
+        block_selection:
+          $ref: "#/components/schemas/QueryBlockSelection"
+        from_address:
+          $ref: "#/components/schemas/EthereumAddress"
+      required:
+        - contract_address
+        - call_data
+        - block_selection
+
+    QueryBlockSelection:
+      oneOf:
+        - $ref: "#/components/schemas/LatestBlockSelection"
+        - $ref: "#/components/schemas/FinalizedBlockSelection"
+        - $ref: "#/components/schemas/BlockNumberBlockSelection"
+      discriminator:
+        propertyName: type
+        mapping:
+          latest: "#/components/schemas/LatestBlockSelection"
+          finalized: "#/components/schemas/FinalizedBlockSelection"
+          block_number: "#/components/schemas/BlockNumberBlockSelection"
+      description: Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.
+
+    LatestBlockSelection:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            - latest
+          description: Resolve latest to concrete block metadata before executing the call.
+      required:
+        - type
+
+    FinalizedBlockSelection:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            - finalized
+          description: Resolve finalized to concrete block metadata before executing the call.
+      required:
+        - type
+
+    BlockNumberBlockSelection:
+      type: object
+      additionalProperties: false
+      properties:
+        type:
+          type: string
+          enum:
+            - block_number
+          description: Execute against an explicit block number after resolving header metadata.
+        block_number:
+          type: string
+          pattern: "^[0-9]+$"
+          description: Decimal uint64 block number.
+      required:
+        - type
+        - block_number
+
+    QueryAcceptedResponse:
+      type: object
+      properties:
+        query_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the query.
+        status:
+          $ref: "#/components/schemas/QueryStatus"
+      required:
+        - query_id
+        - status
+
+    Query:
+      type: object
+      description: Chain query resource loaded from chain_queries.
+      properties:
+        query_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the query.
+        channel_id:
+          type: string
+          format: uuid
+          description: Channel that owns the query.
+        status:
+          $ref: "#/components/schemas/QueryStatus"
+        query_kind:
+          $ref: "#/components/schemas/QueryKind"
+        chain_selector:
+          $ref: "#/components/schemas/ChainSelector"
+        status_event_id:
+          type: string
+          format: uuid
+          description: Channel event ID for the latest terminal query.status event when available.
+        status_event_offset:
+          type: integer
+          format: int64
+          description: Channel event offset for the latest terminal query.status event when available.
+        event_hash:
+          type: string
+          description: Verifiable event hash for the terminal query result.
+        verifiable_result:
+          type: string
+          description: Opaque base64-encoded verifiable query result.
+        proof:
+          $ref: "#/components/schemas/OCRProof"
+        error_code:
+          type: string
+          description: Terminal execution error code when the query failed.
+        error_message:
+          type: string
+          description: Human-readable terminal execution error message when the query failed.
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        expires_at:
+          $ref: "#/components/schemas/Timestamp"
+        accepted_at:
+          $ref: "#/components/schemas/Timestamp"
+        sending_at:
+          $ref: "#/components/schemas/Timestamp"
+        sent_at:
+          $ref: "#/components/schemas/Timestamp"
+        completed_at:
+          $ref: "#/components/schemas/Timestamp"
+        failed_at:
+          $ref: "#/components/schemas/Timestamp"
+        expired_at:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - query_id
+        - channel_id
+        - status
+        - query_kind
+        - chain_selector
+        - created_at
+        - updated_at
+
+    QuerySummary:
+      type: object
+      description: Request and lifecycle-focused query summary for list responses.
+      properties:
+        query_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the query.
+        channel_id:
+          type: string
+          format: uuid
+          description: Channel that owns the query.
+        status:
+          $ref: "#/components/schemas/QueryStatus"
+        query_kind:
+          $ref: "#/components/schemas/QueryKind"
+        chain_selector:
+          $ref: "#/components/schemas/ChainSelector"
+        error_code:
+          type: string
+          description: Terminal execution error code when the query failed.
+        error_message:
+          type: string
+          description: Human-readable terminal execution error message when the query failed.
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        expires_at:
+          $ref: "#/components/schemas/Timestamp"
+        completed_at:
+          $ref: "#/components/schemas/Timestamp"
+        failed_at:
+          $ref: "#/components/schemas/Timestamp"
+        expired_at:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - query_id
+        - channel_id
+        - status
+        - query_kind
+        - chain_selector
+        - created_at
+        - updated_at
+
+    QueryList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuerySummary"
+        has_more:
+          type: boolean
+          description: True if there are more queries to fetch.
+      required:
+        - data
+        - has_more
+
     CreateWatcher:
       oneOf:
         - $ref: "#/components/schemas/CreateWatcherWithService"
@@ -2024,6 +2456,7 @@ components:
         payload:
           oneOf:
             - $ref: "#/components/schemas/OperationStatusPayload"
+            - $ref: "#/components/schemas/QueryStatusPayload"
             - $ref: "#/components/schemas/WatcherStatusPayload"
             - $ref: "#/components/schemas/WatcherEventPayload"
             - $ref: "#/components/schemas/WalletStatusPayload"
@@ -2123,6 +2556,30 @@ components:
         - wallet_operation_id
         - address
         - chain_selector
+        - timestamp
+    QueryStatusPayload:
+      type: object
+      description: Minimal top-level payload for query.status channel events.
+      properties:
+        query_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the query.
+        status:
+          $ref: "#/components/schemas/QueryStatus"
+        timestamp:
+          type: integer
+          format: int64
+          description: Timestamp when the status event was created.
+        event_hash:
+          type: string
+          description: Verifiable event hash for terminal query status events.
+        verifiable_result:
+          type: string
+          description: Opaque base64-encoded verifiable query result for terminal query status events.
+      required:
+        - query_id
+        - status
         - timestamp
     WatcherStatusPayload:
       type: object
