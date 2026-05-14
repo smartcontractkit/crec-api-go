@@ -24,10 +24,10 @@ const (
 
 // Defines values for ApplicationErrorType.
 const (
-	AlreadyExists ApplicationErrorType = "Already exists"
-	BadRequest    ApplicationErrorType = "Bad request"
-	InternalError ApplicationErrorType = "Internal error"
-	NotFound      ApplicationErrorType = "Not found"
+	CONFLICT        ApplicationErrorType = "CONFLICT"
+	INTERNALERROR   ApplicationErrorType = "INTERNAL_ERROR"
+	NOTFOUND        ApplicationErrorType = "NOT_FOUND"
+	VALIDATIONERROR ApplicationErrorType = "VALIDATION_ERROR"
 )
 
 // Defines values for CancelOperationStatus.
@@ -308,10 +308,12 @@ type Event struct {
 	// EventId Unique identifier for the event
 	EventId *openapi_types.UUID `json:"event_id,omitempty"`
 	Headers EventHeaders        `json:"headers"`
-	Payload Event_Payload       `json:"payload"`
+
+	// Payload Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload).
+	Payload Event_Payload `json:"payload"`
 }
 
-// Event_Payload defines model for Event.Payload.
+// Event_Payload Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload).
 type Event_Payload struct {
 	union json.RawMessage
 }

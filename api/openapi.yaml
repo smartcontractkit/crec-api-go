@@ -1530,10 +1530,10 @@ components:
           type: string
           description: Error type
           enum:
-            - "Already exists"
-            - "Internal error"
-            - "Not found"
-            - "Bad request"
+            - "NOT_FOUND"
+            - "VALIDATION_ERROR"
+            - "CONFLICT"
+            - "INTERNAL_ERROR"
         message:
           type: string
           description: Error message describing the issue
@@ -2022,6 +2022,7 @@ components:
           format: uuid
           description: Unique identifier for the event
         payload:
+          description: "Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload). "
           oneOf:
             - $ref: "#/components/schemas/OperationStatusPayload"
             - $ref: "#/components/schemas/WatcherStatusPayload"
