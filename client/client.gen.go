@@ -134,7 +134,7 @@ const (
 	Pending   WatcherStatus = "pending"
 )
 
-// ApplicationError defines model for ApplicationError.
+// ApplicationError Standard error response body.
 type ApplicationError struct {
 	// Message Error message describing the issue
 	Message string `json:"message"`
@@ -158,7 +158,7 @@ type CancelOperationStatus string
 // ChainSelector Chain selector identifier for the blockchain network
 type ChainSelector = string
 
-// Channel defines model for Channel.
+// Channel A channel resource.
 type Channel struct {
 	// ChannelId Unique identifier for the channel
 	ChannelId openapi_types.UUID `json:"channel_id"`
@@ -176,7 +176,7 @@ type Channel struct {
 	Status ChannelStatus `json:"status"`
 }
 
-// ChannelList defines model for ChannelList.
+// ChannelList Paginated list of channels.
 type ChannelList struct {
 	Data []Channel `json:"data"`
 
@@ -190,7 +190,7 @@ type ChannelStatus string
 // ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
 type ConfidenceLevel string
 
-// CreateChannel defines model for CreateChannel.
+// CreateChannel Request body for creating a new channel.
 type CreateChannel struct {
 	// Description Description of the channel
 	Description *string `json:"description,omitempty"`
@@ -220,7 +220,7 @@ type CreateOperation struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// CreateWallet defines model for CreateWallet.
+// CreateWallet Request body for creating a new wallet.
 type CreateWallet struct {
 	// AllowedEcdsaSigners List of allowed ECDSA public signing keys (Ethereum addresses)
 	AllowedEcdsaSigners *ECDSASignersList `json:"allowed_ecdsa_signers,omitempty"`
@@ -247,12 +247,12 @@ type CreateWallet struct {
 	WalletType WalletType `json:"wallet_type"`
 }
 
-// CreateWatcher defines model for CreateWatcher.
+// CreateWatcher Request body for creating a new watcher (service-based or ABI-based).
 type CreateWatcher struct {
 	union json.RawMessage
 }
 
-// CreateWatcherWithABI defines model for CreateWatcherWithABI.
+// CreateWatcherWithABI Watcher creation parameters using a raw ABI definition.
 type CreateWatcherWithABI struct {
 	// Abi ABI definitions for the events to watch
 	Abi []EventABI `json:"abi"`
@@ -273,7 +273,7 @@ type CreateWatcherWithABI struct {
 	Name string `json:"name"`
 }
 
-// CreateWatcherWithService defines model for CreateWatcherWithService.
+// CreateWatcherWithService Watcher creation parameters using a named service namespace.
 type CreateWatcherWithService struct {
 	// Address Smart contract address to watch for events
 	Address string `json:"address"`
@@ -303,11 +303,13 @@ type ECDSASignersList = []EthereumAddress
 // EthereumAddress 42-character hex Ethereum address
 type EthereumAddress = string
 
-// Event defines model for Event.
+// Event A channel event containing a typed payload and headers.
 type Event struct {
 	// EventId Unique identifier for the event
 	EventId *openapi_types.UUID `json:"event_id,omitempty"`
-	Headers EventHeaders        `json:"headers"`
+
+	// Headers Metadata headers for an event, including type discriminator and proofs.
+	Headers EventHeaders `json:"headers"`
 
 	// Payload Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload).
 	Payload Event_Payload `json:"payload"`
@@ -318,7 +320,7 @@ type Event_Payload struct {
 	union json.RawMessage
 }
 
-// EventABI defines model for EventABI.
+// EventABI ABI definition for a smart contract event.
 type EventABI struct {
 	// Anonymous Whether the event is anonymous
 	Anonymous bool `json:"anonymous"`
@@ -336,7 +338,7 @@ type EventABI struct {
 // EventABIType Type must be 'event'
 type EventABIType string
 
-// EventABIInput defines model for EventABIInput.
+// EventABIInput A single input parameter in an event ABI.
 type EventABIInput struct {
 	// Indexed Whether the parameter is indexed
 	Indexed bool `json:"indexed"`
@@ -351,7 +353,7 @@ type EventABIInput struct {
 	Type string `json:"type"`
 }
 
-// EventHeaders defines model for EventHeaders.
+// EventHeaders Metadata headers for an event, including type discriminator and proofs.
 type EventHeaders struct {
 	// Offset Unique offset for message ordering
 	Offset int64                      `json:"offset"`
@@ -369,7 +371,7 @@ type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
 }
 
-// EventList defines model for EventList.
+// EventList Paginated list of events.
 type EventList struct {
 	Events []Event `json:"events"`
 
@@ -395,12 +397,12 @@ type FinalizeOperation struct {
 // FinalizeOperationStatus Marks the operation as accepted/finalized.
 type FinalizeOperationStatus string
 
-// HealthCheck defines model for HealthCheck.
+// HealthCheck Health check response.
 type HealthCheck struct {
 	Status string `json:"status"`
 }
 
-// Network defines model for Network.
+// Network A blockchain network supported by CRE Connect.
 type Network struct {
 	// ChainFamily Chain family (e.g., "evm", "solana")
 	ChainFamily string `json:"chain_family"`
@@ -430,7 +432,7 @@ type Network struct {
 	UpdatedAt int64 `json:"updated_at"`
 }
 
-// NetworkList defines model for NetworkList.
+// NetworkList Paginated list of networks.
 type NetworkList struct {
 	Data []Network `json:"data"`
 
@@ -441,7 +443,7 @@ type NetworkList struct {
 // NetworkType Type of chain
 type NetworkType string
 
-// OCRProof defines model for OCRProof.
+// OCRProof An OCR-based cryptographic proof attached to a verifiable event.
 type OCRProof struct {
 	// Alg Algorithm used for the proof
 	Alg string `json:"alg"`
@@ -456,7 +458,7 @@ type OCRProof struct {
 	Signatures []string `json:"signatures"`
 }
 
-// Operation defines model for Operation.
+// Operation A signed operation resource.
 type Operation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -504,7 +506,7 @@ type Operation struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationList defines model for OperationList.
+// OperationList Paginated list of operations.
 type OperationList struct {
 	Data []Operation `json:"data"`
 
@@ -512,7 +514,7 @@ type OperationList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// OperationResponse defines model for OperationResponse.
+// OperationResponse Response body for a created operation.
 type OperationResponse struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
@@ -521,7 +523,7 @@ type OperationResponse struct {
 // OperationStatus Status of an operation
 type OperationStatus string
 
-// OperationStatusPayload defines model for OperationStatusPayload.
+// OperationStatusPayload Event payload for an operation status change.
 type OperationStatusPayload struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -557,7 +559,7 @@ type OperationStatusPayload struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// PatchChannel defines model for PatchChannel.
+// PatchChannel Request body for updating a channel.
 type PatchChannel struct {
 	// Description New description for the channel
 	Description *string `json:"description,omitempty"`
@@ -655,7 +657,7 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
-// UpdateWallet defines model for UpdateWallet.
+// UpdateWallet Request body for updating a wallet.
 type UpdateWallet struct {
 	// Description New description for the wallet
 	Description *string `json:"description,omitempty"`
@@ -667,7 +669,7 @@ type UpdateWallet struct {
 	Status *WalletStatus `json:"status,omitempty"`
 }
 
-// UpdateWatcher defines model for UpdateWatcher.
+// UpdateWatcher Request body for updating a watcher.
 type UpdateWatcher struct {
 	// Name New name for the watcher
 	Name *string `json:"name,omitempty"`
@@ -676,7 +678,7 @@ type UpdateWatcher struct {
 	Status *WatcherStatus `json:"status,omitempty"`
 }
 
-// Wallet defines model for Wallet.
+// Wallet A wallet resource.
 type Wallet struct {
 	// Address 42-character hex Ethereum address
 	Address EthereumAddress `json:"address"`
@@ -721,7 +723,7 @@ type Wallet struct {
 // WalletEventStatus Status of a wallet in events (includes archived state for filtering)
 type WalletEventStatus string
 
-// WalletList defines model for WalletList.
+// WalletList Paginated list of wallets.
 type WalletList struct {
 	Data []Wallet `json:"data"`
 
@@ -732,7 +734,7 @@ type WalletList struct {
 // WalletStatus Status of a wallet entity
 type WalletStatus string
 
-// WalletStatusPayload defines model for WalletStatusPayload.
+// WalletStatusPayload Event payload for a wallet status change.
 type WalletStatusPayload struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -756,7 +758,7 @@ type WalletStatusPayload struct {
 // WalletType Type of wallet
 type WalletType string
 
-// Watcher defines model for Watcher.
+// Watcher A watcher resource.
 type Watcher struct {
 	// Abi ABI definitions for the events (if not using service-based events)
 	Abi *[]EventABI `json:"abi,omitempty"`
@@ -798,7 +800,7 @@ type Watcher struct {
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
 
-// WatcherEventPayload defines model for WatcherEventPayload.
+// WatcherEventPayload Event payload for an on-chain event detected by a watcher.
 type WatcherEventPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
@@ -819,7 +821,7 @@ type WatcherEventPayload struct {
 // WatcherEventStatus Status of a watcher in events (includes transitional and archival states for filtering)
 type WatcherEventStatus string
 
-// WatcherList defines model for WatcherList.
+// WatcherList Paginated list of watchers.
 type WatcherList struct {
 	Data []WatcherSummary `json:"data"`
 
@@ -830,7 +832,7 @@ type WatcherList struct {
 // WatcherStatus Status of a watcher entity
 type WatcherStatus string
 
-// WatcherStatusPayload defines model for WatcherStatusPayload.
+// WatcherStatusPayload Event payload for a watcher status change.
 type WatcherStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
@@ -851,7 +853,7 @@ type WatcherStatusPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
-// WatcherSummary defines model for WatcherSummary.
+// WatcherSummary Summary view of a watcher.
 type WatcherSummary struct {
 	// Address Smart contract address being watched
 	Address string `json:"address"`
@@ -1061,8 +1063,8 @@ type UpdateChannelJSONRequestBody = PatchChannel
 // CreateOperationJSONRequestBody defines body for CreateOperation for application/json ContentType.
 type CreateOperationJSONRequestBody = CreateOperation
 
-// PatchChannelsChannelIdOperationsOperationIdJSONRequestBody defines body for PatchChannelsChannelIdOperationsOperationId for application/json ContentType.
-type PatchChannelsChannelIdOperationsOperationIdJSONRequestBody = PatchOperation
+// FinalizeOrCancelOperationJSONRequestBody defines body for FinalizeOrCancelOperation for application/json ContentType.
+type FinalizeOrCancelOperationJSONRequestBody = PatchOperation
 
 // CreateWatcherJSONRequestBody defines body for CreateWatcher for application/json ContentType.
 type CreateWatcherJSONRequestBody = CreateWatcher
@@ -1512,10 +1514,10 @@ type ClientInterface interface {
 	// GetOperation request
 	GetOperation(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// PatchChannelsChannelIdOperationsOperationIdWithBody request with any body
-	PatchChannelsChannelIdOperationsOperationIdWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	// FinalizeOrCancelOperationWithBody request with any body
+	FinalizeOrCancelOperationWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	PatchChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	FinalizeOrCancelOperation(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListWatchers request
 	ListWatchers(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1712,8 +1714,8 @@ func (c *Client) GetOperation(ctx context.Context, channelId openapi_types.UUID,
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchChannelsChannelIdOperationsOperationIdWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody(c.Server, channelId, operationId, contentType, body)
+func (c *Client) FinalizeOrCancelOperationWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFinalizeOrCancelOperationRequestWithBody(c.Server, channelId, operationId, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1724,8 +1726,8 @@ func (c *Client) PatchChannelsChannelIdOperationsOperationIdWithBody(ctx context
 	return c.Client.Do(req)
 }
 
-func (c *Client) PatchChannelsChannelIdOperationsOperationId(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewPatchChannelsChannelIdOperationsOperationIdRequest(c.Server, channelId, operationId, body)
+func (c *Client) FinalizeOrCancelOperation(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewFinalizeOrCancelOperationRequest(c.Server, channelId, operationId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2851,19 +2853,19 @@ func NewGetOperationRequest(server string, channelId openapi_types.UUID, operati
 	return req, nil
 }
 
-// NewPatchChannelsChannelIdOperationsOperationIdRequest calls the generic PatchChannelsChannelIdOperationsOperationId builder with application/json body
-func NewPatchChannelsChannelIdOperationsOperationIdRequest(server string, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody) (*http.Request, error) {
+// NewFinalizeOrCancelOperationRequest calls the generic FinalizeOrCancelOperation builder with application/json body
+func NewFinalizeOrCancelOperationRequest(server string, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody(server, channelId, operationId, "application/json", bodyReader)
+	return NewFinalizeOrCancelOperationRequestWithBody(server, channelId, operationId, "application/json", bodyReader)
 }
 
-// NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody generates requests for PatchChannelsChannelIdOperationsOperationId with any type of body
-func NewPatchChannelsChannelIdOperationsOperationIdRequestWithBody(server string, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+// NewFinalizeOrCancelOperationRequestWithBody generates requests for FinalizeOrCancelOperation with any type of body
+func NewFinalizeOrCancelOperationRequestWithBody(server string, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -3630,10 +3632,10 @@ type ClientWithResponsesInterface interface {
 	// GetOperationWithResponse request
 	GetOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetOperationResponse, error)
 
-	// PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse request with any body
-	PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error)
+	// FinalizeOrCancelOperationWithBodyWithResponse request with any body
+	FinalizeOrCancelOperationWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*FinalizeOrCancelOperationResponse, error)
 
-	PatchChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error)
+	FinalizeOrCancelOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*FinalizeOrCancelOperationResponse, error)
 
 	// ListWatchersWithResponse request
 	ListWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*ListWatchersResponse, error)
@@ -3917,7 +3919,7 @@ func (r GetOperationResponse) StatusCode() int {
 	return 0
 }
 
-type PatchChannelsChannelIdOperationsOperationIdResponse struct {
+type FinalizeOrCancelOperationResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *Operation
@@ -3927,7 +3929,7 @@ type PatchChannelsChannelIdOperationsOperationIdResponse struct {
 }
 
 // Status returns HTTPResponse.Status
-func (r PatchChannelsChannelIdOperationsOperationIdResponse) Status() string {
+func (r FinalizeOrCancelOperationResponse) Status() string {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.Status
 	}
@@ -3935,7 +3937,7 @@ func (r PatchChannelsChannelIdOperationsOperationIdResponse) Status() string {
 }
 
 // StatusCode returns HTTPResponse.StatusCode
-func (r PatchChannelsChannelIdOperationsOperationIdResponse) StatusCode() int {
+func (r FinalizeOrCancelOperationResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4296,21 +4298,21 @@ func (c *ClientWithResponses) GetOperationWithResponse(ctx context.Context, chan
 	return ParseGetOperationResponse(rsp)
 }
 
-// PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse request with arbitrary body returning *PatchChannelsChannelIdOperationsOperationIdResponse
-func (c *ClientWithResponses) PatchChannelsChannelIdOperationsOperationIdWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error) {
-	rsp, err := c.PatchChannelsChannelIdOperationsOperationIdWithBody(ctx, channelId, operationId, contentType, body, reqEditors...)
+// FinalizeOrCancelOperationWithBodyWithResponse request with arbitrary body returning *FinalizeOrCancelOperationResponse
+func (c *ClientWithResponses) FinalizeOrCancelOperationWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*FinalizeOrCancelOperationResponse, error) {
+	rsp, err := c.FinalizeOrCancelOperationWithBody(ctx, channelId, operationId, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp)
+	return ParseFinalizeOrCancelOperationResponse(rsp)
 }
 
-func (c *ClientWithResponses) PatchChannelsChannelIdOperationsOperationIdWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body PatchChannelsChannelIdOperationsOperationIdJSONRequestBody, reqEditors ...RequestEditorFn) (*PatchChannelsChannelIdOperationsOperationIdResponse, error) {
-	rsp, err := c.PatchChannelsChannelIdOperationsOperationId(ctx, channelId, operationId, body, reqEditors...)
+func (c *ClientWithResponses) FinalizeOrCancelOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*FinalizeOrCancelOperationResponse, error) {
+	rsp, err := c.FinalizeOrCancelOperation(ctx, channelId, operationId, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
-	return ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp)
+	return ParseFinalizeOrCancelOperationResponse(rsp)
 }
 
 // ListWatchersWithResponse request returning *ListWatchersResponse
@@ -4856,15 +4858,15 @@ func ParseGetOperationResponse(rsp *http.Response) (*GetOperationResponse, error
 	return response, nil
 }
 
-// ParsePatchChannelsChannelIdOperationsOperationIdResponse parses an HTTP response from a PatchChannelsChannelIdOperationsOperationIdWithResponse call
-func ParsePatchChannelsChannelIdOperationsOperationIdResponse(rsp *http.Response) (*PatchChannelsChannelIdOperationsOperationIdResponse, error) {
+// ParseFinalizeOrCancelOperationResponse parses an HTTP response from a FinalizeOrCancelOperationWithResponse call
+func ParseFinalizeOrCancelOperationResponse(rsp *http.Response) (*FinalizeOrCancelOperationResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
 	if err != nil {
 		return nil, err
 	}
 
-	response := &PatchChannelsChannelIdOperationsOperationIdResponse{
+	response := &FinalizeOrCancelOperationResponse{
 		Body:         bodyBytes,
 		HTTPResponse: rsp,
 	}

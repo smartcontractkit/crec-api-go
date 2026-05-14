@@ -50,6 +50,25 @@ Use `client.WithRequestEditorFn` to add auth headers (e.g. API key) to requests.
 
 The models package is used by crec-workflow-utils, crec-sdk-ext-dta, crec-sdk-ext-dvp, and other CREC components for VerifiableEvent, EVMEvent, and related types.
 
+## Error Types
+
+All error responses use the `ApplicationError` schema:
+
+```json
+{ "type": "NOT_FOUND", "message": "The requested resource was not found." }
+```
+
+The `type` field is a SCREAMING_SNAKE_CASE enum:
+
+| Value              | HTTP status | Meaning                  |
+|--------------------|-------------|--------------------------|
+| `NOT_FOUND`        | 404         | Resource does not exist  |
+| `VALIDATION_ERROR` | 400         | Request fails validation |
+| `CONFLICT`         | 409         | Resource already exists  |
+| `INTERNAL_ERROR`   | 5xx         | Internal server error    |
+
+When adding a new error type, update the enum in `api/openapi.yaml` **before** the server starts emitting the new value. See `components/schemas/ApplicationError`.
+
 ## Regenerating Bindings
 
 After modifying `api/openapi.yaml` or `models/models.yaml`:
