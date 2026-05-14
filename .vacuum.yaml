@@ -1,16 +1,19 @@
 extends: [[spectral:oas, recommended]]
 rules:
-  oas3-missing-example: off
-  oas3-parameter-description: off
-  component-description: off
-  operation-description: off
-  operation-tags: off
-  description-duplication: off
-  oas3-api-servers: off
-  #todo - should be turned back on after fixing all the issues
-  operation-operationId: off
-  #todo - should be turned back on after fixing all the issues
-  oas3-schema: off
-  camel-case-properties: off
-  oas3-unused-component: off
+  operation-operationId: true
+  operation-tags: true
+  oas3-api-servers: true
+  oas3-schema: true
+  oas3-unused-component: true
+  oas3-parameter-description: true
+  operation-description: true
+  oas3-missing-example: true
+  component-description: true
 
+  # snake_case JSON property names are the intentional wire format for this API;
+  # renaming to camelCase would be a breaking change.
+  camel-case-properties: false
+
+  # Error response descriptions (e.g. "Not found", "Internal server error") repeat
+  # across endpoints by design — they describe the same error type consistently.
+  description-duplication: false

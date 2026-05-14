@@ -54,12 +54,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/NetworkList"
+              example: {data: [], has_more: false}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
   /wallets:
     post:
       tags:
@@ -67,11 +69,13 @@ paths:
       operationId: createWallet
       summary: Creates a new wallet.
       requestBody:
+        description: Wallet creation parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateWallet"
+            example: {name: "my-wallet", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa"}
       responses:
         "201":
           description: Wallet created successfully
@@ -79,18 +83,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", allowed_rsa_signers: [], allowed_ecdsa_signers: []}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     get:
       tags:
         - Wallets
@@ -157,12 +164,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WalletList"
+              example: {data: [], has_more: false}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
   /wallets/{wallet_id}:
     get:
       tags:
@@ -173,6 +182,7 @@ paths:
         - in: path
           name: wallet_id
           required: true
+          description: Unique wallet identifier.
           schema:
             type: string
             format: uuid
@@ -183,18 +193,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", allowed_rsa_signers: [], allowed_ecdsa_signers: []}
         "404":
           description: Wallet not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     patch:
       tags:
         - Wallets
@@ -204,15 +217,18 @@ paths:
         - in: path
           name: wallet_id
           required: true
+          description: Unique wallet identifier.
           schema:
             type: string
             format: uuid
       requestBody:
+        description: Wallet update parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateWallet"
+            example: {name: "updated-wallet"}
       responses:
         "200":
           description: Wallet updated successfully
@@ -220,24 +236,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "updated-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", allowed_rsa_signers: [], allowed_ecdsa_signers: []}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "404":
           description: Wallet not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
 
   /channels:
     post:
@@ -246,11 +266,13 @@ paths:
       operationId: createChannel
       summary: Creates a new channel.
       requestBody:
+        description: Channel creation parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateChannel"
+            example: {name: "my-channel"}
       responses:
         "201":
           description: Channel created successfully
@@ -258,18 +280,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Channel"
+              example: {channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", name: "my-channel", status: "active", created_at: 1715698800}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     get:
       tags:
         - Channels
@@ -316,12 +341,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ChannelList"
+              example: {data: [], has_more: false}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
   /channels/{channel_id}:
     get:
       tags:
@@ -332,6 +359,7 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
@@ -342,18 +370,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Channel"
+              example: {channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", name: "my-channel", status: "active", created_at: 1715698800}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     patch:
       tags:
         - Channels
@@ -366,15 +397,18 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
       requestBody:
+        description: Channel update parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/PatchChannel"
+            example: {name: "updated-channel"}
       responses:
         "200":
           description: Channel updated successfully
@@ -382,24 +416,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Channel"
+              example: {channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", name: "updated-channel", status: "active", created_at: 1715698800}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
 
   /channels/{channel_id}/watchers:
     post:
@@ -411,15 +449,18 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
       requestBody:
+        description: Watcher creation parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateWatcher"
+            example: {name: "my-watcher", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", service: "dta", events: ["SubscriptionRequested"]}
       responses:
         "201":
           description: Watcher created successfully
@@ -427,24 +468,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     get:
       tags:
         - Watchers
@@ -457,6 +502,7 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
@@ -503,6 +549,7 @@ paths:
         - in: query
           name: service
           description: Filter watchers by service. Multiple values allowed.
+          example: ["dta"]
           schema:
             type: array
             items:
@@ -521,18 +568,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WatcherList"
+              example: {data: [], has_more: false}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
   /channels/{channel_id}/watchers/{watcher_id}:
     get:
       tags:
@@ -543,12 +593,14 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
         - in: path
           name: watcher_id
           required: true
+          description: Unique watcher identifier.
           schema:
             type: string
             format: uuid
@@ -559,18 +611,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
         "404":
           description: Channel or watcher not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     patch:
       tags:
         - Watchers
@@ -583,21 +638,25 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
         - in: path
           name: watcher_id
           required: true
+          description: Unique watcher identifier.
           schema:
             type: string
             format: uuid
       requestBody:
+        description: Watcher update parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/UpdateWatcher"
+            example: {name: "updated-watcher"}
       responses:
         "200":
           description: Watcher updated successfully
@@ -605,30 +664,35 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
         "202":
           description: Archive request accepted. The watcher is transitioning to archived state asynchronously.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "archiving", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "404":
           description: Channel or watcher not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
 
   /channels/{channel_id}/operations:
     post:
@@ -646,15 +710,18 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
       requestBody:
+        description: Operation creation parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateOperation"
+            example: {chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]}
       responses:
         "201":
           description: Operation created successfully
@@ -662,24 +729,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OperationResponse"
+              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789"}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     get:
       tags:
         - Operations
@@ -691,6 +762,7 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
@@ -772,18 +844,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OperationList"
+              example: {data: [], has_more: false}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
   /channels/{channel_id}/operations/{operation_id}:
     get:
       tags:
@@ -796,12 +871,14 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
         - in: path
           name: operation_id
           required: true
+          description: Unique operation identifier.
           schema:
             type: string
             format: uuid
@@ -812,19 +889,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Operation"
+              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "accepted", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800}
         "404":
           description: Channel or operation not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     patch:
+      tags:
+        - Operations
+      operationId: finalizeOrCancelOperation
       summary: Finalizes or cancels an operation.
       description: |
         Finalize by sending status accepted with signature and digest.
@@ -834,21 +917,25 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
         - in: path
           name: operation_id
           required: true
+          description: Unique operation identifier.
           schema:
             type: string
             format: uuid
       requestBody:
+        description: Operation finalization or cancellation parameters.
         required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/PatchOperation"
+            example: {status: "cancelled"}
       responses:
         "200":
           description: Operation updated successfully
@@ -856,24 +943,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Operation"
+              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "cancelled", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800}
         "400":
           description: Invalid request data
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "404":
           description: Channel or operation not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "409":
           description: Operation could not be finalized or cancelled because.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", message: "Operation is in a state that does not allow this transition."}
 
   /channels/{channel_id}/events:
     get:
@@ -885,6 +976,7 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
@@ -910,24 +1002,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EventList"
+              example: {events: [], has_more: false}
         "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request parameters."}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
 
   /channels/{channel_id}/events/search:
     get:
@@ -949,6 +1045,7 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
@@ -1003,6 +1100,7 @@ paths:
         - in: query
           name: chain_selector
           description: Filter by chain selector
+          example: ["16015286601757825753"]
           schema:
             type: array
             items:
@@ -1012,6 +1110,7 @@ paths:
         - in: query
           name: status
           description: Filter by operation status. Multiple values allowed.
+          example: ["confirmed"]
           schema:
             type: array
             items:
@@ -1033,6 +1132,7 @@ paths:
         - in: query
           name: address
           description: Filter by wallet address. Multiple values allowed.
+          example: ["0x742d35Cc6634C0532925a3b844Bc454e4438f44e"]
           schema:
             type: array
             items:
@@ -1057,6 +1157,7 @@ paths:
         - in: query
           name: service
           description: Filter by watcher service. Multiple values allowed.
+          example: ["dta"]
           schema:
             type: array
             items:
@@ -1070,24 +1171,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/EventList"
+              example: {events: [], has_more: false}
         "400":
           description: Invalid request parameters
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid request parameters."}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
 
   /channels/{channel_id}/events/search/{event_id}:
     get:
@@ -1099,12 +1204,14 @@ paths:
         - in: path
           name: channel_id
           required: true
+          description: Unique channel identifier.
           schema:
             type: string
             format: uuid
         - in: path
           name: event_id
           required: true
+          description: Unique event identifier.
           schema:
             type: string
             format: uuid
@@ -1115,18 +1222,21 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Event"
+              example: {event_id: "d290f1ee-6c54-4b01-90e6-d701748f0851", payload: {status: "confirmed", status_reason: "", operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", wallet_operation_id: "op-12345", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", timestamp: 1715698800}, headers: {type: "operation.status", offset: 1, proofs: []}}
         "404":
           description: Channel or event not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
 
 security:
   - ApiKeyAuth: []
@@ -1149,6 +1259,7 @@ components:
         - deployed
         - archived
         - failed
+      example: "pending"
     WalletEventStatus:
       type: string
       description: Status of a wallet in events (includes archived state for filtering)
@@ -1158,6 +1269,7 @@ components:
         - deployed
         - failed
         - archived
+      example: "pending"
     WatcherStatus:
       type: string
       description: Status of a watcher entity
@@ -1167,6 +1279,13 @@ components:
         - failed
         - archiving
         - archived
+      x-enum-varnames:
+        - WatcherStatusPending
+        - WatcherStatusActive
+        - WatcherStatusFailed
+        - WatcherStatusArchiving
+        - WatcherStatusArchived
+      example: "pending"
     WatcherEventStatus:
       type: string
       description: Status of a watcher in events (includes transitional and archival states for filtering)
@@ -1177,6 +1296,7 @@ components:
         - archiving
         - archive_failed
         - archived
+      example: "pending"
     OperationStatus:
       type: string
       description: Status of an operation
@@ -1190,6 +1310,7 @@ components:
         - cancelled
         - expired
         - failed
+      example: "accepted"
     SubjectType:
       type: string
       description: Type of subject used for audit identity and filtering.
@@ -1199,12 +1320,14 @@ components:
       x-enum-varnames:
         - SubjectTypeApiKey
         - SubjectTypeUser
+      example: "api_key"
     WalletType:
       type: string
       description: Type of wallet
       enum:
         - ecdsa
         - rsa
+      example: "ecdsa"
     EventType:
       type: string
       description: Type of event
@@ -1223,13 +1346,16 @@ components:
       type: string
       description: 42-character hex Ethereum address
       pattern: "^0x[a-fA-F0-9]{40}$"
+      example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
     RSAPublicKey:
       type: object
       description: RSA public key with exponent and modulus
+      example: {e: "0x010001", n: "0x00c458b08a5b7939c97a5611389823468087f90918712a20166d3215917263548596071234567890abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef"}
       properties:
         e:
           type: string
           description: RSA public exponent (hex encoded, 2-17 bytes)
+          example: "0x010001"
           ## For the public exponent (e), the common and recommended values
           ## result in an exact size of 3 or 4 bytes in encoded form.
           ## Max 17 bytes. in rare or custom implementations, it could be a
@@ -1243,6 +1369,7 @@ components:
         n:
           type: string
           description: RSA modulus (hex encoded, min 2048 bits)
+          example: "0x00c458b08a5b7939c97a5611389823468087f90918712a20166d3215917263548596071234567890abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef"
           ## 1024 bit keys are less secure. Only 2048 bit keys or 4096 bit RSA
           ## keys are supported. Modulus = (number_of_bits / 8) bytes =
           ## bytes*2 for hex representation.
@@ -1258,6 +1385,9 @@ components:
       minItems: 0
       maxItems: 10
       uniqueItems: true
+      example:
+        - e: "0x010001"
+          n: "0x00c458b08a5b7939c97a5611389823468087f90918712a20166d3215917263548596071234567890abcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdef"
     ECDSASignersList:
       type: array
       description: List of allowed ECDSA public signing keys (Ethereum addresses)
@@ -1266,14 +1396,20 @@ components:
       minItems: 0
       maxItems: 10
       uniqueItems: true
+      example:
+        - "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+        - "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
     ChainSelector:
       type: string
       description: Chain selector identifier for the blockchain network
+      example: "16015286601757825753"
     Timestamp:
       type: integer
       format: int64
       description: Unix timestamp in seconds
+      example: 1601528660
     HealthCheck:
+      description: Health check response.
       type: object
       properties:
         status:
@@ -1282,14 +1418,17 @@ components:
       required:
         - status
     CreateWallet:
+      description: Request body for creating a new wallet.
       type: object
       properties:
         name:
           type: string
           description: Name of the wallet
+          example: "my-wallet"
         description:
           type: string
           description: Description of the wallet
+          example: "My wallet description"
         wallet_owner_address:
           $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
@@ -1304,52 +1443,62 @@ components:
           type: string
           format: uuid
           description: Unique identifier for the channel where the wallet status will be published
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
       required:
         - name
         - wallet_owner_address
         - chain_selector
         - wallet_type
     UpdateWallet:
+      description: Request body for updating a wallet.
       type: object
       properties:
         name:
           type: string
           description: New name for the wallet
+          example: "my-wallet"
           minLength: 1
           maxLength: 255
-          pattern: '^(?!\s*$).+'
+          pattern: '.*\S.*'
         description:
           type: string
           description: New description for the wallet
+          example: "My wallet description"
           minLength: 1
           maxLength: 255
-          pattern: '^(?!\s*$).+'
+          pattern: '.*\S.*'
         status:
           $ref: "#/components/schemas/WalletStatus"
     UpdateWatcher:
+      description: Request body for updating a watcher.
       type: object
       properties:
         name:
           type: string
           description: New name for the watcher
+          example: "my-watcher"
           minLength: 1
           maxLength: 255
-          pattern: '^(?!\s*$).+'
+          pattern: '.*\S.*'
         status:
           $ref: "#/components/schemas/WatcherStatus"
     Wallet:
+      description: A wallet resource.
       type: object
       properties:
         wallet_id:
           type: string
           format: uuid
           description: Unique identifier for the wallet
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         name:
           type: string
           description: Name of the wallet
+          example: "my-wallet"
         description:
           type: string
           description: Description of the wallet
+          example: "My wallet description"
         address:
           $ref: "#/components/schemas/EthereumAddress"
         wallet_owner_address:
@@ -1364,6 +1513,7 @@ components:
           type: string
           format: uuid
           description: Channel ID where wallet status events are published
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         allowed_rsa_signers:
           $ref: "#/components/schemas/RSASignersList"
         allowed_ecdsa_signers:
@@ -1383,46 +1533,57 @@ components:
         - allowed_rsa_signers
         - allowed_ecdsa_signers
     WalletList:
+      description: Paginated list of wallets.
       type: object
       properties:
         data:
           type: array
           items:
             $ref: "#/components/schemas/Wallet"
+          example: []
         has_more:
           type: boolean
           description: True if there are more wallets to fetch
+          example: false
       required:
         - data
         - has_more
 
     Network:
+      description: A blockchain network supported by CRE Connect.
       type: object
       properties:
         id:
           type: string
           format: uuid
           description: Unique identifier for the network
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         name:
           type: string
           description: Name of the network
+          example: "Sepolia"
         chain_selector:
           type: string
           description: Chain selector identifier
+          example: "16015286601757825753"
         chain_id:
           type: string
           description: Chain ID identifier
+          example: "11155111"
         chain_family:
           type: string
           description: Chain family (e.g., "evm", "solana")
+          example: "evm"
         created_at:
           type: integer
           format: int64
           description: Timestamp of when the network was created
+          example: 1715698800
         updated_at:
           type: integer
           format: int64
           description: Timestamp of when the network was last updated
+          example: 1715698800
         type:
           $ref: "#/components/schemas/NetworkType"
         default_confidence_level:
@@ -1436,15 +1597,18 @@ components:
         - created_at
         - updated_at
     NetworkList:
+      description: Paginated list of networks.
       type: object
       properties:
         data:
           type: array
           items:
             $ref: "#/components/schemas/Network"
+          example: []
         has_more:
           type: boolean
           description: True if there are more networks to fetch
+          example: false
       required:
         - data
         - has_more
@@ -1524,92 +1688,111 @@ components:
         - value
         - data
     ApplicationError:
+      description: Standard error response body.
       type: object
       properties:
         type:
           type: string
           description: Error type
+          example: "NOT_FOUND"
           enum:
-            - "Already exists"
-            - "Internal error"
-            - "Not found"
-            - "Bad request"
+            - "NOT_FOUND"
+            - "VALIDATION_ERROR"
+            - "CONFLICT"
+            - "INTERNAL_ERROR"
         message:
           type: string
           description: Error message describing the issue
+          example: "The requested resource was not found."
       required:
         - type
         - message
     CreateChannel:
+      description: Request body for creating a new channel.
       type: object
       properties:
         name:
           type: string
           description: Name of the channel
+          example: "my-channel"
         description:
           type: string
           description: Description of the channel
+          example: "My channel description"
       required:
         - name
     PatchChannel:
+      description: Request body for updating a channel.
       type: object
       properties:
         name:
           type: string
           description: New name for the channel
+          example: "my-channel"
           minLength: 1
           maxLength: 255
-          pattern: '^(?!\s*$).+'
+          pattern: '.*\S.*'
         description:
           type: string
           description: New description for the channel
+          example: "My channel description"
           minLength: 1
           maxLength: 255
-          pattern: '^(?!\s*$).+'
+          pattern: '.*\S.*'
         status:
           $ref: "#/components/schemas/ChannelStatus"
     Channel:
+      description: A channel resource.
       type: object
       properties:
         channel_id:
           type: string
           format: uuid
           description: Unique identifier for the channel
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         name:
           type: string
           description: Name of the channel
+          example: "my-channel"
         description:
           type: string
           description: Description of the channel
+          example: "My channel description"
         status:
           $ref: "#/components/schemas/ChannelStatus"
         created_at:
           type: integer
           format: int64
           description: Timestamp of when the channel was created
+          example: 1715698800
       required:
         - channel_id
         - name
         - status
         - created_at
     ChannelList:
+      description: Paginated list of channels.
       type: object
       properties:
         data:
           type: array
           items:
             $ref: "#/components/schemas/Channel"
+          example: []
         has_more:
           type: boolean
           description: True if there are more channels to fetch
+          example: false
       required:
         - data
         - has_more
     CreateWatcher:
+      description: Request body for creating a new watcher (service-based or ABI-based).
       oneOf:
         - $ref: "#/components/schemas/CreateWatcherWithService"
         - $ref: "#/components/schemas/CreateWatcherWithABI"
     CreateWatcherWithService:
+      description: Watcher creation parameters using a named service namespace.
       type: object
       properties:
         name:
@@ -1625,6 +1808,7 @@ components:
         service:
           type: string
           description: Service service namespace (e.g., "dvp", "dta")
+          example: "dta"
         events:
           type: array
           items:
@@ -1644,6 +1828,7 @@ components:
         - service
         - events
     CreateWatcherWithABI:
+      description: Watcher creation parameters using a raw ABI definition.
       type: object
       properties:
         name:
@@ -1677,6 +1862,7 @@ components:
         - events
         - abi
     EventABI:
+      description: ABI definition for a smart contract event.
       type: object
       properties:
         anonymous:
@@ -1700,6 +1886,7 @@ components:
         - name
         - type
     EventABIInput:
+      description: A single input parameter in an event ABI.
       type: object
       properties:
         indexed:
@@ -1720,51 +1907,63 @@ components:
         - name
         - type
     Watcher:
+      description: A watcher resource.
       type: object
       properties:
         watcher_id:
           type: string
           format: uuid
           description: Unique identifier for the watcher
+          example: "a8098c1a-f86e-11da-bd1a-00112444be1e"
         name:
           type: string
           description: Name of the watcher for identification
+          example: "my-watcher"
         channel_id:
           type: string
           format: uuid
           description: ID of the channel this watcher belongs to
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         created_at:
           type: integer
           format: int64
           description: Timestamp of when the watcher was created
+          example: 1715698800
         status:
           $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
           type: string
           description: The chain selector to identify the chain where the watcher will run
+          example: "16015286601757825753"
         address:
           type: string
           description: Smart contract address being watched
+          example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
         service:
           type: string
           description: Service service namespace (if using service-based events)
+          example: "dta"
         events:
           type: array
           items:
             type: string
           description: List of event names being watched
+          example: ["SubscriptionRequested"]
         abi:
           type: array
           items:
             $ref: "#/components/schemas/EventABI"
           description: ABI definitions for the events (if not using service-based events)
+          example: []
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
+          example: "zone-a"
         service_config:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
+          example: {}
         confidence_level:
           $ref: "#/components/schemas/ConfidenceLevel"
       required:
@@ -1778,23 +1977,28 @@ components:
         - don_family
         - confidence_level
     WatcherSummary:
+      description: Summary view of a watcher.
       type: object
       properties:
         watcher_id:
           type: string
           format: uuid
           description: Unique identifier for the watcher
+          example: "a8098c1a-f86e-11da-bd1a-00112444be1e"
         name:
           type: string
           description: Name of the watcher for identification
+          example: "my-watcher"
         channel_id:
           type: string
           format: uuid
           description: ID of the channel this watcher belongs to
+          example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         created_at:
           type: integer
           format: int64
           description: Timestamp of when the watcher was created
+          example: 1715698800
         status:
           $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
@@ -1802,12 +2006,15 @@ components:
         address:
           type: string
           description: Smart contract address being watched
+          example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
         service:
           type: string
           description: Service service namespace (if using service-based events)
+          example: "dta"
         don_family:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
+          example: "zone-a"
         confidence_level:
           $ref: "#/components/schemas/ConfidenceLevel"
       required:
@@ -1820,15 +2027,18 @@ components:
         - don_family
         - confidence_level
     WatcherList:
+      description: Paginated list of watchers.
       type: object
       properties:
         data:
           type: array
           items:
             $ref: "#/components/schemas/WatcherSummary"
+          example: []
         has_more:
           type: boolean
           description: True if there are more watchers to fetch
+          example: false
       required:
         - data
         - has_more
@@ -1841,22 +2051,27 @@ components:
         address:
           type: string
           description: Wallet address performing the operation
+          example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
         wallet_operation_id:
           type: string
           description: Unique wallet operation identifier
+          example: "op-12345"
         deadline:
           type: integer
           format: int64
           description: Unix timestamp deadline for the operation. A value of 0 means no expiration.
+          example: 0
         transactions:
           type: array
           items:
             $ref: "#/components/schemas/TransactionRequest"
           description: List of transactions to execute. Each transaction may include optional preview data.
+          example: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]
           minItems: 1
         signature:
           type: string
           description: EIP-712 signature of the operation. Optional for draft creation.
+          example: "0xabcdef..."
       required:
         - chain_selector
         - address
@@ -1864,12 +2079,14 @@ components:
         - deadline
         - transactions
     Operation:
+      description: A signed operation resource.
       type: object
       properties:
         operation_id:
           type: string
           format: uuid
           description: Unique identifier for the operation
+          example: "c1e5b8d0-1234-5678-abcd-ef0123456789"
         status:
           $ref: "#/components/schemas/OperationStatus"
         chain_selector:
@@ -1877,26 +2094,34 @@ components:
         address:
           type: string
           description: Wallet address performing the operation
+          example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
         wallet_operation_id:
           type: string
           description: Unique wallet operation identifier
+          example: "op-12345"
         deadline:
           type: integer
           format: int64
           description: Unix timestamp deadline for the operation. A value of 0 means no expiration.
+          example: 0
         transactions:
           type: array
           items:
             $ref: "#/components/schemas/Transaction"
           description: List of transactions associated with the operation.
+          example: []
         signature:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string
-          nullable: true
+          nullable: true          
           description: EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
+          example: null
         digest:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string
-          nullable: true
+          nullable: true          
           description: Signing digest for the finalized operation.
+          example: null
         initiator:
           $ref: "#/components/schemas/Subject"
         signer:
@@ -1921,24 +2146,29 @@ components:
         - signature
         - created_at
     OperationResponse:
+      description: Response body for a created operation.
       type: object
       properties:
         operation_id:
           type: string
           format: uuid
           description: Unique identifier for the operation
+          example: "c1e5b8d0-1234-5678-abcd-ef0123456789"
       required:
         - operation_id
     OperationList:
+      description: Paginated list of operations.
       type: object
       properties:
         data:
           type: array
           items:
             $ref: "#/components/schemas/Operation"
+          example: []
         has_more:
           type: boolean
           description: True if there are more operations to fetch
+          example: false
       required:
         - data
         - has_more
@@ -1952,9 +2182,11 @@ components:
         subject_id:
           type: string
           description: Stable subject identifier used for filtering and equality.
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         subject_name:
           type: string
           description: Human-friendly subject name.
+          example: "my-wallet"
       required:
         - subject_type
         - subject_id
@@ -1969,12 +2201,15 @@ components:
           enum:
             - accepted
           description: Marks the operation as accepted/finalized.
+          example: "accepted"
         signature:
           type: string
           description: Final signature returned by the signing flow.
+          example: "0xabcdef..."
         digest:
           type: string
           description: Digest associated with the finalized operation.
+          example: "0x1234..."
       required:
         - status
         - signature
@@ -1989,6 +2224,7 @@ components:
           enum:
             - cancelled
           description: Marks the operation as cancelled.
+          example: "cancelled"
       required:
         - status
     PatchOperation:
@@ -2002,26 +2238,33 @@ components:
           cancelled: "#/components/schemas/CancelOperation"
       description: PATCH body for finalizing or cancelling an operation.
     EventList:
+      description: Paginated list of events.
       type: object
       properties:
         events:
           type: array
           items:
             $ref: "#/components/schemas/Event"
+          example: []
         has_more:
           type: boolean
           description: True if there are more events to fetch
+          example: false
       required:
         - events
         - has_more
     Event:
+      description: A channel event containing a typed payload and headers.
       type: object
       properties:
         event_id:
           type: string
           format: uuid
           description: Unique identifier for the event
+          example: "d290f1ee-6c54-4b01-90e6-d701748f0851"
         payload:
+          description: "Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload). "
+          example: {status: "confirmed", status_reason: "", operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", wallet_operation_id: "op-12345", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", timestamp: 1715698800}
           oneOf:
             - $ref: "#/components/schemas/OperationStatusPayload"
             - $ref: "#/components/schemas/WatcherStatusPayload"
@@ -2033,6 +2276,7 @@ components:
         - payload
         - headers
     EventHeaders:
+      description: Metadata headers for an event, including type discriminator and proofs.
       type: object
       properties:
         type:
@@ -2041,41 +2285,58 @@ components:
           type: integer
           format: int64
           description: Unique offset for message ordering
+          example: 1
         proofs:
           type: array
           items:
-            oneOf:
+            anyOf:
               - $ref: "#/components/schemas/OCRProof"
               - type: object
                 description: Generic proof object for future extensibility
                 additionalProperties: true
+          example: []
       required:
         - type
         - offset
         - proofs
+      example:
+        type: "operation.status"
+        offset: 15520
+        proofs:
+          - alg: "keccak256"
+            ocr_report: "0x00010203"
+            ocr_context: "0x0a0b0c"
+            signatures:
+              - "0x789abc"
     OCRProof:
+      description: An OCR-based cryptographic proof attached to a verifiable event.
       type: object
       properties:
         alg:
           type: string
           description: Algorithm used for the proof
+          example: "ocr2vrf"
         ocr_report:
           type: string
           description: OCR report data
+          example: "0xabc123..."
         ocr_context:
           type: string
           description: OCR context data
+          example: "0xdef456..."
         signatures:
           type: array
           items:
             type: string
           description: Array of signatures
+          example: []
       required:
         - alg
         - ocr_report
         - ocr_context
         - signatures
     OperationStatusPayload:
+      description: Event payload for an operation status change.
       type: object
       properties:
         status:
@@ -2083,39 +2344,51 @@ components:
         status_reason:
           type: string
           description: Reason for the status
+          example: "Resource not found"
         operation_id:
           type: string
           format: uuid
           description: Unique identifier for the operation
+          example: "c1e5b8d0-1234-5678-abcd-ef0123456789"
         wallet_operation_id:
           type: string
           description: Wallet operation identifier
+          example: "op-12345"
         address:
           type: string
           description: Wallet address performing the operation
+          example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
         digest:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string
-          nullable: true
+          nullable: true          
           description: Canonical signing digest for the operation.
+          example: null
         transactions:
+          # switch to type: [array, "null"] when upgrading to OpenAPI 3.1.2
           type: array
-          nullable: true
+          nullable: true          
           items:
             $ref: "#/components/schemas/Transaction"
           description: Transactions associated with the event.
+          example: []
         event_hash:
           type: string
           description: Verifiable event hash for reference (only present when status is confirmed)
+          example: "0xabc123def456"
         verifiable_event:
           type: string
           description: Base64 encoded verifiable event for verification
+          example: "eyJhbGciOiJFUzI1NiJ9..."
         chain_selector:
           type: string
           description: Chain selector identifier for the blockchain network
+          example: "16015286601757825753"
         timestamp:
           type: integer
           format: int64
           description: Timestamp when the event was created
+          example: 1715698800
       required:
         - status
         - status_reason
@@ -2125,6 +2398,7 @@ components:
         - chain_selector
         - timestamp
     WatcherStatusPayload:
+      description: Event payload for a watcher status change.
       type: object
       properties:
         status:
@@ -2132,19 +2406,24 @@ components:
         status_reason:
           type: string
           description: Reason for the status
+          example: "Resource not found"
         watcher_id:
           type: string
           description: Unique watcher identifier
+          example: "a8098c1a-f86e-11da-bd1a-00112444be1e"
         chain_selector:
           type: string
           description: Chain selector identifier for the blockchain network
+          example: "16015286601757825753"
         timestamp:
           type: integer
           format: int64
           description: Timestamp when the event was created
+          example: 1715698800
         service:
           type: string
           description: Service namespace of the watcher
+          example: "dta"
       required:
         - status
         - status_reason
@@ -2152,24 +2431,30 @@ components:
         - chain_selector
         - timestamp
     WatcherEventPayload:
+      description: Event payload for an on-chain event detected by a watcher.
       type: object
       properties:
         watcher_id:
           type: string
           description: Unique watcher identifier
+          example: "a8098c1a-f86e-11da-bd1a-00112444be1e"
         chain_selector:
           type: string
           description: Chain selector identifier for the blockchain network
+          example: "16015286601757825753"
         event_hash:
           type: string
           description: Verifiable event hash
+          example: "0xabc123def456"
         verifiable_event:
           type: string
           description: Base64 encoded verifiable event
+          example: "eyJhbGciOiJFUzI1NiJ9..."
         timestamp:
           type: integer
           format: int64
           description: Timestamp when the event was created
+          example: 1715698800
       required:
         - watcher_id
         - event_hash
@@ -2177,6 +2462,7 @@ components:
         - chain_selector
         - timestamp
     WalletStatusPayload:
+      description: Event payload for a wallet status change.
       type: object
       properties:
         status:
@@ -2184,20 +2470,25 @@ components:
         status_reason:
           type: string
           description: Reason for the status
+          example: "Resource not found"
         address:
           type: string
           description: Wallet address performing the operation
+          example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
         chain_selector:
           type: string
           description: Chain selector identifier for the blockchain network
+          example: "16015286601757825753"
         wallet_id:
           type: string
           format: uuid
           description: Unique identifier for the wallet
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
         timestamp:
           type: integer
           format: int64
           description: Timestamp when the event was created
+          example: 1715698800
       required:
         - status
         - status_reason
@@ -2211,6 +2502,7 @@ components:
       enum:
         - active
         - archived
+      example: "active"
     ConfidenceLevel:
       type: string
       description: Confidence level. If not specified, the default confidence level for the network will be used.
@@ -2218,9 +2510,11 @@ components:
         - "latest"
         - "safe"
         - "finalized"
+      example: "latest"
     NetworkType:
       type: string
       description: Type of chain
       enum:
         - "mainnet"
         - "testnet"
+      example: "mainnet"
