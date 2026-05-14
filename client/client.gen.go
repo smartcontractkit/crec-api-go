@@ -127,11 +127,11 @@ const (
 
 // Defines values for WatcherStatus.
 const (
-	Active    WatcherStatus = "active"
-	Archived  WatcherStatus = "archived"
-	Archiving WatcherStatus = "archiving"
-	Failed    WatcherStatus = "failed"
-	Pending   WatcherStatus = "pending"
+	WatcherStatusActive    WatcherStatus = "active"
+	WatcherStatusArchived  WatcherStatus = "archived"
+	WatcherStatusArchiving WatcherStatus = "archiving"
+	WatcherStatusFailed    WatcherStatus = "failed"
+	WatcherStatusPending   WatcherStatus = "pending"
 )
 
 // ApplicationError Standard error response body.

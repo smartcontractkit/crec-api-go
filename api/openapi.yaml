@@ -1279,6 +1279,12 @@ components:
         - failed
         - archiving
         - archived
+      x-enum-varnames:
+        - WatcherStatusPending
+        - WatcherStatusActive
+        - WatcherStatusFailed
+        - WatcherStatusArchiving
+        - WatcherStatusArchived
       example: "pending"
     WatcherEventStatus:
       type: string
