@@ -2119,11 +2119,17 @@ components:
           description: Signing digest for the finalized operation.
           example: null
         initiator:
-          $ref: "#/components/schemas/Subject"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Subject"
         signer:
-          $ref: "#/components/schemas/Subject"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Subject"
         canceller:
-          $ref: "#/components/schemas/Subject"
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Subject"
         signed_at:
           $ref: "#/components/schemas/Timestamp"
         cancelled_at:
@@ -2138,7 +2144,6 @@ components:
         - wallet_operation_id
         - deadline
         - transactions
-        - initiator
         - signature
         - created_at
     OperationResponse:
