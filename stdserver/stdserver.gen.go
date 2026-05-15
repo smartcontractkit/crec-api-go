@@ -559,7 +559,7 @@ type OperationStatusPayload struct {
 
 // PatchChannel Request body for updating a channel.
 type PatchChannel struct {
-	// Description New description for the channel
+	// Description New description for the channel. Send empty string to clear.
 	Description *string `json:"description,omitempty"`
 
 	// Name New name for the channel
@@ -657,7 +657,7 @@ type TransactionRequest struct {
 
 // UpdateWallet Request body for updating a wallet.
 type UpdateWallet struct {
-	// Description New description for the wallet
+	// Description New description for the wallet. Send empty string to clear.
 	Description *string `json:"description,omitempty"`
 
 	// Name New name for the wallet

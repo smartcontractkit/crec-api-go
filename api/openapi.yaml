@@ -1462,11 +1462,9 @@ components:
           pattern: '.*\S.*'
         description:
           type: string
-          description: New description for the wallet
+          description: New description for the wallet. Send empty string to clear.
           example: "My wallet description"
-          minLength: 1
           maxLength: 255
-          pattern: '.*\S.*'
         status:
           $ref: "#/components/schemas/WalletStatus"
     UpdateWatcher:
@@ -1734,11 +1732,9 @@ components:
           pattern: '.*\S.*'
         description:
           type: string
-          description: New description for the channel
+          description: New description for the channel. Send empty string to clear.
           example: "My channel description"
-          minLength: 1
           maxLength: 255
-          pattern: '.*\S.*'
         status:
           $ref: "#/components/schemas/ChannelStatus"
     Channel:
@@ -2113,13 +2109,13 @@ components:
         signature:
           # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string
-          nullable: true          
+          nullable: true
           description: EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
           example: null
         digest:
           # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string
-          nullable: true          
+          nullable: true
           description: Signing digest for the finalized operation.
           example: null
         initiator:
@@ -2361,13 +2357,13 @@ components:
         digest:
           # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string
-          nullable: true          
+          nullable: true
           description: Canonical signing digest for the operation.
           example: null
         transactions:
           # switch to type: [array, "null"] when upgrading to OpenAPI 3.1.2
           type: array
-          nullable: true          
+          nullable: true
           items:
             $ref: "#/components/schemas/Transaction"
           description: Transactions associated with the event.
