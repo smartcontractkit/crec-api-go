@@ -463,9 +463,7 @@ type Operation struct {
 
 	// CancelledAt Unix timestamp in seconds
 	CancelledAt *Timestamp `json:"cancelled_at,omitempty"`
-
-	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
-	Canceller *Subject `json:"canceller,omitempty"`
+	Canceller   *Subject   `json:"canceller"`
 
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
@@ -477,10 +475,8 @@ type Operation struct {
 	Deadline int64 `json:"deadline"`
 
 	// Digest Signing digest for the finalized operation.
-	Digest *string `json:"digest"`
-
-	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
-	Initiator Subject `json:"initiator"`
+	Digest    *string  `json:"digest"`
+	Initiator *Subject `json:"initiator"`
 
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
@@ -490,9 +486,7 @@ type Operation struct {
 
 	// SignedAt Unix timestamp in seconds
 	SignedAt *Timestamp `json:"signed_at,omitempty"`
-
-	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
-	Signer *Subject `json:"signer,omitempty"`
+	Signer   *Subject   `json:"signer"`
 
 	// Status Status of an operation
 	Status OperationStatus `json:"status"`
