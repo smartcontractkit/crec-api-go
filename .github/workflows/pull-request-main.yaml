@@ -17,7 +17,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup Go
-        uses: smartcontractkit/.github/actions/setup-golang@setup-golang/0.3.2
+        uses: smartcontractkit/.github/actions/setup-golang@setup-golang/1.2.0
         with:
           go-version-file: ./go.mod
           use-go-cache: "true"
@@ -38,7 +38,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: smartcontractkit/.github/actions/setup-golang@setup-golang/0.3.2
+        uses: smartcontractkit/.github/actions/setup-golang@setup-golang/1.2.0
         with:
           go-version-file: ./go.mod
           use-go-cache: "true"
@@ -64,7 +64,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Go
-        uses: smartcontractkit/.github/actions/setup-golang@setup-golang/0.3.2
+        uses: smartcontractkit/.github/actions/setup-golang@setup-golang/1.2.0
         with:
           go-version-file: ./go.mod
           use-go-cache: "true"
