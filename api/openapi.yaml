@@ -2495,7 +2495,7 @@ components:
         transactions:
           type: array
           items:
-            $ref: "#/components/schemas/TransactionRequest"
+            $ref: "#/components/schemas/Transaction"
           description: List of transactions to execute. Each transaction may include optional preview data.
           example: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]
           minItems: 1
@@ -2509,7 +2509,6 @@ components:
         - wallet_operation_id
         - deadline
         - transactions
-        - signature
     Operation:
       description: A signed operation resource.
       type: object
@@ -2539,7 +2538,7 @@ components:
         transactions:
           type: array
           items:
-            $ref: "#/components/schemas/TransactionRequest"
+            $ref: "#/components/schemas/Transaction"
           description: List of transactions associated with the operation.
           example: []
         signature:
@@ -2805,7 +2804,7 @@ components:
           type: array
           nullable: true
           items:
-            $ref: "#/components/schemas/TransactionRequest"
+            $ref: "#/components/schemas/Transaction"
           description: Transactions associated with the event.
           example: []
         event_hash:

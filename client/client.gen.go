@@ -254,10 +254,10 @@ type CreateOperation struct {
 	Deadline int64 `json:"deadline"`
 
 	// Signature EIP-712 signature of the operation.
-	Signature string `json:"signature"`
+	Signature *string `json:"signature,omitempty"`
 
 	// Transactions List of transactions to execute. Each transaction may include optional preview data.
-	Transactions []TransactionRequest `json:"transactions"`
+	Transactions []Transaction `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -588,7 +588,7 @@ type Operation struct {
 	Status OperationStatus `json:"status"`
 
 	// Transactions List of transactions associated with the operation.
-	Transactions []TransactionRequest `json:"transactions"`
+	Transactions []Transaction `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -638,7 +638,7 @@ type OperationStatusPayload struct {
 	Timestamp int64 `json:"timestamp"`
 
 	// Transactions Transactions associated with the event.
-	Transactions *[]TransactionRequest `json:"transactions"`
+	Transactions *[]Transaction `json:"transactions"`
 
 	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
