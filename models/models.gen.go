@@ -89,14 +89,18 @@ type ChainQueryData struct {
 
 	// ChannelId Channel that owns the query.
 	ChannelId openapi_types.UUID `json:"channel_id"`
-	Error     *ChainQueryError   `json:"error"`
+
+	// Error Terminal chain query execution error.
+	Error *ChainQueryError `json:"error,omitempty"`
 
 	// QueryId Unique identifier for the query.
 	QueryId openapi_types.UUID `json:"query_id"`
 
 	// QueryKind Kind of chain query.
-	QueryKind ChainQueryKind             `json:"query_kind"`
-	Result    *ChainQueryExecutionResult `json:"result"`
+	QueryKind ChainQueryKind `json:"query_kind"`
+
+	// Result Successful EVM call result.
+	Result *ChainQueryExecutionResult `json:"result,omitempty"`
 
 	// Target EVM call target bound into the signed query result.
 	Target ChainQueryTarget `json:"target"`

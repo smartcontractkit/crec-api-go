@@ -24,7 +24,7 @@ tags:
   - name: Operations
     description: Operations within a channel.
   - name: Queries
-    description: Asynchronous chain queries scoped to a channel.
+    description: Chain queries scoped to a channel.
   - name: Events
     description: Events (poll and historical search).
 
@@ -446,7 +446,7 @@ paths:
       tags:
         - Queries
       operationId: createQuery
-      summary: Creates an asynchronous chain query under a channel.
+      summary: Creates a chain query under a channel.
       description: |
         Creates a channel-scoped Chain Query Request. New queries are rejected for archived channels.
         The customer-provided idempotency_key is scoped to the organization and channel.
@@ -465,7 +465,7 @@ paths:
               $ref: "#/components/schemas/CreateQuery"
       responses:
         "202":
-          description: Query accepted for asynchronous execution.
+          description: Query accepted for execution.
           content:
             application/json:
               schema:
@@ -506,8 +506,8 @@ paths:
       operationId: listQueries
       summary: Lists chain queries for a channel.
       description: |
-        Returns request and lifecycle-focused query records for the channel.
-        OCR proof material and opaque verifiable results are only returned by the individual query resource.
+        Returns query records for the channel.
+        The list response does not include OCR proofs or verifiable results.
       parameters:
         - in: path
           name: channel_id
@@ -566,7 +566,7 @@ paths:
       operationId: getQuery
       summary: Retrieves a specific chain query by ID.
       description: |
-        Returns request, lifecycle, expiration, and terminal verifiable fields from the query resource.
+        Returns request fields, status timestamps, expiration, and terminal verifiable fields from the query resource.
         Implementations must not hydrate terminal query details by querying channel events.
       parameters:
         - in: path
@@ -1975,7 +1975,7 @@ components:
     CreateQuery:
       type: object
       additionalProperties: false
-      description: Request body for creating an asynchronous chain query.
+      description: Request body for creating a chain query.
       properties:
         idempotency_key:
           type: string
@@ -2109,28 +2109,14 @@ components:
           $ref: "#/components/schemas/QueryKind"
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
-        status_event_id:
-          type: string
-          format: uuid
-          description: Channel event ID for the latest terminal query.status event when available.
-        status_event_offset:
-          type: integer
-          format: int64
-          description: Channel event offset for the latest terminal query.status event when available.
         event_hash:
           type: string
           description: Verifiable event hash for the terminal query result.
         verifiable_result:
           type: string
-          description: Opaque base64-encoded verifiable query result.
+          description: Base64-encoded verifiable query result.
         proof:
           $ref: "#/components/schemas/OCRProof"
-        error_code:
-          type: string
-          description: Terminal execution error code when the query failed.
-        error_message:
-          type: string
-          description: Human-readable terminal execution error message when the query failed.
         created_at:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
@@ -2160,7 +2146,7 @@ components:
 
     QuerySummary:
       type: object
-      description: Request and lifecycle-focused query summary for list responses.
+      description: Query fields returned by list responses.
       properties:
         query_id:
           type: string
@@ -2176,12 +2162,6 @@ components:
           $ref: "#/components/schemas/QueryKind"
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
-        error_code:
-          type: string
-          description: Terminal execution error code when the query failed.
-        error_message:
-          type: string
-          description: Human-readable terminal execution error message when the query failed.
         created_at:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
@@ -2853,7 +2833,7 @@ components:
           description: Verifiable event hash for terminal query status events.
         verifiable_result:
           type: string
-          description: Opaque base64-encoded verifiable query result for terminal query status events.
+          description: Base64-encoded verifiable query result for terminal query status events.
       required:
         - query_id
         - status

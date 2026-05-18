@@ -261,7 +261,7 @@ type CreateOperation struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// CreateQuery Request body for creating an asynchronous chain query.
+// CreateQuery Request body for creating a chain query.
 type CreateQuery struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
@@ -679,12 +679,6 @@ type Query struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt Timestamp `json:"created_at"`
 
-	// ErrorCode Terminal execution error code when the query failed.
-	ErrorCode *string `json:"error_code,omitempty"`
-
-	// ErrorMessage Human-readable terminal execution error message when the query failed.
-	ErrorMessage *string `json:"error_message,omitempty"`
-
 	// EventHash Verifiable event hash for the terminal query result.
 	EventHash *string `json:"event_hash,omitempty"`
 
@@ -715,16 +709,10 @@ type Query struct {
 	// Status Lifecycle status of a chain query.
 	Status QueryStatus `json:"status"`
 
-	// StatusEventId Channel event ID for the latest terminal query.status event when available.
-	StatusEventId *openapi_types.UUID `json:"status_event_id,omitempty"`
-
-	// StatusEventOffset Channel event offset for the latest terminal query.status event when available.
-	StatusEventOffset *int64 `json:"status_event_offset,omitempty"`
-
 	// UpdatedAt Unix timestamp in seconds
 	UpdatedAt Timestamp `json:"updated_at"`
 
-	// VerifiableResult Opaque base64-encoded verifiable query result.
+	// VerifiableResult Base64-encoded verifiable query result.
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
 }
 
@@ -770,11 +758,11 @@ type QueryStatusPayload struct {
 	// Timestamp Timestamp when the status event was created.
 	Timestamp int64 `json:"timestamp"`
 
-	// VerifiableResult Opaque base64-encoded verifiable query result for terminal query status events.
+	// VerifiableResult Base64-encoded verifiable query result for terminal query status events.
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
 }
 
-// QuerySummary Request and lifecycle-focused query summary for list responses.
+// QuerySummary Query fields returned by list responses.
 type QuerySummary struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
@@ -787,12 +775,6 @@ type QuerySummary struct {
 
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt Timestamp `json:"created_at"`
-
-	// ErrorCode Terminal execution error code when the query failed.
-	ErrorCode *string `json:"error_code,omitempty"`
-
-	// ErrorMessage Human-readable terminal execution error message when the query failed.
-	ErrorMessage *string `json:"error_message,omitempty"`
 
 	// ExpiredAt Unix timestamp in seconds
 	ExpiredAt *Timestamp `json:"expired_at,omitempty"`
@@ -1843,7 +1825,7 @@ type ServerInterface interface {
 	// Lists chain queries for a channel.
 	// (GET /channels/{channel_id}/queries)
 	ListQueries(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListQueriesParams)
-	// Creates an asynchronous chain query under a channel.
+	// Creates a chain query under a channel.
 	// (POST /channels/{channel_id}/queries)
 	CreateQuery(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Retrieves a specific chain query by ID.

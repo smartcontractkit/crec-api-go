@@ -168,12 +168,10 @@ components:
           $ref: "#/components/schemas/ChainQueryBlockSelection"
         result:
           nullable: true
-          allOf:
-            - $ref: "#/components/schemas/ChainQueryExecutionResult"
+          $ref: "#/components/schemas/ChainQueryExecutionResult"
         error:
           nullable: true
-          allOf:
-            - $ref: "#/components/schemas/ChainQueryError"
+          $ref: "#/components/schemas/ChainQueryError"
       required:
         - query_id
         - channel_id
