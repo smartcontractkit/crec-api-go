@@ -861,10 +861,10 @@ paths:
       tags:
         - Operations
       operationId: createOperation
-      summary: Creates a signed operation, scoped to a channel.
+      summary: Creates a signed operation or draft request, scoped to a channel.
       description: |
-        Creates a signed operation. Signed operations are relayed immediately.
-        Each transaction may include an optional preview block.
+        Creates a signed or draft operation first, depending on the presence of a signature.
+        Signed operations are relayed immediately. Drafts can be finalized or cancelled later.
         The operation is scoped to the channel, and will only be visible to the channel.
 
       parameters:
@@ -882,7 +882,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateOperation"
-            example: {chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}], signature: "0xabcdef..."}
+            example: {chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]}
       responses:
         "201":
           description: Operation created successfully
@@ -1050,7 +1050,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Operation"
-              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "accepted", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: "0xabcdef...", created_at: 1715698800}
+              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "accepted", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800}
         "404":
           description: Channel or operation not found
           content:
@@ -1104,7 +1104,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Operation"
-              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "cancelled", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: "0xabcdef...", created_at: 1715698800}
+              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "cancelled", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800}
         "400":
           description: Invalid request data
           content:
@@ -2475,7 +2475,7 @@ components:
         - has_more
     CreateOperation:
       type: object
-      description: Request body for creating a signed operation.
+      description: Request body for creating a signed operation or a draft when the signature is omitted.
       properties:
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
@@ -2495,13 +2495,13 @@ components:
         transactions:
           type: array
           items:
-            $ref: "#/components/schemas/Transaction"
+            $ref: "#/components/schemas/TransactionRequest"
           description: List of transactions to execute. Each transaction may include optional preview data.
           example: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]
           minItems: 1
         signature:
           type: string
-          description: EIP-712 signature of the operation.
+          description: EIP-712 signature of the operation. Optional for draft creation.
           example: "0xabcdef..."
       required:
         - chain_selector
@@ -2542,9 +2542,11 @@ components:
           description: List of transactions associated with the operation.
           example: []
         signature:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string
-          description: EIP-712 signature of the operation.
-          example: "0xabcdef..."
+          nullable: true
+          description: EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
+          example: null
         digest:
           # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
           type: string

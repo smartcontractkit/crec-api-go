@@ -240,7 +240,7 @@ type CreateChannel struct {
 	Name string `json:"name"`
 }
 
-// CreateOperation Request body for creating a signed operation.
+// CreateOperation Request body for creating a signed operation or a draft when the signature is omitted.
 type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -251,11 +251,11 @@ type CreateOperation struct {
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
-	// Signature EIP-712 signature of the operation.
+	// Signature EIP-712 signature of the operation. Optional for draft creation.
 	Signature *string `json:"signature,omitempty"`
 
 	// Transactions List of transactions to execute. Each transaction may include optional preview data.
-	Transactions []Transaction `json:"transactions"`
+	Transactions []TransactionRequest `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -575,8 +575,8 @@ type Operation struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Signature EIP-712 signature of the operation.
-	Signature string `json:"signature"`
+	// Signature EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
+	Signature *string `json:"signature"`
 
 	// SignedAt Unix timestamp in seconds
 	SignedAt *Timestamp `json:"signed_at,omitempty"`
@@ -1240,18 +1240,6 @@ type ListOperationsParams struct {
 	CancellerSubjectId *string `form:"canceller_subject_id,omitempty" json:"canceller_subject_id,omitempty"`
 }
 
-// ListQueriesParams defines parameters for ListQueries.
-type ListQueriesParams struct {
-	// Status Filter queries by status. Multiple values allowed.
-	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
-
-	// Limit Maximum number of queries to return
-	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
-
-	// Offset Number of queries to skip for pagination
-	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
-}
-
 // ListWatchersParams defines parameters for ListWatchers.
 type ListWatchersParams struct {
 	// Limit Maximum number of watchers to return
@@ -1317,9 +1305,6 @@ type CreateOperationJSONRequestBody = CreateOperation
 
 // FinalizeOrCancelOperationJSONRequestBody defines body for FinalizeOrCancelOperation for application/json ContentType.
 type FinalizeOrCancelOperationJSONRequestBody = PatchOperation
-
-// CreateQueryJSONRequestBody defines body for CreateQuery for application/json ContentType.
-type CreateQueryJSONRequestBody = CreateQuery
 
 // CreateWatcherJSONRequestBody defines body for CreateWatcher for application/json ContentType.
 type CreateWatcherJSONRequestBody = CreateWatcher
@@ -1831,7 +1816,7 @@ type ServerInterface interface {
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	ListOperations(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListOperationsParams)
-	// Creates a signed operation, scoped to a channel.
+	// Creates a signed operation or draft request, scoped to a channel.
 	// (POST /channels/{channel_id}/operations)
 	CreateOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Gets Operation record for a specific operation.
@@ -1840,15 +1825,6 @@ type ServerInterface interface {
 	// Finalizes or cancels an operation.
 	// (PATCH /channels/{channel_id}/operations/{operation_id})
 	FinalizeOrCancelOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
-	// Lists chain queries for a channel.
-	// (GET /channels/{channel_id}/queries)
-	ListQueries(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListQueriesParams)
-	// Creates an asynchronous chain query under a channel.
-	// (POST /channels/{channel_id}/queries)
-	CreateQuery(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
-	// Retrieves a specific chain query by ID.
-	// (GET /channels/{channel_id}/queries/{query_id})
-	GetQuery(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, queryId openapi_types.UUID)
 	// Retrieves watchers for a channel.
 	// (GET /channels/{channel_id}/watchers)
 	ListWatchers(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListWatchersParams)
@@ -2522,135 +2498,6 @@ func (siw *ServerInterfaceWrapper) FinalizeOrCancelOperation(w http.ResponseWrit
 	handler.ServeHTTP(w, r)
 }
 
-// ListQueries operation middleware
-func (siw *ServerInterfaceWrapper) ListQueries(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "channel_id" -------------
-	var channelId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params ListQueriesParams
-
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "limit" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "offset" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.ListQueries(w, r, channelId, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// CreateQuery operation middleware
-func (siw *ServerInterfaceWrapper) CreateQuery(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "channel_id" -------------
-	var channelId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateQuery(w, r, channelId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetQuery operation middleware
-func (siw *ServerInterfaceWrapper) GetQuery(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "channel_id" -------------
-	var channelId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
-		return
-	}
-
-	// ------------- Path parameter "query_id" -------------
-	var queryId openapi_types.UUID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "query_id", r.PathValue("query_id"), &queryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "query_id", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetQuery(w, r, channelId, queryId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
 // ListWatchers operation middleware
 func (siw *ServerInterfaceWrapper) ListWatchers(w http.ResponseWriter, r *http.Request) {
 
@@ -3202,9 +3049,6 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.CreateOperation)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetOperation)
 	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.FinalizeOrCancelOperation)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/queries", wrapper.ListQueries)
-	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/queries", wrapper.CreateQuery)
-	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/queries/{query_id}", wrapper.GetQuery)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.ListWatchers)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.CreateWatcher)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetWatcher)

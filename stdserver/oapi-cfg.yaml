@@ -5,3 +5,5 @@ generate:
   std-http-server: true
 output-options:
   skip-prune: true
+  exclude-tags:
+    - Queries

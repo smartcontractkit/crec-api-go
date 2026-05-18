@@ -240,7 +240,7 @@ type CreateChannel struct {
 	Name string `json:"name"`
 }
 
-// CreateOperation Request body for creating a signed operation.
+// CreateOperation Request body for creating a signed operation or a draft when the signature is omitted.
 type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -251,11 +251,11 @@ type CreateOperation struct {
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
-	// Signature EIP-712 signature of the operation.
+	// Signature EIP-712 signature of the operation. Optional for draft creation.
 	Signature *string `json:"signature,omitempty"`
 
 	// Transactions List of transactions to execute. Each transaction may include optional preview data.
-	Transactions []Transaction `json:"transactions"`
+	Transactions []TransactionRequest `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -575,8 +575,8 @@ type Operation struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Signature EIP-712 signature of the operation.
-	Signature string `json:"signature"`
+	// Signature EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
+	Signature *string `json:"signature"`
 
 	// SignedAt Unix timestamp in seconds
 	SignedAt *Timestamp `json:"signed_at,omitempty"`
@@ -1831,7 +1831,7 @@ type ServerInterface interface {
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	ListOperations(c *gin.Context, channelId openapi_types.UUID, params ListOperationsParams)
-	// Creates a signed operation, scoped to a channel.
+	// Creates a signed operation or draft request, scoped to a channel.
 	// (POST /channels/{channel_id}/operations)
 	CreateOperation(c *gin.Context, channelId openapi_types.UUID)
 	// Gets Operation record for a specific operation.
@@ -3949,7 +3949,7 @@ type StrictServerInterface interface {
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	ListOperations(ctx context.Context, request ListOperationsRequestObject) (ListOperationsResponseObject, error)
-	// Creates a signed operation, scoped to a channel.
+	// Creates a signed operation or draft request, scoped to a channel.
 	// (POST /channels/{channel_id}/operations)
 	CreateOperation(ctx context.Context, request CreateOperationRequestObject) (CreateOperationResponseObject, error)
 	// Gets Operation record for a specific operation.
