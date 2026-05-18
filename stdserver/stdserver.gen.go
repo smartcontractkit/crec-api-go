@@ -30,7 +30,7 @@ const (
 
 // Defines values for BlockNumberBlockSelectionType.
 const (
-	BlockNumber BlockNumberBlockSelectionType = "block_number"
+	BlockNumberBlockSelectionTypeBlockNumber BlockNumberBlockSelectionType = "block_number"
 )
 
 // Defines values for CancelOperationStatus.
@@ -46,9 +46,9 @@ const (
 
 // Defines values for ConfidenceLevel.
 const (
-	ConfidenceLevelFinalized ConfidenceLevel = "finalized"
-	ConfidenceLevelLatest    ConfidenceLevel = "latest"
-	ConfidenceLevelSafe      ConfidenceLevel = "safe"
+	Finalized ConfidenceLevel = "finalized"
+	Latest    ConfidenceLevel = "latest"
+	Safe      ConfidenceLevel = "safe"
 )
 
 // Defines values for EventABIType.
@@ -77,7 +77,7 @@ const (
 
 // Defines values for LatestBlockSelectionType.
 const (
-	Latest LatestBlockSelectionType = "latest"
+	LatestBlockSelectionTypeLatest LatestBlockSelectionType = "latest"
 )
 
 // Defines values for NetworkType.
@@ -240,7 +240,7 @@ type CreateChannel struct {
 	Name string `json:"name"`
 }
 
-// CreateOperation Request body for creating a signed operation or a draft when the signature is omitted.
+// CreateOperation Request body for creating a signed operation.
 type CreateOperation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -251,8 +251,8 @@ type CreateOperation struct {
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
-	// Signature EIP-712 signature of the operation. Optional for draft creation.
-	Signature *string `json:"signature,omitempty"`
+	// Signature EIP-712 signature of the operation.
+	Signature string `json:"signature"`
 
 	// Transactions List of transactions to execute. Each transaction may include optional preview data.
 	Transactions []TransactionRequest `json:"transactions"`
@@ -575,8 +575,8 @@ type Operation struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
-	// Signature EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
-	Signature *string `json:"signature"`
+	// Signature EIP-712 signature of the operation.
+	Signature string `json:"signature"`
 
 	// SignedAt Unix timestamp in seconds
 	SignedAt *Timestamp `json:"signed_at,omitempty"`
@@ -586,7 +586,7 @@ type Operation struct {
 	Status OperationStatus `json:"status"`
 
 	// Transactions List of transactions associated with the operation.
-	Transactions []Transaction `json:"transactions"`
+	Transactions []TransactionRequest `json:"transactions"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -636,7 +636,7 @@ type OperationStatusPayload struct {
 	Timestamp int64 `json:"timestamp"`
 
 	// Transactions Transactions associated with the event.
-	Transactions *[]Transaction `json:"transactions"`
+	Transactions *[]TransactionRequest `json:"transactions"`
 
 	// VerifiableEvent Base64 encoded verifiable event for verification
 	VerifiableEvent *string `json:"verifiable_event,omitempty"`
@@ -1831,7 +1831,7 @@ type ServerInterface interface {
 	// Retrieves operations for a channel.
 	// (GET /channels/{channel_id}/operations)
 	ListOperations(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListOperationsParams)
-	// Creates a signed operation or draft request, scoped to a channel.
+	// Creates a signed operation, scoped to a channel.
 	// (POST /channels/{channel_id}/operations)
 	CreateOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
 	// Gets Operation record for a specific operation.

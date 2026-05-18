@@ -230,6 +230,8 @@ components:
           enum:
             - latest
           description: Latest block selector resolved to concrete metadata by the query workflow.
+          x-enum-varnames:
+            - ChainQueryLatestBlockSelectionTypeLatest
       required:
         - type
     ChainQueryFinalizedBlockSelection:
@@ -240,6 +242,8 @@ components:
           enum:
             - finalized
           description: Finalized block selector resolved to concrete metadata by the query workflow.
+          x-enum-varnames:
+            - ChainQueryFinalizedBlockSelectionTypeFinalized
       required:
         - type
     ChainQueryBlockNumberSelection:
@@ -250,6 +254,8 @@ components:
           enum:
             - block_number
           description: Explicit block number selector.
+          x-enum-varnames:
+            - ChainQueryBlockNumberSelectionTypeBlockNumber
         block_number:
           type: string
           pattern: "^[0-9]+$"

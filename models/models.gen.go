@@ -14,7 +14,7 @@ import (
 
 // Defines values for ChainQueryBlockNumberSelectionType.
 const (
-	BlockNumber ChainQueryBlockNumberSelectionType = "block_number"
+	ChainQueryBlockNumberSelectionTypeBlockNumber ChainQueryBlockNumberSelectionType = "block_number"
 )
 
 // Defines values for ChainQueryErrorCode.
@@ -31,7 +31,7 @@ const (
 
 // Defines values for ChainQueryFinalizedBlockSelectionType.
 const (
-	Finalized ChainQueryFinalizedBlockSelectionType = "finalized"
+	ChainQueryFinalizedBlockSelectionTypeFinalized ChainQueryFinalizedBlockSelectionType = "finalized"
 )
 
 // Defines values for ChainQueryKind.
@@ -41,7 +41,7 @@ const (
 
 // Defines values for ChainQueryLatestBlockSelectionType.
 const (
-	Latest ChainQueryLatestBlockSelectionType = "latest"
+	ChainQueryLatestBlockSelectionTypeLatest ChainQueryLatestBlockSelectionType = "latest"
 )
 
 // Defines values for ChainQueryVerifiableEventName.
