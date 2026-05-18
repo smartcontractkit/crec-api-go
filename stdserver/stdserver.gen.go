@@ -22,12 +22,10 @@ const (
 
 // Defines values for ApplicationErrorType.
 const (
-	AlreadyExists     ApplicationErrorType = "Already exists"
-	BadRequest        ApplicationErrorType = "Bad request"
-	Conflict          ApplicationErrorType = "Conflict"
-	InternalError     ApplicationErrorType = "Internal error"
-	NotFound          ApplicationErrorType = "Not found"
-	RateLimitExceeded ApplicationErrorType = "Rate limit exceeded"
+	CONFLICT        ApplicationErrorType = "CONFLICT"
+	INTERNALERROR   ApplicationErrorType = "INTERNAL_ERROR"
+	NOTFOUND        ApplicationErrorType = "NOT_FOUND"
+	VALIDATIONERROR ApplicationErrorType = "VALIDATION_ERROR"
 )
 
 // Defines values for BlockNumberBlockSelectionType.
@@ -158,14 +156,14 @@ const (
 
 // Defines values for WatcherStatus.
 const (
-	Active    WatcherStatus = "active"
-	Archived  WatcherStatus = "archived"
-	Archiving WatcherStatus = "archiving"
-	Failed    WatcherStatus = "failed"
-	Pending   WatcherStatus = "pending"
+	WatcherStatusActive    WatcherStatus = "active"
+	WatcherStatusArchived  WatcherStatus = "archived"
+	WatcherStatusArchiving WatcherStatus = "archiving"
+	WatcherStatusFailed    WatcherStatus = "failed"
+	WatcherStatusPending   WatcherStatus = "pending"
 )
 
-// ApplicationError defines model for ApplicationError.
+// ApplicationError Standard error response body.
 type ApplicationError struct {
 	// Message Error message describing the issue
 	Message string `json:"message"`
@@ -201,7 +199,7 @@ type CancelOperationStatus string
 // ChainSelector Chain selector identifier for the blockchain network
 type ChainSelector = string
 
-// Channel defines model for Channel.
+// Channel A channel resource.
 type Channel struct {
 	// ChannelId Unique identifier for the channel
 	ChannelId openapi_types.UUID `json:"channel_id"`
@@ -219,7 +217,7 @@ type Channel struct {
 	Status ChannelStatus `json:"status"`
 }
 
-// ChannelList defines model for ChannelList.
+// ChannelList Paginated list of channels.
 type ChannelList struct {
 	Data []Channel `json:"data"`
 
@@ -233,7 +231,7 @@ type ChannelStatus string
 // ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
 type ConfidenceLevel string
 
-// CreateChannel defines model for CreateChannel.
+// CreateChannel Request body for creating a new channel.
 type CreateChannel struct {
 	// Description Description of the channel
 	Description *string `json:"description,omitempty"`
@@ -281,7 +279,7 @@ type CreateQuery struct {
 	QueryKind QueryKind `json:"query_kind"`
 }
 
-// CreateWallet defines model for CreateWallet.
+// CreateWallet Request body for creating a new wallet.
 type CreateWallet struct {
 	// AllowedEcdsaSigners List of allowed ECDSA public signing keys (Ethereum addresses)
 	AllowedEcdsaSigners *ECDSASignersList `json:"allowed_ecdsa_signers,omitempty"`
@@ -308,12 +306,12 @@ type CreateWallet struct {
 	WalletType WalletType `json:"wallet_type"`
 }
 
-// CreateWatcher defines model for CreateWatcher.
+// CreateWatcher Request body for creating a new watcher (service-based or ABI-based).
 type CreateWatcher struct {
 	union json.RawMessage
 }
 
-// CreateWatcherWithABI defines model for CreateWatcherWithABI.
+// CreateWatcherWithABI Watcher creation parameters using a raw ABI definition.
 type CreateWatcherWithABI struct {
 	// Abi ABI definitions for the events to watch
 	Abi []EventABI `json:"abi"`
@@ -334,7 +332,7 @@ type CreateWatcherWithABI struct {
 	Name string `json:"name"`
 }
 
-// CreateWatcherWithService defines model for CreateWatcherWithService.
+// CreateWatcherWithService Watcher creation parameters using a named service namespace.
 type CreateWatcherWithService struct {
 	// Address Smart contract address to watch for events
 	Address string `json:"address"`
@@ -379,20 +377,24 @@ type EVMCallQueryParams struct {
 // EthereumAddress 42-character hex Ethereum address
 type EthereumAddress = string
 
-// Event defines model for Event.
+// Event A channel event containing a typed payload and headers.
 type Event struct {
 	// EventId Unique identifier for the event
 	EventId *openapi_types.UUID `json:"event_id,omitempty"`
-	Headers EventHeaders        `json:"headers"`
-	Payload Event_Payload       `json:"payload"`
+
+	// Headers Metadata headers for an event, including type discriminator and proofs.
+	Headers EventHeaders `json:"headers"`
+
+	// Payload Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload).
+	Payload Event_Payload `json:"payload"`
 }
 
-// Event_Payload defines model for Event.Payload.
+// Event_Payload Event payload object; use headers.type to determine the variant (operation.status → OperationStatusPayload, watcher.status → WatcherStatusPayload, watcher.event → WatcherEventPayload, wallet.status → WalletStatusPayload).
 type Event_Payload struct {
 	union json.RawMessage
 }
 
-// EventABI defines model for EventABI.
+// EventABI ABI definition for a smart contract event.
 type EventABI struct {
 	// Anonymous Whether the event is anonymous
 	Anonymous bool `json:"anonymous"`
@@ -410,7 +412,7 @@ type EventABI struct {
 // EventABIType Type must be 'event'
 type EventABIType string
 
-// EventABIInput defines model for EventABIInput.
+// EventABIInput A single input parameter in an event ABI.
 type EventABIInput struct {
 	// Indexed Whether the parameter is indexed
 	Indexed bool `json:"indexed"`
@@ -425,7 +427,7 @@ type EventABIInput struct {
 	Type string `json:"type"`
 }
 
-// EventHeaders defines model for EventHeaders.
+// EventHeaders Metadata headers for an event, including type discriminator and proofs.
 type EventHeaders struct {
 	// Offset Unique offset for message ordering
 	Offset int64                      `json:"offset"`
@@ -443,7 +445,7 @@ type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
 }
 
-// EventList defines model for EventList.
+// EventList Paginated list of events.
 type EventList struct {
 	Events []Event `json:"events"`
 
@@ -478,7 +480,7 @@ type FinalizedBlockSelection struct {
 // FinalizedBlockSelectionType Resolve finalized to concrete block metadata before executing the call.
 type FinalizedBlockSelectionType string
 
-// HealthCheck defines model for HealthCheck.
+// HealthCheck Health check response.
 type HealthCheck struct {
 	Status string `json:"status"`
 }
@@ -492,7 +494,7 @@ type LatestBlockSelection struct {
 // LatestBlockSelectionType Resolve latest to concrete block metadata before executing the call.
 type LatestBlockSelectionType string
 
-// Network defines model for Network.
+// Network A blockchain network supported by CRE Connect.
 type Network struct {
 	// ChainFamily Chain family (e.g., "evm", "solana")
 	ChainFamily string `json:"chain_family"`
@@ -522,7 +524,7 @@ type Network struct {
 	UpdatedAt int64 `json:"updated_at"`
 }
 
-// NetworkList defines model for NetworkList.
+// NetworkList Paginated list of networks.
 type NetworkList struct {
 	Data []Network `json:"data"`
 
@@ -533,7 +535,7 @@ type NetworkList struct {
 // NetworkType Type of chain
 type NetworkType string
 
-// OCRProof defines model for OCRProof.
+// OCRProof An OCR-based cryptographic proof attached to a verifiable event.
 type OCRProof struct {
 	// Alg Algorithm used for the proof
 	Alg string `json:"alg"`
@@ -548,16 +550,14 @@ type OCRProof struct {
 	Signatures []string `json:"signatures"`
 }
 
-// Operation defines model for Operation.
+// Operation A signed operation resource.
 type Operation struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
 
 	// CancelledAt Unix timestamp in seconds
 	CancelledAt *Timestamp `json:"cancelled_at,omitempty"`
-
-	// Canceller Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
-	Canceller *Subject `json:"canceller,omitempty"`
+	Canceller   *Subject   `json:"canceller"`
 
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
@@ -569,10 +569,8 @@ type Operation struct {
 	Deadline int64 `json:"deadline"`
 
 	// Digest Signing digest for the finalized operation.
-	Digest *string `json:"digest"`
-
-	// Initiator Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
-	Initiator Subject `json:"initiator"`
+	Digest    *string  `json:"digest"`
+	Initiator *Subject `json:"initiator"`
 
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
@@ -582,9 +580,7 @@ type Operation struct {
 
 	// SignedAt Unix timestamp in seconds
 	SignedAt *Timestamp `json:"signed_at,omitempty"`
-
-	// Signer Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
-	Signer *Subject `json:"signer,omitempty"`
+	Signer   *Subject   `json:"signer"`
 
 	// Status Status of an operation
 	Status OperationStatus `json:"status"`
@@ -596,7 +592,7 @@ type Operation struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationList defines model for OperationList.
+// OperationList Paginated list of operations.
 type OperationList struct {
 	Data []Operation `json:"data"`
 
@@ -604,7 +600,7 @@ type OperationList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// OperationResponse defines model for OperationResponse.
+// OperationResponse Response body for a created operation.
 type OperationResponse struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
@@ -613,7 +609,7 @@ type OperationResponse struct {
 // OperationStatus Status of an operation
 type OperationStatus string
 
-// OperationStatusPayload defines model for OperationStatusPayload.
+// OperationStatusPayload Event payload for an operation status change.
 type OperationStatusPayload struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -649,9 +645,9 @@ type OperationStatusPayload struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// PatchChannel defines model for PatchChannel.
+// PatchChannel Request body for updating a channel.
 type PatchChannel struct {
-	// Description New description for the channel
+	// Description New description for the channel. Send empty string to clear.
 	Description *string `json:"description,omitempty"`
 
 	// Name New name for the channel
@@ -700,7 +696,9 @@ type Query struct {
 
 	// FailedAt Unix timestamp in seconds
 	FailedAt *Timestamp `json:"failed_at,omitempty"`
-	Proof    *OCRProof  `json:"proof,omitempty"`
+
+	// Proof An OCR-based cryptographic proof attached to a verifiable event.
+	Proof *OCRProof `json:"proof,omitempty"`
 
 	// QueryId Unique identifier for the query.
 	QueryId openapi_types.UUID `json:"query_id"`
@@ -899,9 +897,9 @@ type TransactionRequest struct {
 	Value string `json:"value"`
 }
 
-// UpdateWallet defines model for UpdateWallet.
+// UpdateWallet Request body for updating a wallet.
 type UpdateWallet struct {
-	// Description New description for the wallet
+	// Description New description for the wallet. Send empty string to clear.
 	Description *string `json:"description,omitempty"`
 
 	// Name New name for the wallet
@@ -911,7 +909,7 @@ type UpdateWallet struct {
 	Status *WalletStatus `json:"status,omitempty"`
 }
 
-// UpdateWatcher defines model for UpdateWatcher.
+// UpdateWatcher Request body for updating a watcher.
 type UpdateWatcher struct {
 	// Name New name for the watcher
 	Name *string `json:"name,omitempty"`
@@ -920,7 +918,7 @@ type UpdateWatcher struct {
 	Status *WatcherStatus `json:"status,omitempty"`
 }
 
-// Wallet defines model for Wallet.
+// Wallet A wallet resource.
 type Wallet struct {
 	// Address 42-character hex Ethereum address
 	Address EthereumAddress `json:"address"`
@@ -965,7 +963,7 @@ type Wallet struct {
 // WalletEventStatus Status of a wallet in events (includes archived state for filtering)
 type WalletEventStatus string
 
-// WalletList defines model for WalletList.
+// WalletList Paginated list of wallets.
 type WalletList struct {
 	Data []Wallet `json:"data"`
 
@@ -976,7 +974,7 @@ type WalletList struct {
 // WalletStatus Status of a wallet entity
 type WalletStatus string
 
-// WalletStatusPayload defines model for WalletStatusPayload.
+// WalletStatusPayload Event payload for a wallet status change.
 type WalletStatusPayload struct {
 	// Address Wallet address performing the operation
 	Address string `json:"address"`
@@ -1000,7 +998,7 @@ type WalletStatusPayload struct {
 // WalletType Type of wallet
 type WalletType string
 
-// Watcher defines model for Watcher.
+// Watcher A watcher resource.
 type Watcher struct {
 	// Abi ABI definitions for the events (if not using service-based events)
 	Abi *[]EventABI `json:"abi,omitempty"`
@@ -1042,7 +1040,7 @@ type Watcher struct {
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 }
 
-// WatcherEventPayload defines model for WatcherEventPayload.
+// WatcherEventPayload Event payload for an on-chain event detected by a watcher.
 type WatcherEventPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
@@ -1063,7 +1061,7 @@ type WatcherEventPayload struct {
 // WatcherEventStatus Status of a watcher in events (includes transitional and archival states for filtering)
 type WatcherEventStatus string
 
-// WatcherList defines model for WatcherList.
+// WatcherList Paginated list of watchers.
 type WatcherList struct {
 	Data []WatcherSummary `json:"data"`
 
@@ -1074,7 +1072,7 @@ type WatcherList struct {
 // WatcherStatus Status of a watcher entity
 type WatcherStatus string
 
-// WatcherStatusPayload defines model for WatcherStatusPayload.
+// WatcherStatusPayload Event payload for a watcher status change.
 type WatcherStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
@@ -1095,7 +1093,7 @@ type WatcherStatusPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
-// WatcherSummary defines model for WatcherSummary.
+// WatcherSummary Summary view of a watcher.
 type WatcherSummary struct {
 	// Address Smart contract address being watched
 	Address string `json:"address"`
@@ -1178,7 +1176,7 @@ type SearchChannelEventsParams struct {
 	// ChainSelector Filter by chain selector
 	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Status Filter by lifecycle/status. Multiple values allowed. Applies to operation.status, query.status, watcher.status, and wallet.status.
+	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
 
 	// WatcherId Filter by watcher ID (applies to watcher.status and watcher.event types)
@@ -1317,8 +1315,8 @@ type UpdateChannelJSONRequestBody = PatchChannel
 // CreateOperationJSONRequestBody defines body for CreateOperation for application/json ContentType.
 type CreateOperationJSONRequestBody = CreateOperation
 
-// PatchChannelsChannelIdOperationsOperationIdJSONRequestBody defines body for PatchChannelsChannelIdOperationsOperationId for application/json ContentType.
-type PatchChannelsChannelIdOperationsOperationIdJSONRequestBody = PatchOperation
+// FinalizeOrCancelOperationJSONRequestBody defines body for FinalizeOrCancelOperation for application/json ContentType.
+type FinalizeOrCancelOperationJSONRequestBody = PatchOperation
 
 // CreateQueryJSONRequestBody defines body for CreateQuery for application/json ContentType.
 type CreateQueryJSONRequestBody = CreateQuery
@@ -1841,7 +1839,7 @@ type ServerInterface interface {
 	GetOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
 	// Finalizes or cancels an operation.
 	// (PATCH /channels/{channel_id}/operations/{operation_id})
-	PatchChannelsChannelIdOperationsOperationId(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
+	FinalizeOrCancelOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
 	// Lists chain queries for a channel.
 	// (GET /channels/{channel_id}/queries)
 	ListQueries(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListQueriesParams)
@@ -2484,8 +2482,8 @@ func (siw *ServerInterfaceWrapper) GetOperation(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
-// PatchChannelsChannelIdOperationsOperationId operation middleware
-func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdOperationsOperationId(w http.ResponseWriter, r *http.Request) {
+// FinalizeOrCancelOperation operation middleware
+func (siw *ServerInterfaceWrapper) FinalizeOrCancelOperation(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
@@ -2514,7 +2512,7 @@ func (siw *ServerInterfaceWrapper) PatchChannelsChannelIdOperationsOperationId(w
 	r = r.WithContext(ctx)
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PatchChannelsChannelIdOperationsOperationId(w, r, channelId, operationId)
+		siw.Handler.FinalizeOrCancelOperation(w, r, channelId, operationId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -3203,7 +3201,7 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.ListOperations)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.CreateOperation)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetOperation)
-	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.PatchChannelsChannelIdOperationsOperationId)
+	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.FinalizeOrCancelOperation)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/queries", wrapper.ListQueries)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/queries", wrapper.CreateQuery)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/queries/{query_id}", wrapper.GetQuery)
