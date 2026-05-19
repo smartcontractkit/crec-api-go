@@ -111,6 +111,28 @@ components:
     ChainQueryVerifiableEvent:
       type: object
       description: Verifiable event envelope for a terminal chain query result before base64 encoding.
+      example:
+        service: "_crec"
+        name: "ChainQuery"
+        chain_selector: "16015286601757825753"
+        timestamp: "2024-05-14T12:00:15Z"
+        data:
+          query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+          channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          query_kind: "evm_call"
+          target:
+            from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+            contract_address: "0x1111111111111111111111111111111111111111"
+            call_data: "0x18160ddd"
+          block_selection:
+            requested:
+              type: "finalized"
+            resolved:
+              block_number: "6500000"
+              block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              block_timestamp: 1715698800
+          result:
+            raw_return_data: "0x00000000000000000000000000000000000000000000000000000000000003e8"
       properties:
         service:
           type: string
@@ -148,9 +170,27 @@ components:
         - evm_call
       x-enum-varnames:
         - ChainQueryKindEVMCall
+      example: "evm_call"
     ChainQueryData:
       type: object
       description: Signed data object for a terminal chain query result.
+      example:
+        query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        query_kind: "evm_call"
+        target:
+          from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          contract_address: "0x1111111111111111111111111111111111111111"
+          call_data: "0x18160ddd"
+        block_selection:
+          requested:
+            type: "finalized"
+          resolved:
+            block_number: "6500000"
+            block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            block_timestamp: 1715698800
+        result:
+          raw_return_data: "0x00000000000000000000000000000000000000000000000000000000000003e8"
       properties:
         query_id:
           type: string
@@ -181,6 +221,10 @@ components:
     ChainQueryTarget:
       type: object
       description: EVM call target bound into the signed query result.
+      example:
+        from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        contract_address: "0x1111111111111111111111111111111111111111"
+        call_data: "0x18160ddd"
       properties:
         from_address:
           type: string
@@ -201,6 +245,13 @@ components:
     ChainQueryBlockSelection:
       type: object
       description: Requested block selection and optional concrete resolved block metadata.
+      example:
+        requested:
+          type: "latest"
+        resolved:
+          block_number: "6500000"
+          block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          block_timestamp: 1715698800
       properties:
         requested:
           $ref: "#/components/schemas/ChainQueryRequestedBlockSelection"
@@ -220,8 +271,11 @@ components:
           finalized: "#/components/schemas/ChainQueryFinalizedBlockSelection"
           block_number: "#/components/schemas/ChainQueryBlockNumberSelection"
       description: Requested block selector included in the verifiable query result.
+      example:
+        type: "latest"
     ChainQueryLatestBlockSelection:
       type: object
+      example: {type: "latest"}
       properties:
         type:
           type: string
@@ -234,6 +288,7 @@ components:
         - type
     ChainQueryFinalizedBlockSelection:
       type: object
+      example: {type: "finalized"}
       properties:
         type:
           type: string
@@ -246,6 +301,9 @@ components:
         - type
     ChainQueryBlockNumberSelection:
       type: object
+      example:
+        type: "block_number"
+        block_number: "6500000"
       properties:
         type:
           type: string
@@ -264,6 +322,10 @@ components:
     ChainQueryResolvedBlock:
       type: object
       description: Concrete block metadata resolved and signed by the query workflow.
+      example:
+        block_number: "6500000"
+        block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        block_timestamp: 1715698800
       properties:
         block_number:
           type: string
@@ -284,6 +346,7 @@ components:
     ChainQueryExecutionResult:
       type: object
       description: Successful EVM call result.
+      example: {raw_return_data: "0x00000000000000000000000000000000000000000000000000000000000003e8"}
       properties:
         raw_return_data:
           type: string
@@ -312,9 +375,14 @@ components:
         - ChainQueryErrorCodeCREWorkflowFailed
         - ChainQueryErrorCodeQueryExpired
         - ChainQueryErrorCodeInternalError
+      example: "CALL_REVERTED"
     ChainQueryError:
       type: object
       description: Terminal chain query execution error.
+      example:
+        code: "CALL_REVERTED"
+        message: "EVM call reverted."
+        raw_revert_data: "0x08c379a0"
       properties:
         code:
           $ref: "#/components/schemas/ChainQueryErrorCode"

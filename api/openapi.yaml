@@ -463,6 +463,41 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateQuery"
+            examples:
+              latestEVMCall:
+                summary: EVM call resolved at the latest block
+                value:
+                  idempotency_key: "balance-latest-001"
+                  query_kind: "evm_call"
+                  chain_selector: "16015286601757825753"
+                  params:
+                    contract_address: "0x1111111111111111111111111111111111111111"
+                    call_data: "0x70a08231000000000000000000000000742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                    block_selection: {type: "latest"}
+                    from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                  metadata: {request_id: "balance-check-001"}
+              finalizedEVMCall:
+                summary: EVM call resolved at the finalized block
+                value:
+                  idempotency_key: "total-supply-finalized-001"
+                  query_kind: "evm_call"
+                  chain_selector: "16015286601757825753"
+                  params:
+                    contract_address: "0x1111111111111111111111111111111111111111"
+                    call_data: "0x18160ddd"
+                    block_selection: {type: "finalized"}
+              explicitBlockEVMCall:
+                summary: EVM call at an explicit block number
+                value:
+                  idempotency_key: "decimals-block-001"
+                  query_kind: "evm_call"
+                  chain_selector: "16015286601757825753"
+                  params:
+                    contract_address: "0x1111111111111111111111111111111111111111"
+                    call_data: "0x313ce567"
+                    block_selection:
+                      type: "block_number"
+                      block_number: "6500000"
       responses:
         "202":
           description: Query accepted for execution.
@@ -470,36 +505,42 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/QueryAcceptedResponse"
+              example: {query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a", status: "accepted"}
         "400":
           description: Invalid request data, unsupported query kind, invalid params, invalid calldata, invalid block selection, or archived channel.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Invalid query request."}
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested channel was not found."}
         "409":
           description: Idempotency key reused with a different canonical request.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", message: "Idempotency key reused with a different canonical request."}
         "429":
           description: Query create quota or workflow admission rate limit exceeded.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "VALIDATION_ERROR", message: "Query create quota or workflow admission rate limit exceeded."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
     get:
       tags:
         - Queries
@@ -525,11 +566,13 @@ paths:
               $ref: "#/components/schemas/QueryStatus"
           style: form
           explode: true
+          example: ["accepted", "completed"]
         - in: query
           name: view
           description: Selects the fields returned for each query.
           schema:
             $ref: "#/components/schemas/QueryListView"
+          example: "summary"
         - in: query
           name: limit
           description: Maximum number of queries to return
@@ -553,18 +596,62 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/QueryList"
+              examples:
+                summaryView:
+                  summary: Summary query list response
+                  value:
+                    data:
+                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        created_at: 1715698800
+                        updated_at: 1715698815
+                        expires_at: 1715702400
+                        accepted_at: 1715698800
+                        sending_at: 1715698801
+                        sent_at: 1715698802
+                        completed_at: 1715698815
+                    has_more: false
+                fullView:
+                  summary: Full query list response with terminal verifiable fields
+                  value:
+                    data:
+                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        event_hash: "0xabc123def456"
+                        verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
+                        proof:
+                          alg: "ocr2vrf"
+                          ocr_report: "0xabc123"
+                          ocr_context: "0xdef456"
+                          signatures: ["0x789abc"]
+                        created_at: 1715698800
+                        updated_at: 1715698815
+                        expires_at: 1715702400
+                        accepted_at: 1715698800
+                        sending_at: 1715698801
+                        sent_at: 1715698802
+                        completed_at: 1715698815
+                    has_more: false
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested channel was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
   /channels/{channel_id}/queries/{query_id}:
     get:
       tags:
@@ -594,18 +681,40 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Query"
+              example:
+                query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                status: "completed"
+                query_kind: "evm_call"
+                chain_selector: "16015286601757825753"
+                event_hash: "0xabc123def456"
+                verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
+                proof:
+                  alg: "ocr2vrf"
+                  ocr_report: "0xabc123"
+                  ocr_context: "0xdef456"
+                  signatures: ["0x789abc"]
+                created_at: 1715698800
+                updated_at: 1715698815
+                expires_at: 1715702400
+                accepted_at: 1715698800
+                sending_at: 1715698801
+                sent_at: 1715698802
+                completed_at: 1715698815
         "404":
           description: Channel or query not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested query was not found."}
         "500":
           description: Internal server error
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
 
   /channels/{channel_id}/watchers:
     post:
@@ -650,7 +759,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
+              example: {type: "NOT_FOUND", message: "The requested channel was not found."}
         "500":
           description: Internal server error
           content:
@@ -781,12 +890,12 @@ paths:
                 $ref: "#/components/schemas/Watcher"
               example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
         "404":
-          description: Channel or watcher not found
+          description: Channel or query not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
+              example: {type: "NOT_FOUND", message: "The requested query was not found."}
         "500":
           description: Internal server error
           content:
@@ -910,7 +1019,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
+              example: {type: "NOT_FOUND", message: "The requested channel was not found."}
         "500":
           description: Internal server error
           content:
@@ -1011,14 +1120,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OperationList"
-              example: {data: [], has_more: false}
+              example:
+                data:
+                  - operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789"
+                    status: "accepted"
+                    chain_selector: "16015286601757825753"
+                    address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                    wallet_operation_id: "op-12345"
+                    deadline: 0
+                    transactions: []
+                    initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}
+                    signature: null
+                    created_at: 1715698800
+                has_more: false
         "404":
           description: Channel not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "NOT_FOUND", message: "The requested resource was not found."}
+              example: {type: "NOT_FOUND", message: "The requested channel was not found."}
         "500":
           description: Internal server error
           content:
@@ -1026,6 +1147,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+
   /channels/{channel_id}/operations/{operation_id}:
     get:
       tags:
@@ -1497,6 +1619,7 @@ components:
         - QueryStatusCompleted
         - QueryStatusFailed
         - QueryStatusExpired
+      example: "accepted"
     QueryKind:
       type: string
       description: Kind of chain query.
@@ -1504,6 +1627,7 @@ components:
         - evm_call
       x-enum-varnames:
         - QueryKindEVMCall
+      example: "evm_call"
     QueryListView:
       type: string
       description: Selects the fields returned for each query in list responses.
@@ -1514,6 +1638,7 @@ components:
         - QueryListViewFull
         - QueryListViewSummary
       default: full
+      example: "full"
     SubjectType:
       type: string
       description: Type of subject used for audit identity and filtering.
@@ -1992,6 +2117,16 @@ components:
       type: object
       additionalProperties: false
       description: Request body for creating a chain query.
+      example:
+        idempotency_key: "balance-latest-001"
+        query_kind: "evm_call"
+        chain_selector: "16015286601757825753"
+        params:
+          contract_address: "0x1111111111111111111111111111111111111111"
+          call_data: "0x70a08231000000000000000000000000742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          block_selection: {type: "latest"}
+          from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        metadata: {request_id: "balance-check-001"}
       properties:
         idempotency_key:
           type: string
@@ -2018,6 +2153,11 @@ components:
       type: object
       additionalProperties: false
       description: Parameters for an evm_call chain query.
+      example:
+        contract_address: "0x1111111111111111111111111111111111111111"
+        call_data: "0x18160ddd"
+        block_selection: {type: "finalized"}
+        from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
       properties:
         contract_address:
           $ref: "#/components/schemas/EthereumAddress"
@@ -2046,10 +2186,14 @@ components:
           finalized: "#/components/schemas/FinalizedBlockSelection"
           block_number: "#/components/schemas/BlockNumberBlockSelection"
       description: Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.
+      example:
+        type: "block_number"
+        block_number: "6500000"
 
     LatestBlockSelection:
       type: object
       additionalProperties: false
+      example: {type: "latest"}
       properties:
         type:
           type: string
@@ -2064,6 +2208,7 @@ components:
     FinalizedBlockSelection:
       type: object
       additionalProperties: false
+      example: {type: "finalized"}
       properties:
         type:
           type: string
@@ -2078,6 +2223,9 @@ components:
     BlockNumberBlockSelection:
       type: object
       additionalProperties: false
+      example:
+        type: "block_number"
+        block_number: "6500000"
       properties:
         type:
           type: string
@@ -2096,6 +2244,7 @@ components:
 
     QueryAcceptedResponse:
       type: object
+      example: {query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a", status: "accepted"}
       properties:
         query_id:
           type: string
@@ -2111,6 +2260,19 @@ components:
       type: object
       additionalProperties: false
       description: Summary fields for a chain query.
+      example:
+        query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        status: "completed"
+        query_kind: "evm_call"
+        chain_selector: "16015286601757825753"
+        created_at: 1715698800
+        updated_at: 1715698815
+        expires_at: 1715702400
+        accepted_at: 1715698800
+        sending_at: 1715698801
+        sent_at: 1715698802
+        completed_at: 1715698815
       properties:
         query_id:
           type: string
@@ -2156,6 +2318,26 @@ components:
     Query:
       type: object
       description: Chain query resource loaded from chain_queries.
+      example:
+        query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        status: "completed"
+        query_kind: "evm_call"
+        chain_selector: "16015286601757825753"
+        event_hash: "0xabc123def456"
+        verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
+        proof:
+          alg: "ocr2vrf"
+          ocr_report: "0xabc123"
+          ocr_context: "0xdef456"
+          signatures: ["0x789abc"]
+        created_at: 1715698800
+        updated_at: 1715698815
+        expires_at: 1715702400
+        accepted_at: 1715698800
+        sending_at: 1715698801
+        sent_at: 1715698802
+        completed_at: 1715698815
       properties:
         query_id:
           type: string
@@ -2208,6 +2390,18 @@ components:
 
     QueryList:
       type: object
+      example:
+        data:
+          - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+            channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+            status: "completed"
+            query_kind: "evm_call"
+            chain_selector: "16015286601757825753"
+            created_at: 1715698800
+            updated_at: 1715698815
+            expires_at: 1715702400
+            completed_at: 1715698815
+        has_more: false
       properties:
         data:
           type: array
@@ -2842,6 +3036,12 @@ components:
     QueryStatusPayload:
       type: object
       description: Minimal top-level payload for query.status channel events.
+      example:
+        query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+        status: "completed"
+        timestamp: 1715698815
+        event_hash: "0xabc123def456"
+        verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
       properties:
         query_id:
           type: string
