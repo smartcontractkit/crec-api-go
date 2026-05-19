@@ -32,6 +32,7 @@ components:
             - $ref: "#/components/schemas/EVMEvent"
         data:
           type: object
+          description: Event-specific data. ChainQueryData is used when service is _crec and name is ChainQuery.
           additionalProperties: true
       required:
         - name
@@ -107,3 +108,291 @@ components:
         - wallet_address
         - status
         - status_reason
+    ChainQueryVerifiableEvent:
+      type: object
+      description: Verifiable event envelope for a terminal chain query result before base64 encoding.
+      example:
+        service: "_crec"
+        name: "ChainQuery"
+        chain_selector: "16015286601757825753"
+        timestamp: "2024-05-14T12:00:15Z"
+        data:
+          query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+          channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+          query_kind: "evm_call"
+          target:
+            from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+            contract_address: "0x1111111111111111111111111111111111111111"
+            call_data: "0x18160ddd"
+          block_selection:
+            requested:
+              type: "finalized"
+            resolved:
+              block_number: "6500000"
+              block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+              block_timestamp: 1715698800
+          result:
+            raw_return_data: "0x00000000000000000000000000000000000000000000000000000000000003e8"
+      properties:
+        service:
+          type: string
+          enum:
+            - _crec
+          x-enum-varnames:
+            - ChainQueryVerifiableEventServiceCREC
+          description: CRE Connect service namespace for chain query verifiable results.
+        name:
+          type: string
+          enum:
+            - ChainQuery
+          x-enum-varnames:
+            - ChainQueryVerifiableEventNameChainQuery
+          description: Verifiable event name for chain queries.
+        chain_selector:
+          type: string
+          description: Chain selector identifier for the blockchain network.
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the terminal query result was produced.
+        data:
+          $ref: "#/components/schemas/ChainQueryData"
+      required:
+        - service
+        - name
+        - chain_selector
+        - timestamp
+        - data
+    ChainQueryKind:
+      type: string
+      description: Kind of chain query.
+      enum:
+        - evm_call
+      x-enum-varnames:
+        - ChainQueryKindEVMCall
+      example: "evm_call"
+    ChainQueryData:
+      type: object
+      description: Signed data object for a terminal chain query result.
+      example:
+        query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        query_kind: "evm_call"
+        target:
+          from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+          contract_address: "0x1111111111111111111111111111111111111111"
+          call_data: "0x18160ddd"
+        block_selection:
+          requested:
+            type: "finalized"
+          resolved:
+            block_number: "6500000"
+            block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+            block_timestamp: 1715698800
+        result:
+          raw_return_data: "0x00000000000000000000000000000000000000000000000000000000000003e8"
+      properties:
+        query_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the query.
+        channel_id:
+          type: string
+          format: uuid
+          description: Channel that owns the query.
+        query_kind:
+          $ref: "#/components/schemas/ChainQueryKind"
+        target:
+          $ref: "#/components/schemas/ChainQueryTarget"
+        block_selection:
+          $ref: "#/components/schemas/ChainQueryBlockSelection"
+        result:
+          nullable: true
+          $ref: "#/components/schemas/ChainQueryExecutionResult"
+        error:
+          nullable: true
+          $ref: "#/components/schemas/ChainQueryError"
+      required:
+        - query_id
+        - channel_id
+        - query_kind
+        - target
+        - block_selection
+    ChainQueryTarget:
+      type: object
+      description: EVM call target bound into the signed query result.
+      example:
+        from_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        contract_address: "0x1111111111111111111111111111111111111111"
+        call_data: "0x18160ddd"
+      properties:
+        from_address:
+          type: string
+          description: 42-character hex Ethereum address used as the call sender.
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        contract_address:
+          type: string
+          description: 42-character hex Ethereum contract address that was queried.
+          pattern: "^0x[a-fA-F0-9]{40}$"
+        call_data:
+          type: string
+          description: 0x-prefixed even-length hex calldata bytes, including the function selector.
+          pattern: "^0x([a-fA-F0-9]{2})*$"
+      required:
+        - from_address
+        - contract_address
+        - call_data
+    ChainQueryBlockSelection:
+      type: object
+      description: Requested block selection and optional concrete resolved block metadata.
+      example:
+        requested:
+          type: "latest"
+        resolved:
+          block_number: "6500000"
+          block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          block_timestamp: 1715698800
+      properties:
+        requested:
+          $ref: "#/components/schemas/ChainQueryRequestedBlockSelection"
+        resolved:
+          $ref: "#/components/schemas/ChainQueryResolvedBlock"
+      required:
+        - requested
+    ChainQueryRequestedBlockSelection:
+      oneOf:
+        - $ref: "#/components/schemas/ChainQueryLatestBlockSelection"
+        - $ref: "#/components/schemas/ChainQueryFinalizedBlockSelection"
+        - $ref: "#/components/schemas/ChainQueryBlockNumberSelection"
+      discriminator:
+        propertyName: type
+        mapping:
+          latest: "#/components/schemas/ChainQueryLatestBlockSelection"
+          finalized: "#/components/schemas/ChainQueryFinalizedBlockSelection"
+          block_number: "#/components/schemas/ChainQueryBlockNumberSelection"
+      description: Requested block selector included in the verifiable query result.
+      example:
+        type: "latest"
+    ChainQueryLatestBlockSelection:
+      type: object
+      example: {type: "latest"}
+      properties:
+        type:
+          type: string
+          enum:
+            - latest
+          description: Latest block selector resolved to concrete metadata by the query workflow.
+          x-enum-varnames:
+            - ChainQueryLatestBlockSelectionTypeLatest
+      required:
+        - type
+    ChainQueryFinalizedBlockSelection:
+      type: object
+      example: {type: "finalized"}
+      properties:
+        type:
+          type: string
+          enum:
+            - finalized
+          description: Finalized block selector resolved to concrete metadata by the query workflow.
+          x-enum-varnames:
+            - ChainQueryFinalizedBlockSelectionTypeFinalized
+      required:
+        - type
+    ChainQueryBlockNumberSelection:
+      type: object
+      example:
+        type: "block_number"
+        block_number: "6500000"
+      properties:
+        type:
+          type: string
+          enum:
+            - block_number
+          description: Explicit block number selector.
+          x-enum-varnames:
+            - ChainQueryBlockNumberSelectionTypeBlockNumber
+        block_number:
+          type: string
+          pattern: "^[0-9]+$"
+          description: Decimal uint64 block number.
+      required:
+        - type
+        - block_number
+    ChainQueryResolvedBlock:
+      type: object
+      description: Concrete block metadata resolved and signed by the query workflow.
+      example:
+        block_number: "6500000"
+        block_hash: "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        block_timestamp: 1715698800
+      properties:
+        block_number:
+          type: string
+          pattern: "^[0-9]+$"
+          description: Decimal uint64 block number.
+        block_hash:
+          type: string
+          description: 0x-prefixed block hash.
+          pattern: "^0x[a-fA-F0-9]+$"
+        block_timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp in seconds for the resolved block.
+      required:
+        - block_number
+        - block_hash
+        - block_timestamp
+    ChainQueryExecutionResult:
+      type: object
+      description: Successful EVM call result.
+      example: {raw_return_data: "0x00000000000000000000000000000000000000000000000000000000000003e8"}
+      properties:
+        raw_return_data:
+          type: string
+          description: 0x-prefixed ABI-encoded EVM return bytes.
+          pattern: "^0x([a-fA-F0-9]{2})*$"
+      required:
+        - raw_return_data
+    ChainQueryErrorCode:
+      type: string
+      description: Terminal chain query execution error code.
+      enum:
+        - CRE_GATEWAY_REJECTED
+        - CONTRACT_NOT_FOUND
+        - CALL_REVERTED
+        - CHAIN_UNAVAILABLE
+        - BLOCK_SELECTION_NOT_AVAILABLE
+        - CRE_WORKFLOW_FAILED
+        - QUERY_EXPIRED
+        - INTERNAL_ERROR
+      x-enum-varnames:
+        - ChainQueryErrorCodeCREGatewayRejected
+        - ChainQueryErrorCodeContractNotFound
+        - ChainQueryErrorCodeCallReverted
+        - ChainQueryErrorCodeChainUnavailable
+        - ChainQueryErrorCodeBlockSelectionNotAvailable
+        - ChainQueryErrorCodeCREWorkflowFailed
+        - ChainQueryErrorCodeQueryExpired
+        - ChainQueryErrorCodeInternalError
+      example: "CALL_REVERTED"
+    ChainQueryError:
+      type: object
+      description: Terminal chain query execution error.
+      example:
+        code: "CALL_REVERTED"
+        message: "EVM call reverted."
+        raw_revert_data: "0x08c379a0"
+      properties:
+        code:
+          $ref: "#/components/schemas/ChainQueryErrorCode"
+        message:
+          type: string
+          description: Human-readable terminal execution error message.
+        raw_revert_data:
+          type: string
+          description: 0x-prefixed raw EVM revert bytes when available.
+          pattern: "^0x([a-fA-F0-9]{2})*$"
+      required:
+        - code
+        - message

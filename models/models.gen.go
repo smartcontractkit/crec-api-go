@@ -5,9 +5,53 @@ package models
 
 import (
 	"encoding/json"
+	"errors"
 	"time"
 
 	"github.com/oapi-codegen/runtime"
+	openapi_types "github.com/oapi-codegen/runtime/types"
+)
+
+// Defines values for ChainQueryBlockNumberSelectionType.
+const (
+	ChainQueryBlockNumberSelectionTypeBlockNumber ChainQueryBlockNumberSelectionType = "block_number"
+)
+
+// Defines values for ChainQueryErrorCode.
+const (
+	ChainQueryErrorCodeBlockSelectionNotAvailable ChainQueryErrorCode = "BLOCK_SELECTION_NOT_AVAILABLE"
+	ChainQueryErrorCodeCREGatewayRejected         ChainQueryErrorCode = "CRE_GATEWAY_REJECTED"
+	ChainQueryErrorCodeCREWorkflowFailed          ChainQueryErrorCode = "CRE_WORKFLOW_FAILED"
+	ChainQueryErrorCodeCallReverted               ChainQueryErrorCode = "CALL_REVERTED"
+	ChainQueryErrorCodeChainUnavailable           ChainQueryErrorCode = "CHAIN_UNAVAILABLE"
+	ChainQueryErrorCodeContractNotFound           ChainQueryErrorCode = "CONTRACT_NOT_FOUND"
+	ChainQueryErrorCodeInternalError              ChainQueryErrorCode = "INTERNAL_ERROR"
+	ChainQueryErrorCodeQueryExpired               ChainQueryErrorCode = "QUERY_EXPIRED"
+)
+
+// Defines values for ChainQueryFinalizedBlockSelectionType.
+const (
+	ChainQueryFinalizedBlockSelectionTypeFinalized ChainQueryFinalizedBlockSelectionType = "finalized"
+)
+
+// Defines values for ChainQueryKind.
+const (
+	ChainQueryKindEVMCall ChainQueryKind = "evm_call"
+)
+
+// Defines values for ChainQueryLatestBlockSelectionType.
+const (
+	ChainQueryLatestBlockSelectionTypeLatest ChainQueryLatestBlockSelectionType = "latest"
+)
+
+// Defines values for ChainQueryVerifiableEventName.
+const (
+	ChainQueryVerifiableEventNameChainQuery ChainQueryVerifiableEventName = "ChainQuery"
+)
+
+// Defines values for ChainQueryVerifiableEventService.
+const (
+	ChainQueryVerifiableEventServiceCREC ChainQueryVerifiableEventService = "_crec"
 )
 
 // Defines values for OperationStatusDataStatus.
@@ -16,6 +60,146 @@ const (
 	Confirmed    OperationStatusDataStatus = "confirmed"
 	Failed       OperationStatusDataStatus = "failed"
 )
+
+// ChainQueryBlockNumberSelection defines model for ChainQueryBlockNumberSelection.
+type ChainQueryBlockNumberSelection struct {
+	// BlockNumber Decimal uint64 block number.
+	BlockNumber string `json:"block_number"`
+
+	// Type Explicit block number selector.
+	Type ChainQueryBlockNumberSelectionType `json:"type"`
+}
+
+// ChainQueryBlockNumberSelectionType Explicit block number selector.
+type ChainQueryBlockNumberSelectionType string
+
+// ChainQueryBlockSelection Requested block selection and optional concrete resolved block metadata.
+type ChainQueryBlockSelection struct {
+	// Requested Requested block selector included in the verifiable query result.
+	Requested ChainQueryRequestedBlockSelection `json:"requested"`
+
+	// Resolved Concrete block metadata resolved and signed by the query workflow.
+	Resolved *ChainQueryResolvedBlock `json:"resolved,omitempty"`
+}
+
+// ChainQueryData Signed data object for a terminal chain query result.
+type ChainQueryData struct {
+	// BlockSelection Requested block selection and optional concrete resolved block metadata.
+	BlockSelection ChainQueryBlockSelection `json:"block_selection"`
+
+	// ChannelId Channel that owns the query.
+	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// Error Terminal chain query execution error.
+	Error *ChainQueryError `json:"error,omitempty"`
+
+	// QueryId Unique identifier for the query.
+	QueryId openapi_types.UUID `json:"query_id"`
+
+	// QueryKind Kind of chain query.
+	QueryKind ChainQueryKind `json:"query_kind"`
+
+	// Result Successful EVM call result.
+	Result *ChainQueryExecutionResult `json:"result,omitempty"`
+
+	// Target EVM call target bound into the signed query result.
+	Target ChainQueryTarget `json:"target"`
+}
+
+// ChainQueryError Terminal chain query execution error.
+type ChainQueryError struct {
+	// Code Terminal chain query execution error code.
+	Code ChainQueryErrorCode `json:"code"`
+
+	// Message Human-readable terminal execution error message.
+	Message string `json:"message"`
+
+	// RawRevertData 0x-prefixed raw EVM revert bytes when available.
+	RawRevertData *string `json:"raw_revert_data,omitempty"`
+}
+
+// ChainQueryErrorCode Terminal chain query execution error code.
+type ChainQueryErrorCode string
+
+// ChainQueryExecutionResult Successful EVM call result.
+type ChainQueryExecutionResult struct {
+	// RawReturnData 0x-prefixed ABI-encoded EVM return bytes.
+	RawReturnData string `json:"raw_return_data"`
+}
+
+// ChainQueryFinalizedBlockSelection defines model for ChainQueryFinalizedBlockSelection.
+type ChainQueryFinalizedBlockSelection struct {
+	// Type Finalized block selector resolved to concrete metadata by the query workflow.
+	Type ChainQueryFinalizedBlockSelectionType `json:"type"`
+}
+
+// ChainQueryFinalizedBlockSelectionType Finalized block selector resolved to concrete metadata by the query workflow.
+type ChainQueryFinalizedBlockSelectionType string
+
+// ChainQueryKind Kind of chain query.
+type ChainQueryKind string
+
+// ChainQueryLatestBlockSelection defines model for ChainQueryLatestBlockSelection.
+type ChainQueryLatestBlockSelection struct {
+	// Type Latest block selector resolved to concrete metadata by the query workflow.
+	Type ChainQueryLatestBlockSelectionType `json:"type"`
+}
+
+// ChainQueryLatestBlockSelectionType Latest block selector resolved to concrete metadata by the query workflow.
+type ChainQueryLatestBlockSelectionType string
+
+// ChainQueryRequestedBlockSelection Requested block selector included in the verifiable query result.
+type ChainQueryRequestedBlockSelection struct {
+	union json.RawMessage
+}
+
+// ChainQueryResolvedBlock Concrete block metadata resolved and signed by the query workflow.
+type ChainQueryResolvedBlock struct {
+	// BlockHash 0x-prefixed block hash.
+	BlockHash string `json:"block_hash"`
+
+	// BlockNumber Decimal uint64 block number.
+	BlockNumber string `json:"block_number"`
+
+	// BlockTimestamp Unix timestamp in seconds for the resolved block.
+	BlockTimestamp int64 `json:"block_timestamp"`
+}
+
+// ChainQueryTarget EVM call target bound into the signed query result.
+type ChainQueryTarget struct {
+	// CallData 0x-prefixed even-length hex calldata bytes, including the function selector.
+	CallData string `json:"call_data"`
+
+	// ContractAddress 42-character hex Ethereum contract address that was queried.
+	ContractAddress string `json:"contract_address"`
+
+	// FromAddress 42-character hex Ethereum address used as the call sender.
+	FromAddress string `json:"from_address"`
+}
+
+// ChainQueryVerifiableEvent Verifiable event envelope for a terminal chain query result before base64 encoding.
+type ChainQueryVerifiableEvent struct {
+	// ChainSelector Chain selector identifier for the blockchain network.
+	ChainSelector string `json:"chain_selector"`
+
+	// Data Signed data object for a terminal chain query result.
+	Data ChainQueryData `json:"data"`
+
+	// Name Verifiable event name for chain queries.
+	Name ChainQueryVerifiableEventName `json:"name"`
+
+	// Service CRE Connect service namespace for chain query verifiable results.
+	Service ChainQueryVerifiableEventService `json:"service"`
+
+	// Timestamp Timestamp when the terminal query result was produced.
+	Timestamp time.Time `json:"timestamp"`
+}
+
+// ChainQueryVerifiableEventName Verifiable event name for chain queries.
+type ChainQueryVerifiableEventName string
+
+// ChainQueryVerifiableEventService CRE Connect service namespace for chain query verifiable results.
+type ChainQueryVerifiableEventService string
 
 // EVMEvent defines model for EVMEvent.
 type EVMEvent struct {
@@ -74,8 +258,10 @@ type VerifiableEvent struct {
 	ChainFamily *string `json:"chain_family,omitempty"`
 
 	// ChainSelector The specific blockchain network related to the event
-	ChainSelector *string                 `json:"chain_selector,omitempty"`
-	Data          *map[string]interface{} `json:"data,omitempty"`
+	ChainSelector *string `json:"chain_selector,omitempty"`
+
+	// Data Event-specific data. ChainQueryData is used when service is _crec and name is ChainQuery.
+	Data *map[string]interface{} `json:"data,omitempty"`
 
 	// Name The name of the event
 	Name string `json:"name"`
@@ -90,6 +276,125 @@ type VerifiableEvent struct {
 // VerifiableEvent_ChainEvent defines model for VerifiableEvent.ChainEvent.
 type VerifiableEvent_ChainEvent struct {
 	union json.RawMessage
+}
+
+// AsChainQueryLatestBlockSelection returns the union data inside the ChainQueryRequestedBlockSelection as a ChainQueryLatestBlockSelection
+func (t ChainQueryRequestedBlockSelection) AsChainQueryLatestBlockSelection() (ChainQueryLatestBlockSelection, error) {
+	var body ChainQueryLatestBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromChainQueryLatestBlockSelection overwrites any union data inside the ChainQueryRequestedBlockSelection as the provided ChainQueryLatestBlockSelection
+func (t *ChainQueryRequestedBlockSelection) FromChainQueryLatestBlockSelection(v ChainQueryLatestBlockSelection) error {
+	v.Type = "latest"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeChainQueryLatestBlockSelection performs a merge with any union data inside the ChainQueryRequestedBlockSelection, using the provided ChainQueryLatestBlockSelection
+func (t *ChainQueryRequestedBlockSelection) MergeChainQueryLatestBlockSelection(v ChainQueryLatestBlockSelection) error {
+	v.Type = "latest"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsChainQueryFinalizedBlockSelection returns the union data inside the ChainQueryRequestedBlockSelection as a ChainQueryFinalizedBlockSelection
+func (t ChainQueryRequestedBlockSelection) AsChainQueryFinalizedBlockSelection() (ChainQueryFinalizedBlockSelection, error) {
+	var body ChainQueryFinalizedBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromChainQueryFinalizedBlockSelection overwrites any union data inside the ChainQueryRequestedBlockSelection as the provided ChainQueryFinalizedBlockSelection
+func (t *ChainQueryRequestedBlockSelection) FromChainQueryFinalizedBlockSelection(v ChainQueryFinalizedBlockSelection) error {
+	v.Type = "finalized"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeChainQueryFinalizedBlockSelection performs a merge with any union data inside the ChainQueryRequestedBlockSelection, using the provided ChainQueryFinalizedBlockSelection
+func (t *ChainQueryRequestedBlockSelection) MergeChainQueryFinalizedBlockSelection(v ChainQueryFinalizedBlockSelection) error {
+	v.Type = "finalized"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsChainQueryBlockNumberSelection returns the union data inside the ChainQueryRequestedBlockSelection as a ChainQueryBlockNumberSelection
+func (t ChainQueryRequestedBlockSelection) AsChainQueryBlockNumberSelection() (ChainQueryBlockNumberSelection, error) {
+	var body ChainQueryBlockNumberSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromChainQueryBlockNumberSelection overwrites any union data inside the ChainQueryRequestedBlockSelection as the provided ChainQueryBlockNumberSelection
+func (t *ChainQueryRequestedBlockSelection) FromChainQueryBlockNumberSelection(v ChainQueryBlockNumberSelection) error {
+	v.Type = "block_number"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeChainQueryBlockNumberSelection performs a merge with any union data inside the ChainQueryRequestedBlockSelection, using the provided ChainQueryBlockNumberSelection
+func (t *ChainQueryRequestedBlockSelection) MergeChainQueryBlockNumberSelection(v ChainQueryBlockNumberSelection) error {
+	v.Type = "block_number"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t ChainQueryRequestedBlockSelection) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t ChainQueryRequestedBlockSelection) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "block_number":
+		return t.AsChainQueryBlockNumberSelection()
+	case "finalized":
+		return t.AsChainQueryFinalizedBlockSelection()
+	case "latest":
+		return t.AsChainQueryLatestBlockSelection()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t ChainQueryRequestedBlockSelection) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *ChainQueryRequestedBlockSelection) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
 }
 
 // AsEVMEvent returns the union data inside the VerifiableEvent_ChainEvent as a EVMEvent

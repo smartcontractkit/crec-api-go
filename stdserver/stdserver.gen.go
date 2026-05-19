@@ -28,6 +28,11 @@ const (
 	VALIDATIONERROR ApplicationErrorType = "VALIDATION_ERROR"
 )
 
+// Defines values for BlockNumberBlockSelectionType.
+const (
+	BlockNumberBlockSelectionTypeBlockNumber BlockNumberBlockSelectionType = "block_number"
+)
+
 // Defines values for CancelOperationStatus.
 const (
 	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
@@ -54,6 +59,7 @@ const (
 // Defines values for EventType.
 const (
 	EventTypeOperationStatus EventType = "operation.status"
+	EventTypeQueryStatus     EventType = "query.status"
 	EventTypeWalletStatus    EventType = "wallet.status"
 	EventTypeWatcherEvent    EventType = "watcher.event"
 	EventTypeWatcherStatus   EventType = "watcher.status"
@@ -62,6 +68,16 @@ const (
 // Defines values for FinalizeOperationStatus.
 const (
 	Accepted FinalizeOperationStatus = "accepted"
+)
+
+// Defines values for FinalizedBlockSelectionType.
+const (
+	FinalizedBlockSelectionTypeFinalized FinalizedBlockSelectionType = "finalized"
+)
+
+// Defines values for LatestBlockSelectionType.
+const (
+	LatestBlockSelectionTypeLatest LatestBlockSelectionType = "latest"
 )
 
 // Defines values for NetworkType.
@@ -81,6 +97,21 @@ const (
 	OperationStatusPendingSignature OperationStatus = "pending_signature"
 	OperationStatusSending          OperationStatus = "sending"
 	OperationStatusSent             OperationStatus = "sent"
+)
+
+// Defines values for QueryKind.
+const (
+	QueryKindEVMCall QueryKind = "evm_call"
+)
+
+// Defines values for QueryStatus.
+const (
+	QueryStatusAccepted  QueryStatus = "accepted"
+	QueryStatusCompleted QueryStatus = "completed"
+	QueryStatusExpired   QueryStatus = "expired"
+	QueryStatusFailed    QueryStatus = "failed"
+	QueryStatusSending   QueryStatus = "sending"
+	QueryStatusSent      QueryStatus = "sent"
 )
 
 // Defines values for SubjectType.
@@ -143,6 +174,18 @@ type ApplicationError struct {
 
 // ApplicationErrorType Error type
 type ApplicationErrorType string
+
+// BlockNumberBlockSelection defines model for BlockNumberBlockSelection.
+type BlockNumberBlockSelection struct {
+	// BlockNumber Decimal uint64 block number.
+	BlockNumber string `json:"block_number"`
+
+	// Type Execute against an explicit block number after resolving header metadata.
+	Type BlockNumberBlockSelectionType `json:"type"`
+}
+
+// BlockNumberBlockSelectionType Execute against an explicit block number after resolving header metadata.
+type BlockNumberBlockSelectionType string
 
 // CancelOperation PATCH body for cancelling a pending operation.
 type CancelOperation struct {
@@ -216,6 +259,24 @@ type CreateOperation struct {
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// CreateQuery Request body for creating a chain query.
+type CreateQuery struct {
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// IdempotencyKey Customer-provided idempotency key scoped to organization and channel.
+	IdempotencyKey string `json:"idempotency_key"`
+
+	// Metadata Optional customer metadata. Not part of the signed query unless explicitly copied into verifiable_result by the workflow.
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+
+	// Params Parameters for an evm_call chain query.
+	Params EVMCallQueryParams `json:"params"`
+
+	// QueryKind Kind of chain query.
+	QueryKind QueryKind `json:"query_kind"`
 }
 
 // CreateWallet Request body for creating a new wallet.
@@ -297,6 +358,21 @@ type CreateWatcherWithService struct {
 
 // ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
 type ECDSASignersList = []EthereumAddress
+
+// EVMCallQueryParams Parameters for an evm_call chain query.
+type EVMCallQueryParams struct {
+	// BlockSelection Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.
+	BlockSelection QueryBlockSelection `json:"block_selection"`
+
+	// CallData 0x-prefixed even-length hex calldata bytes, including the function selector.
+	CallData string `json:"call_data"`
+
+	// ContractAddress 42-character hex Ethereum address
+	ContractAddress EthereumAddress `json:"contract_address"`
+
+	// FromAddress 42-character hex Ethereum address
+	FromAddress *EthereumAddress `json:"from_address,omitempty"`
+}
 
 // EthereumAddress 42-character hex Ethereum address
 type EthereumAddress = string
@@ -395,10 +471,28 @@ type FinalizeOperation struct {
 // FinalizeOperationStatus Marks the operation as accepted/finalized.
 type FinalizeOperationStatus string
 
+// FinalizedBlockSelection defines model for FinalizedBlockSelection.
+type FinalizedBlockSelection struct {
+	// Type Resolve finalized to concrete block metadata before executing the call.
+	Type FinalizedBlockSelectionType `json:"type"`
+}
+
+// FinalizedBlockSelectionType Resolve finalized to concrete block metadata before executing the call.
+type FinalizedBlockSelectionType string
+
 // HealthCheck Health check response.
 type HealthCheck struct {
 	Status string `json:"status"`
 }
+
+// LatestBlockSelection defines model for LatestBlockSelection.
+type LatestBlockSelection struct {
+	// Type Resolve latest to concrete block metadata before executing the call.
+	Type LatestBlockSelectionType `json:"type"`
+}
+
+// LatestBlockSelectionType Resolve latest to concrete block metadata before executing the call.
+type LatestBlockSelectionType string
 
 // Network A blockchain network supported by CRE Connect.
 type Network struct {
@@ -566,6 +660,106 @@ type PatchChannel struct {
 // PatchOperation PATCH body for finalizing or cancelling an operation.
 type PatchOperation struct {
 	union json.RawMessage
+}
+
+// Query Chain query resource loaded from chain_queries.
+type Query struct {
+	// AcceptedAt Unix timestamp in seconds
+	AcceptedAt *Timestamp `json:"accepted_at,omitempty"`
+
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// ChannelId Channel that owns the query.
+	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// CompletedAt Unix timestamp in seconds
+	CompletedAt *Timestamp `json:"completed_at,omitempty"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// EventHash Verifiable event hash for the terminal query result.
+	EventHash *string `json:"event_hash,omitempty"`
+
+	// ExpiredAt Unix timestamp in seconds
+	ExpiredAt *Timestamp `json:"expired_at,omitempty"`
+
+	// ExpiresAt Unix timestamp in seconds
+	ExpiresAt *Timestamp `json:"expires_at,omitempty"`
+
+	// FailedAt Unix timestamp in seconds
+	FailedAt *Timestamp `json:"failed_at,omitempty"`
+
+	// Proof An OCR-based cryptographic proof attached to a verifiable event.
+	Proof *OCRProof `json:"proof,omitempty"`
+
+	// QueryId Unique identifier for the query.
+	QueryId openapi_types.UUID `json:"query_id"`
+
+	// QueryKind Kind of chain query.
+	QueryKind QueryKind `json:"query_kind"`
+
+	// SendingAt Unix timestamp in seconds
+	SendingAt *Timestamp `json:"sending_at,omitempty"`
+
+	// SentAt Unix timestamp in seconds
+	SentAt *Timestamp `json:"sent_at,omitempty"`
+
+	// Status Status of a chain query.
+	Status QueryStatus `json:"status"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt Timestamp `json:"updated_at"`
+
+	// VerifiableResult Base64-encoded verifiable query result.
+	VerifiableResult *string `json:"verifiable_result,omitempty"`
+}
+
+// QueryAcceptedResponse defines model for QueryAcceptedResponse.
+type QueryAcceptedResponse struct {
+	// QueryId Unique identifier for the query.
+	QueryId openapi_types.UUID `json:"query_id"`
+
+	// Status Status of a chain query.
+	Status QueryStatus `json:"status"`
+}
+
+// QueryBlockSelection Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.
+type QueryBlockSelection struct {
+	union json.RawMessage
+}
+
+// QueryKind Kind of chain query.
+type QueryKind string
+
+// QueryList Paginated list of queries.
+type QueryList struct {
+	Data []Query `json:"data"`
+
+	// HasMore True if there are more queries to fetch.
+	HasMore bool `json:"has_more"`
+}
+
+// QueryStatus Status of a chain query.
+type QueryStatus string
+
+// QueryStatusPayload Minimal top-level payload for query.status channel events.
+type QueryStatusPayload struct {
+	// EventHash Verifiable event hash for terminal query status events.
+	EventHash *string `json:"event_hash,omitempty"`
+
+	// QueryId Unique identifier for the query.
+	QueryId openapi_types.UUID `json:"query_id"`
+
+	// Status Status of a chain query.
+	Status QueryStatus `json:"status"`
+
+	// Timestamp Timestamp when the status event was created.
+	Timestamp int64 `json:"timestamp"`
+
+	// VerifiableResult Base64-encoded verifiable query result for terminal query status events.
+	VerifiableResult *string `json:"verifiable_result,omitempty"`
 }
 
 // RSAPublicKey RSA public key with exponent and modulus
@@ -992,6 +1186,18 @@ type ListOperationsParams struct {
 	CancellerSubjectId *string `form:"canceller_subject_id,omitempty" json:"canceller_subject_id,omitempty"`
 }
 
+// ListQueriesParams defines parameters for ListQueries.
+type ListQueriesParams struct {
+	// Status Filter queries by status. Multiple values allowed.
+	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Limit Maximum number of queries to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of queries to skip for pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
 // ListWatchersParams defines parameters for ListWatchers.
 type ListWatchersParams struct {
 	// Limit Maximum number of watchers to return
@@ -1057,6 +1263,9 @@ type CreateOperationJSONRequestBody = CreateOperation
 
 // FinalizeOrCancelOperationJSONRequestBody defines body for FinalizeOrCancelOperation for application/json ContentType.
 type FinalizeOrCancelOperationJSONRequestBody = PatchOperation
+
+// CreateQueryJSONRequestBody defines body for CreateQuery for application/json ContentType.
+type CreateQueryJSONRequestBody = CreateQuery
 
 // CreateWatcherJSONRequestBody defines body for CreateWatcher for application/json ContentType.
 type CreateWatcherJSONRequestBody = CreateWatcher
@@ -1148,6 +1357,32 @@ func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) err
 
 // MergeOperationStatusPayload performs a merge with any union data inside the Event_Payload, using the provided OperationStatusPayload
 func (t *Event_Payload) MergeOperationStatusPayload(v OperationStatusPayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsQueryStatusPayload returns the union data inside the Event_Payload as a QueryStatusPayload
+func (t Event_Payload) AsQueryStatusPayload() (QueryStatusPayload, error) {
+	var body QueryStatusPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromQueryStatusPayload overwrites any union data inside the Event_Payload as the provided QueryStatusPayload
+func (t *Event_Payload) FromQueryStatusPayload(v QueryStatusPayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeQueryStatusPayload performs a merge with any union data inside the Event_Payload, using the provided QueryStatusPayload
+func (t *Event_Payload) MergeQueryStatusPayload(v QueryStatusPayload) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1397,6 +1632,125 @@ func (t *PatchOperation) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsLatestBlockSelection returns the union data inside the QueryBlockSelection as a LatestBlockSelection
+func (t QueryBlockSelection) AsLatestBlockSelection() (LatestBlockSelection, error) {
+	var body LatestBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromLatestBlockSelection overwrites any union data inside the QueryBlockSelection as the provided LatestBlockSelection
+func (t *QueryBlockSelection) FromLatestBlockSelection(v LatestBlockSelection) error {
+	v.Type = "latest"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeLatestBlockSelection performs a merge with any union data inside the QueryBlockSelection, using the provided LatestBlockSelection
+func (t *QueryBlockSelection) MergeLatestBlockSelection(v LatestBlockSelection) error {
+	v.Type = "latest"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFinalizedBlockSelection returns the union data inside the QueryBlockSelection as a FinalizedBlockSelection
+func (t QueryBlockSelection) AsFinalizedBlockSelection() (FinalizedBlockSelection, error) {
+	var body FinalizedBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFinalizedBlockSelection overwrites any union data inside the QueryBlockSelection as the provided FinalizedBlockSelection
+func (t *QueryBlockSelection) FromFinalizedBlockSelection(v FinalizedBlockSelection) error {
+	v.Type = "finalized"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFinalizedBlockSelection performs a merge with any union data inside the QueryBlockSelection, using the provided FinalizedBlockSelection
+func (t *QueryBlockSelection) MergeFinalizedBlockSelection(v FinalizedBlockSelection) error {
+	v.Type = "finalized"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBlockNumberBlockSelection returns the union data inside the QueryBlockSelection as a BlockNumberBlockSelection
+func (t QueryBlockSelection) AsBlockNumberBlockSelection() (BlockNumberBlockSelection, error) {
+	var body BlockNumberBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBlockNumberBlockSelection overwrites any union data inside the QueryBlockSelection as the provided BlockNumberBlockSelection
+func (t *QueryBlockSelection) FromBlockNumberBlockSelection(v BlockNumberBlockSelection) error {
+	v.Type = "block_number"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBlockNumberBlockSelection performs a merge with any union data inside the QueryBlockSelection, using the provided BlockNumberBlockSelection
+func (t *QueryBlockSelection) MergeBlockNumberBlockSelection(v BlockNumberBlockSelection) error {
+	v.Type = "block_number"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t QueryBlockSelection) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t QueryBlockSelection) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "block_number":
+		return t.AsBlockNumberBlockSelection()
+	case "finalized":
+		return t.AsFinalizedBlockSelection()
+	case "latest":
+		return t.AsLatestBlockSelection()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t QueryBlockSelection) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *QueryBlockSelection) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Retrieves channels for the organization.
@@ -1432,6 +1786,15 @@ type ServerInterface interface {
 	// Finalizes or cancels an operation.
 	// (PATCH /channels/{channel_id}/operations/{operation_id})
 	FinalizeOrCancelOperation(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, operationId openapi_types.UUID)
+	// Lists chain queries for a channel.
+	// (GET /channels/{channel_id}/queries)
+	ListQueries(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListQueriesParams)
+	// Creates a chain query under a channel.
+	// (POST /channels/{channel_id}/queries)
+	CreateQuery(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID)
+	// Retrieves a specific chain query by ID.
+	// (GET /channels/{channel_id}/queries/{query_id})
+	GetQuery(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, queryId openapi_types.UUID)
 	// Retrieves watchers for a channel.
 	// (GET /channels/{channel_id}/watchers)
 	ListWatchers(w http.ResponseWriter, r *http.Request, channelId openapi_types.UUID, params ListWatchersParams)
@@ -2105,6 +2468,135 @@ func (siw *ServerInterfaceWrapper) FinalizeOrCancelOperation(w http.ResponseWrit
 	handler.ServeHTTP(w, r)
 }
 
+// ListQueries operation middleware
+func (siw *ServerInterfaceWrapper) ListQueries(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListQueriesParams
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListQueries(w, r, channelId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateQuery operation middleware
+func (siw *ServerInterfaceWrapper) CreateQuery(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateQuery(w, r, channelId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetQuery operation middleware
+func (siw *ServerInterfaceWrapper) GetQuery(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "channel_id" -------------
+	var channelId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "channel_id", r.PathValue("channel_id"), &channelId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "channel_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "query_id" -------------
+	var queryId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "query_id", r.PathValue("query_id"), &queryId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "query_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetQuery(w, r, channelId, queryId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListWatchers operation middleware
 func (siw *ServerInterfaceWrapper) ListWatchers(w http.ResponseWriter, r *http.Request) {
 
@@ -2656,6 +3148,9 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/operations", wrapper.CreateOperation)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.GetOperation)
 	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/operations/{operation_id}", wrapper.FinalizeOrCancelOperation)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/queries", wrapper.ListQueries)
+	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/queries", wrapper.CreateQuery)
+	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/queries/{query_id}", wrapper.GetQuery)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.ListWatchers)
 	m.HandleFunc("POST "+options.BaseURL+"/channels/{channel_id}/watchers", wrapper.CreateWatcher)
 	m.HandleFunc("GET "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.GetWatcher)

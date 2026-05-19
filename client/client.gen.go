@@ -30,6 +30,11 @@ const (
 	VALIDATIONERROR ApplicationErrorType = "VALIDATION_ERROR"
 )
 
+// Defines values for BlockNumberBlockSelectionType.
+const (
+	BlockNumberBlockSelectionTypeBlockNumber BlockNumberBlockSelectionType = "block_number"
+)
+
 // Defines values for CancelOperationStatus.
 const (
 	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
@@ -56,6 +61,7 @@ const (
 // Defines values for EventType.
 const (
 	EventTypeOperationStatus EventType = "operation.status"
+	EventTypeQueryStatus     EventType = "query.status"
 	EventTypeWalletStatus    EventType = "wallet.status"
 	EventTypeWatcherEvent    EventType = "watcher.event"
 	EventTypeWatcherStatus   EventType = "watcher.status"
@@ -64,6 +70,16 @@ const (
 // Defines values for FinalizeOperationStatus.
 const (
 	Accepted FinalizeOperationStatus = "accepted"
+)
+
+// Defines values for FinalizedBlockSelectionType.
+const (
+	FinalizedBlockSelectionTypeFinalized FinalizedBlockSelectionType = "finalized"
+)
+
+// Defines values for LatestBlockSelectionType.
+const (
+	LatestBlockSelectionTypeLatest LatestBlockSelectionType = "latest"
 )
 
 // Defines values for NetworkType.
@@ -83,6 +99,21 @@ const (
 	OperationStatusPendingSignature OperationStatus = "pending_signature"
 	OperationStatusSending          OperationStatus = "sending"
 	OperationStatusSent             OperationStatus = "sent"
+)
+
+// Defines values for QueryKind.
+const (
+	QueryKindEVMCall QueryKind = "evm_call"
+)
+
+// Defines values for QueryStatus.
+const (
+	QueryStatusAccepted  QueryStatus = "accepted"
+	QueryStatusCompleted QueryStatus = "completed"
+	QueryStatusExpired   QueryStatus = "expired"
+	QueryStatusFailed    QueryStatus = "failed"
+	QueryStatusSending   QueryStatus = "sending"
+	QueryStatusSent      QueryStatus = "sent"
 )
 
 // Defines values for SubjectType.
@@ -145,6 +176,18 @@ type ApplicationError struct {
 
 // ApplicationErrorType Error type
 type ApplicationErrorType string
+
+// BlockNumberBlockSelection defines model for BlockNumberBlockSelection.
+type BlockNumberBlockSelection struct {
+	// BlockNumber Decimal uint64 block number.
+	BlockNumber string `json:"block_number"`
+
+	// Type Execute against an explicit block number after resolving header metadata.
+	Type BlockNumberBlockSelectionType `json:"type"`
+}
+
+// BlockNumberBlockSelectionType Execute against an explicit block number after resolving header metadata.
+type BlockNumberBlockSelectionType string
 
 // CancelOperation PATCH body for cancelling a pending operation.
 type CancelOperation struct {
@@ -218,6 +261,24 @@ type CreateOperation struct {
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
+}
+
+// CreateQuery Request body for creating a chain query.
+type CreateQuery struct {
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// IdempotencyKey Customer-provided idempotency key scoped to organization and channel.
+	IdempotencyKey string `json:"idempotency_key"`
+
+	// Metadata Optional customer metadata. Not part of the signed query unless explicitly copied into verifiable_result by the workflow.
+	Metadata *map[string]interface{} `json:"metadata,omitempty"`
+
+	// Params Parameters for an evm_call chain query.
+	Params EVMCallQueryParams `json:"params"`
+
+	// QueryKind Kind of chain query.
+	QueryKind QueryKind `json:"query_kind"`
 }
 
 // CreateWallet Request body for creating a new wallet.
@@ -299,6 +360,21 @@ type CreateWatcherWithService struct {
 
 // ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
 type ECDSASignersList = []EthereumAddress
+
+// EVMCallQueryParams Parameters for an evm_call chain query.
+type EVMCallQueryParams struct {
+	// BlockSelection Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.
+	BlockSelection QueryBlockSelection `json:"block_selection"`
+
+	// CallData 0x-prefixed even-length hex calldata bytes, including the function selector.
+	CallData string `json:"call_data"`
+
+	// ContractAddress 42-character hex Ethereum address
+	ContractAddress EthereumAddress `json:"contract_address"`
+
+	// FromAddress 42-character hex Ethereum address
+	FromAddress *EthereumAddress `json:"from_address,omitempty"`
+}
 
 // EthereumAddress 42-character hex Ethereum address
 type EthereumAddress = string
@@ -397,10 +473,28 @@ type FinalizeOperation struct {
 // FinalizeOperationStatus Marks the operation as accepted/finalized.
 type FinalizeOperationStatus string
 
+// FinalizedBlockSelection defines model for FinalizedBlockSelection.
+type FinalizedBlockSelection struct {
+	// Type Resolve finalized to concrete block metadata before executing the call.
+	Type FinalizedBlockSelectionType `json:"type"`
+}
+
+// FinalizedBlockSelectionType Resolve finalized to concrete block metadata before executing the call.
+type FinalizedBlockSelectionType string
+
 // HealthCheck Health check response.
 type HealthCheck struct {
 	Status string `json:"status"`
 }
+
+// LatestBlockSelection defines model for LatestBlockSelection.
+type LatestBlockSelection struct {
+	// Type Resolve latest to concrete block metadata before executing the call.
+	Type LatestBlockSelectionType `json:"type"`
+}
+
+// LatestBlockSelectionType Resolve latest to concrete block metadata before executing the call.
+type LatestBlockSelectionType string
 
 // Network A blockchain network supported by CRE Connect.
 type Network struct {
@@ -568,6 +662,106 @@ type PatchChannel struct {
 // PatchOperation PATCH body for finalizing or cancelling an operation.
 type PatchOperation struct {
 	union json.RawMessage
+}
+
+// Query Chain query resource loaded from chain_queries.
+type Query struct {
+	// AcceptedAt Unix timestamp in seconds
+	AcceptedAt *Timestamp `json:"accepted_at,omitempty"`
+
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// ChannelId Channel that owns the query.
+	ChannelId openapi_types.UUID `json:"channel_id"`
+
+	// CompletedAt Unix timestamp in seconds
+	CompletedAt *Timestamp `json:"completed_at,omitempty"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// EventHash Verifiable event hash for the terminal query result.
+	EventHash *string `json:"event_hash,omitempty"`
+
+	// ExpiredAt Unix timestamp in seconds
+	ExpiredAt *Timestamp `json:"expired_at,omitempty"`
+
+	// ExpiresAt Unix timestamp in seconds
+	ExpiresAt *Timestamp `json:"expires_at,omitempty"`
+
+	// FailedAt Unix timestamp in seconds
+	FailedAt *Timestamp `json:"failed_at,omitempty"`
+
+	// Proof An OCR-based cryptographic proof attached to a verifiable event.
+	Proof *OCRProof `json:"proof,omitempty"`
+
+	// QueryId Unique identifier for the query.
+	QueryId openapi_types.UUID `json:"query_id"`
+
+	// QueryKind Kind of chain query.
+	QueryKind QueryKind `json:"query_kind"`
+
+	// SendingAt Unix timestamp in seconds
+	SendingAt *Timestamp `json:"sending_at,omitempty"`
+
+	// SentAt Unix timestamp in seconds
+	SentAt *Timestamp `json:"sent_at,omitempty"`
+
+	// Status Status of a chain query.
+	Status QueryStatus `json:"status"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt Timestamp `json:"updated_at"`
+
+	// VerifiableResult Base64-encoded verifiable query result.
+	VerifiableResult *string `json:"verifiable_result,omitempty"`
+}
+
+// QueryAcceptedResponse defines model for QueryAcceptedResponse.
+type QueryAcceptedResponse struct {
+	// QueryId Unique identifier for the query.
+	QueryId openapi_types.UUID `json:"query_id"`
+
+	// Status Status of a chain query.
+	Status QueryStatus `json:"status"`
+}
+
+// QueryBlockSelection Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.
+type QueryBlockSelection struct {
+	union json.RawMessage
+}
+
+// QueryKind Kind of chain query.
+type QueryKind string
+
+// QueryList Paginated list of queries.
+type QueryList struct {
+	Data []Query `json:"data"`
+
+	// HasMore True if there are more queries to fetch.
+	HasMore bool `json:"has_more"`
+}
+
+// QueryStatus Status of a chain query.
+type QueryStatus string
+
+// QueryStatusPayload Minimal top-level payload for query.status channel events.
+type QueryStatusPayload struct {
+	// EventHash Verifiable event hash for terminal query status events.
+	EventHash *string `json:"event_hash,omitempty"`
+
+	// QueryId Unique identifier for the query.
+	QueryId openapi_types.UUID `json:"query_id"`
+
+	// Status Status of a chain query.
+	Status QueryStatus `json:"status"`
+
+	// Timestamp Timestamp when the status event was created.
+	Timestamp int64 `json:"timestamp"`
+
+	// VerifiableResult Base64-encoded verifiable query result for terminal query status events.
+	VerifiableResult *string `json:"verifiable_result,omitempty"`
 }
 
 // RSAPublicKey RSA public key with exponent and modulus
@@ -994,6 +1188,18 @@ type ListOperationsParams struct {
 	CancellerSubjectId *string `form:"canceller_subject_id,omitempty" json:"canceller_subject_id,omitempty"`
 }
 
+// ListQueriesParams defines parameters for ListQueries.
+type ListQueriesParams struct {
+	// Status Filter queries by status. Multiple values allowed.
+	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// Limit Maximum number of queries to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of queries to skip for pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
 // ListWatchersParams defines parameters for ListWatchers.
 type ListWatchersParams struct {
 	// Limit Maximum number of watchers to return
@@ -1059,6 +1265,9 @@ type CreateOperationJSONRequestBody = CreateOperation
 
 // FinalizeOrCancelOperationJSONRequestBody defines body for FinalizeOrCancelOperation for application/json ContentType.
 type FinalizeOrCancelOperationJSONRequestBody = PatchOperation
+
+// CreateQueryJSONRequestBody defines body for CreateQuery for application/json ContentType.
+type CreateQueryJSONRequestBody = CreateQuery
 
 // CreateWatcherJSONRequestBody defines body for CreateWatcher for application/json ContentType.
 type CreateWatcherJSONRequestBody = CreateWatcher
@@ -1150,6 +1359,32 @@ func (t *Event_Payload) FromOperationStatusPayload(v OperationStatusPayload) err
 
 // MergeOperationStatusPayload performs a merge with any union data inside the Event_Payload, using the provided OperationStatusPayload
 func (t *Event_Payload) MergeOperationStatusPayload(v OperationStatusPayload) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsQueryStatusPayload returns the union data inside the Event_Payload as a QueryStatusPayload
+func (t Event_Payload) AsQueryStatusPayload() (QueryStatusPayload, error) {
+	var body QueryStatusPayload
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromQueryStatusPayload overwrites any union data inside the Event_Payload as the provided QueryStatusPayload
+func (t *Event_Payload) FromQueryStatusPayload(v QueryStatusPayload) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeQueryStatusPayload performs a merge with any union data inside the Event_Payload, using the provided QueryStatusPayload
+func (t *Event_Payload) MergeQueryStatusPayload(v QueryStatusPayload) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1399,6 +1634,125 @@ func (t *PatchOperation) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsLatestBlockSelection returns the union data inside the QueryBlockSelection as a LatestBlockSelection
+func (t QueryBlockSelection) AsLatestBlockSelection() (LatestBlockSelection, error) {
+	var body LatestBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromLatestBlockSelection overwrites any union data inside the QueryBlockSelection as the provided LatestBlockSelection
+func (t *QueryBlockSelection) FromLatestBlockSelection(v LatestBlockSelection) error {
+	v.Type = "latest"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeLatestBlockSelection performs a merge with any union data inside the QueryBlockSelection, using the provided LatestBlockSelection
+func (t *QueryBlockSelection) MergeLatestBlockSelection(v LatestBlockSelection) error {
+	v.Type = "latest"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsFinalizedBlockSelection returns the union data inside the QueryBlockSelection as a FinalizedBlockSelection
+func (t QueryBlockSelection) AsFinalizedBlockSelection() (FinalizedBlockSelection, error) {
+	var body FinalizedBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromFinalizedBlockSelection overwrites any union data inside the QueryBlockSelection as the provided FinalizedBlockSelection
+func (t *QueryBlockSelection) FromFinalizedBlockSelection(v FinalizedBlockSelection) error {
+	v.Type = "finalized"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeFinalizedBlockSelection performs a merge with any union data inside the QueryBlockSelection, using the provided FinalizedBlockSelection
+func (t *QueryBlockSelection) MergeFinalizedBlockSelection(v FinalizedBlockSelection) error {
+	v.Type = "finalized"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsBlockNumberBlockSelection returns the union data inside the QueryBlockSelection as a BlockNumberBlockSelection
+func (t QueryBlockSelection) AsBlockNumberBlockSelection() (BlockNumberBlockSelection, error) {
+	var body BlockNumberBlockSelection
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromBlockNumberBlockSelection overwrites any union data inside the QueryBlockSelection as the provided BlockNumberBlockSelection
+func (t *QueryBlockSelection) FromBlockNumberBlockSelection(v BlockNumberBlockSelection) error {
+	v.Type = "block_number"
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeBlockNumberBlockSelection performs a merge with any union data inside the QueryBlockSelection, using the provided BlockNumberBlockSelection
+func (t *QueryBlockSelection) MergeBlockNumberBlockSelection(v BlockNumberBlockSelection) error {
+	v.Type = "block_number"
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t QueryBlockSelection) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t QueryBlockSelection) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "block_number":
+		return t.AsBlockNumberBlockSelection()
+	case "finalized":
+		return t.AsFinalizedBlockSelection()
+	case "latest":
+		return t.AsLatestBlockSelection()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
+}
+
+func (t QueryBlockSelection) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *QueryBlockSelection) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
 
@@ -1512,6 +1866,17 @@ type ClientInterface interface {
 	FinalizeOrCancelOperationWithBody(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	FinalizeOrCancelOperation(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListQueries request
+	ListQueries(ctx context.Context, channelId openapi_types.UUID, params *ListQueriesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateQueryWithBody request with any body
+	CreateQueryWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateQuery(ctx context.Context, channelId openapi_types.UUID, body CreateQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetQuery request
+	GetQuery(ctx context.Context, channelId openapi_types.UUID, queryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListWatchers request
 	ListWatchers(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1722,6 +2087,54 @@ func (c *Client) FinalizeOrCancelOperationWithBody(ctx context.Context, channelI
 
 func (c *Client) FinalizeOrCancelOperation(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewFinalizeOrCancelOperationRequest(c.Server, channelId, operationId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListQueries(ctx context.Context, channelId openapi_types.UUID, params *ListQueriesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListQueriesRequest(c.Server, channelId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateQueryWithBody(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateQueryRequestWithBody(c.Server, channelId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateQuery(ctx context.Context, channelId openapi_types.UUID, body CreateQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateQueryRequest(c.Server, channelId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetQuery(ctx context.Context, channelId openapi_types.UUID, queryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetQueryRequest(c.Server, channelId, queryId)
 	if err != nil {
 		return nil, err
 	}
@@ -2901,6 +3314,182 @@ func NewFinalizeOrCancelOperationRequestWithBody(server string, channelId openap
 	return req, nil
 }
 
+// NewListQueriesRequest generates requests for ListQueries
+func NewListQueriesRequest(server string, channelId openapi_types.UUID, params *ListQueriesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/queries", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateQueryRequest calls the generic CreateQuery builder with application/json body
+func NewCreateQueryRequest(server string, channelId openapi_types.UUID, body CreateQueryJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateQueryRequestWithBody(server, channelId, "application/json", bodyReader)
+}
+
+// NewCreateQueryRequestWithBody generates requests for CreateQuery with any type of body
+func NewCreateQueryRequestWithBody(server string, channelId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/queries", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetQueryRequest generates requests for GetQuery
+func NewGetQueryRequest(server string, channelId openapi_types.UUID, queryId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "channel_id", runtime.ParamLocationPath, channelId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "query_id", runtime.ParamLocationPath, queryId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/channels/%s/queries/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListWatchersRequest generates requests for ListWatchers
 func NewListWatchersRequest(server string, channelId openapi_types.UUID, params *ListWatchersParams) (*http.Request, error) {
 	var err error
@@ -3631,6 +4220,17 @@ type ClientWithResponsesInterface interface {
 
 	FinalizeOrCancelOperationWithResponse(ctx context.Context, channelId openapi_types.UUID, operationId openapi_types.UUID, body FinalizeOrCancelOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*FinalizeOrCancelOperationResponse, error)
 
+	// ListQueriesWithResponse request
+	ListQueriesWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListQueriesParams, reqEditors ...RequestEditorFn) (*ListQueriesResponse, error)
+
+	// CreateQueryWithBodyWithResponse request with any body
+	CreateQueryWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateQueryResponse, error)
+
+	CreateQueryWithResponse(ctx context.Context, channelId openapi_types.UUID, body CreateQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateQueryResponse, error)
+
+	// GetQueryWithResponse request
+	GetQueryWithResponse(ctx context.Context, channelId openapi_types.UUID, queryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetQueryResponse, error)
+
 	// ListWatchersWithResponse request
 	ListWatchersWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListWatchersParams, reqEditors ...RequestEditorFn) (*ListWatchersResponse, error)
 
@@ -3932,6 +4532,81 @@ func (r FinalizeOrCancelOperationResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r FinalizeOrCancelOperationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListQueriesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *QueryList
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListQueriesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListQueriesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateQueryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON202      *QueryAcceptedResponse
+	JSON400      *ApplicationError
+	JSON404      *ApplicationError
+	JSON409      *ApplicationError
+	JSON429      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateQueryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateQueryResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetQueryResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *Query
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetQueryResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetQueryResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -4307,6 +4982,41 @@ func (c *ClientWithResponses) FinalizeOrCancelOperationWithResponse(ctx context.
 		return nil, err
 	}
 	return ParseFinalizeOrCancelOperationResponse(rsp)
+}
+
+// ListQueriesWithResponse request returning *ListQueriesResponse
+func (c *ClientWithResponses) ListQueriesWithResponse(ctx context.Context, channelId openapi_types.UUID, params *ListQueriesParams, reqEditors ...RequestEditorFn) (*ListQueriesResponse, error) {
+	rsp, err := c.ListQueries(ctx, channelId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListQueriesResponse(rsp)
+}
+
+// CreateQueryWithBodyWithResponse request with arbitrary body returning *CreateQueryResponse
+func (c *ClientWithResponses) CreateQueryWithBodyWithResponse(ctx context.Context, channelId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateQueryResponse, error) {
+	rsp, err := c.CreateQueryWithBody(ctx, channelId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateQueryResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateQueryWithResponse(ctx context.Context, channelId openapi_types.UUID, body CreateQueryJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateQueryResponse, error) {
+	rsp, err := c.CreateQuery(ctx, channelId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateQueryResponse(rsp)
+}
+
+// GetQueryWithResponse request returning *GetQueryResponse
+func (c *ClientWithResponses) GetQueryWithResponse(ctx context.Context, channelId openapi_types.UUID, queryId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetQueryResponse, error) {
+	rsp, err := c.GetQuery(ctx, channelId, queryId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetQueryResponse(rsp)
 }
 
 // ListWatchersWithResponse request returning *ListWatchersResponse
@@ -4893,6 +5603,147 @@ func ParseFinalizeOrCancelOperationResponse(rsp *http.Response) (*FinalizeOrCanc
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListQueriesResponse parses an HTTP response from a ListQueriesWithResponse call
+func ParseListQueriesResponse(rsp *http.Response) (*ListQueriesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListQueriesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest QueryList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateQueryResponse parses an HTTP response from a CreateQueryWithResponse call
+func ParseCreateQueryResponse(rsp *http.Response) (*CreateQueryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateQueryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest QueryAcceptedResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON429 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetQueryResponse parses an HTTP response from a GetQueryWithResponse call
+func ParseGetQueryResponse(rsp *http.Response) (*GetQueryResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetQueryResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest Query
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
 
 	}
 
