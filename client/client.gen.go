@@ -106,6 +106,12 @@ const (
 	QueryKindEVMCall QueryKind = "evm_call"
 )
 
+// Defines values for QueryListView.
+const (
+	QueryListViewFull    QueryListView = "full"
+	QueryListViewSummary QueryListView = "summary"
+)
+
 // Defines values for QueryStatus.
 const (
 	QueryStatusAccepted  QueryStatus = "accepted"
@@ -708,7 +714,7 @@ type Query struct {
 	// SentAt Unix timestamp in seconds
 	SentAt *Timestamp `json:"sent_at,omitempty"`
 
-	// Status Lifecycle status of a chain query.
+	// Status Status of a chain query.
 	Status QueryStatus `json:"status"`
 
 	// UpdatedAt Unix timestamp in seconds
@@ -723,7 +729,7 @@ type QueryAcceptedResponse struct {
 	// QueryId Unique identifier for the query.
 	QueryId openapi_types.UUID `json:"query_id"`
 
-	// Status Lifecycle status of a chain query.
+	// Status Status of a chain query.
 	Status QueryStatus `json:"status"`
 }
 
@@ -737,13 +743,21 @@ type QueryKind string
 
 // QueryList defines model for QueryList.
 type QueryList struct {
-	Data []QuerySummary `json:"data"`
+	Data []QueryList_Data_Item `json:"data"`
 
 	// HasMore True if there are more queries to fetch.
 	HasMore bool `json:"has_more"`
 }
 
-// QueryStatus Lifecycle status of a chain query.
+// QueryList_Data_Item defines model for QueryList.data.Item.
+type QueryList_Data_Item struct {
+	union json.RawMessage
+}
+
+// QueryListView Selects the fields returned for each query in list responses.
+type QueryListView string
+
+// QueryStatus Status of a chain query.
 type QueryStatus string
 
 // QueryStatusPayload Minimal top-level payload for query.status channel events.
@@ -754,7 +768,7 @@ type QueryStatusPayload struct {
 	// QueryId Unique identifier for the query.
 	QueryId openapi_types.UUID `json:"query_id"`
 
-	// Status Lifecycle status of a chain query.
+	// Status Status of a chain query.
 	Status QueryStatus `json:"status"`
 
 	// Timestamp Timestamp when the status event was created.
@@ -764,8 +778,11 @@ type QueryStatusPayload struct {
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
 }
 
-// QuerySummary Query fields returned by list responses.
+// QuerySummary Summary fields for a chain query.
 type QuerySummary struct {
+	// AcceptedAt Unix timestamp in seconds
+	AcceptedAt *Timestamp `json:"accepted_at,omitempty"`
+
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
@@ -793,7 +810,13 @@ type QuerySummary struct {
 	// QueryKind Kind of chain query.
 	QueryKind QueryKind `json:"query_kind"`
 
-	// Status Lifecycle status of a chain query.
+	// SendingAt Unix timestamp in seconds
+	SendingAt *Timestamp `json:"sending_at,omitempty"`
+
+	// SentAt Unix timestamp in seconds
+	SentAt *Timestamp `json:"sent_at,omitempty"`
+
+	// Status Status of a chain query.
 	Status QueryStatus `json:"status"`
 
 	// UpdatedAt Unix timestamp in seconds
@@ -1228,6 +1251,9 @@ type ListOperationsParams struct {
 type ListQueriesParams struct {
 	// Status Filter queries by status. Multiple values allowed.
 	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// View Selects the fields returned for each query.
+	View *QueryListView `form:"view,omitempty" json:"view,omitempty"`
 
 	// Limit Maximum number of queries to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -1785,6 +1811,68 @@ func (t QueryBlockSelection) MarshalJSON() ([]byte, error) {
 }
 
 func (t *QueryBlockSelection) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsQuerySummary returns the union data inside the QueryList_Data_Item as a QuerySummary
+func (t QueryList_Data_Item) AsQuerySummary() (QuerySummary, error) {
+	var body QuerySummary
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromQuerySummary overwrites any union data inside the QueryList_Data_Item as the provided QuerySummary
+func (t *QueryList_Data_Item) FromQuerySummary(v QuerySummary) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeQuerySummary performs a merge with any union data inside the QueryList_Data_Item, using the provided QuerySummary
+func (t *QueryList_Data_Item) MergeQuerySummary(v QuerySummary) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsQuery returns the union data inside the QueryList_Data_Item as a Query
+func (t QueryList_Data_Item) AsQuery() (Query, error) {
+	var body Query
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromQuery overwrites any union data inside the QueryList_Data_Item as the provided Query
+func (t *QueryList_Data_Item) FromQuery(v Query) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeQuery performs a merge with any union data inside the QueryList_Data_Item, using the provided Query
+func (t *QueryList_Data_Item) MergeQuery(v Query) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t QueryList_Data_Item) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *QueryList_Data_Item) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
@@ -3382,6 +3470,22 @@ func NewListQueriesRequest(server string, channelId openapi_types.UUID, params *
 		if params.Status != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.View != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "view", runtime.ParamLocationQuery, *params.View); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err

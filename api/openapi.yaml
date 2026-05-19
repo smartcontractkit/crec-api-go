@@ -506,8 +506,9 @@ paths:
       operationId: listQueries
       summary: Lists chain queries for a channel.
       description: |
-        Returns query records for the channel.
-        The list response does not include OCR proofs or verifiable results.
+        Returns queries for the channel.
+        With `view=full`, each item can include `event_hash`, `verifiable_result`, and `proof` when present.
+        With `view=summary`, each item contains the `QuerySummary` fields and does not include `event_hash`, `verifiable_result`, or `proof`.
       parameters:
         - in: path
           name: channel_id
@@ -524,6 +525,11 @@ paths:
               $ref: "#/components/schemas/QueryStatus"
           style: form
           explode: true
+        - in: query
+          name: view
+          description: Selects the fields returned for each query.
+          schema:
+            $ref: "#/components/schemas/QueryListView"
         - in: query
           name: limit
           description: Maximum number of queries to return
@@ -1476,7 +1482,7 @@ components:
       example: "accepted"
     QueryStatus:
       type: string
-      description: Lifecycle status of a chain query.
+      description: Status of a chain query.
       enum:
         - accepted
         - sending
@@ -1498,6 +1504,16 @@ components:
         - evm_call
       x-enum-varnames:
         - QueryKindEVMCall
+    QueryListView:
+      type: string
+      description: Selects the fields returned for each query in list responses.
+      enum:
+        - full
+        - summary
+      x-enum-varnames:
+        - QueryListViewFull
+        - QueryListViewSummary
+      default: full
     SubjectType:
       type: string
       description: Type of subject used for audit identity and filtering.
@@ -2091,6 +2107,52 @@ components:
         - query_id
         - status
 
+    QuerySummary:
+      type: object
+      additionalProperties: false
+      description: Summary fields for a chain query.
+      properties:
+        query_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the query.
+        channel_id:
+          type: string
+          format: uuid
+          description: Channel that owns the query.
+        status:
+          $ref: "#/components/schemas/QueryStatus"
+        query_kind:
+          $ref: "#/components/schemas/QueryKind"
+        chain_selector:
+          $ref: "#/components/schemas/ChainSelector"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        expires_at:
+          $ref: "#/components/schemas/Timestamp"
+        accepted_at:
+          $ref: "#/components/schemas/Timestamp"
+        sending_at:
+          $ref: "#/components/schemas/Timestamp"
+        sent_at:
+          $ref: "#/components/schemas/Timestamp"
+        completed_at:
+          $ref: "#/components/schemas/Timestamp"
+        failed_at:
+          $ref: "#/components/schemas/Timestamp"
+        expired_at:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - query_id
+        - channel_id
+        - status
+        - query_kind
+        - chain_selector
+        - created_at
+        - updated_at
+
     Query:
       type: object
       description: Chain query resource loaded from chain_queries.
@@ -2144,52 +2206,15 @@ components:
         - created_at
         - updated_at
 
-    QuerySummary:
-      type: object
-      description: Query fields returned by list responses.
-      properties:
-        query_id:
-          type: string
-          format: uuid
-          description: Unique identifier for the query.
-        channel_id:
-          type: string
-          format: uuid
-          description: Channel that owns the query.
-        status:
-          $ref: "#/components/schemas/QueryStatus"
-        query_kind:
-          $ref: "#/components/schemas/QueryKind"
-        chain_selector:
-          $ref: "#/components/schemas/ChainSelector"
-        created_at:
-          $ref: "#/components/schemas/Timestamp"
-        updated_at:
-          $ref: "#/components/schemas/Timestamp"
-        expires_at:
-          $ref: "#/components/schemas/Timestamp"
-        completed_at:
-          $ref: "#/components/schemas/Timestamp"
-        failed_at:
-          $ref: "#/components/schemas/Timestamp"
-        expired_at:
-          $ref: "#/components/schemas/Timestamp"
-      required:
-        - query_id
-        - channel_id
-        - status
-        - query_kind
-        - chain_selector
-        - created_at
-        - updated_at
-
     QueryList:
       type: object
       properties:
         data:
           type: array
           items:
-            $ref: "#/components/schemas/QuerySummary"
+            anyOf:
+              - $ref: "#/components/schemas/QuerySummary"
+              - $ref: "#/components/schemas/Query"
         has_more:
           type: boolean
           description: True if there are more queries to fetch.
