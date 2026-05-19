@@ -547,9 +547,8 @@ paths:
       operationId: listQueries
       summary: Lists chain queries for a channel.
       description: |
-        Returns queries for the channel.
-        With `view=full`, each item can include `event_hash`, `verifiable_result`, and `proof` when present.
-        With `view=summary`, each item contains the `QuerySummary` fields and does not include `event_hash`, `verifiable_result`, or `proof`.
+        Returns chain query records for the channel.
+        Each item includes `event_hash`, `verifiable_result`, and `proof` when those fields are available.
       parameters:
         - in: path
           name: channel_id
@@ -567,12 +566,6 @@ paths:
           style: form
           explode: true
           example: ["accepted", "completed"]
-        - in: query
-          name: view
-          description: Selects the fields returned for each query.
-          schema:
-            $ref: "#/components/schemas/QueryListView"
-          example: "summary"
         - in: query
           name: limit
           description: Maximum number of queries to return
@@ -596,48 +589,28 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/QueryList"
-              examples:
-                summaryView:
-                  summary: Summary query list response
-                  value:
-                    data:
-                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
-                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
-                        status: "completed"
-                        query_kind: "evm_call"
-                        chain_selector: "16015286601757825753"
-                        created_at: 1715698800
-                        updated_at: 1715698815
-                        expires_at: 1715702400
-                        accepted_at: 1715698800
-                        sending_at: 1715698801
-                        sent_at: 1715698802
-                        completed_at: 1715698815
-                    has_more: false
-                fullView:
-                  summary: Full query list response with terminal verifiable fields
-                  value:
-                    data:
-                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
-                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
-                        status: "completed"
-                        query_kind: "evm_call"
-                        chain_selector: "16015286601757825753"
-                        event_hash: "0xabc123def456"
-                        verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
-                        proof:
-                          alg: "ocr2vrf"
-                          ocr_report: "0xabc123"
-                          ocr_context: "0xdef456"
-                          signatures: ["0x789abc"]
-                        created_at: 1715698800
-                        updated_at: 1715698815
-                        expires_at: 1715702400
-                        accepted_at: 1715698800
-                        sending_at: 1715698801
-                        sent_at: 1715698802
-                        completed_at: 1715698815
-                    has_more: false
+              example:
+                data:
+                  - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                    channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                    status: "completed"
+                    query_kind: "evm_call"
+                    chain_selector: "16015286601757825753"
+                    event_hash: "0xabc123def456"
+                    verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
+                    proof:
+                      alg: "ocr2vrf"
+                      ocr_report: "0xabc123"
+                      ocr_context: "0xdef456"
+                      signatures: ["0x789abc"]
+                    created_at: 1715698800
+                    updated_at: 1715698815
+                    expires_at: 1715702400
+                    accepted_at: 1715698800
+                    sending_at: 1715698801
+                    sent_at: 1715698802
+                    completed_at: 1715698815
+                has_more: false
         "404":
           description: Channel not found
           content:
@@ -1628,17 +1601,6 @@ components:
       x-enum-varnames:
         - QueryKindEVMCall
       example: "evm_call"
-    QueryListView:
-      type: string
-      description: Selects the fields returned for each query in list responses.
-      enum:
-        - full
-        - summary
-      x-enum-varnames:
-        - QueryListViewFull
-        - QueryListViewSummary
-      default: full
-      example: "full"
     SubjectType:
       type: string
       description: Type of subject used for audit identity and filtering.
@@ -2256,65 +2218,6 @@ components:
         - query_id
         - status
 
-    QuerySummary:
-      type: object
-      additionalProperties: false
-      description: Summary fields for a chain query.
-      example:
-        query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
-        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
-        status: "completed"
-        query_kind: "evm_call"
-        chain_selector: "16015286601757825753"
-        created_at: 1715698800
-        updated_at: 1715698815
-        expires_at: 1715702400
-        accepted_at: 1715698800
-        sending_at: 1715698801
-        sent_at: 1715698802
-        completed_at: 1715698815
-      properties:
-        query_id:
-          type: string
-          format: uuid
-          description: Unique identifier for the query.
-        channel_id:
-          type: string
-          format: uuid
-          description: Channel that owns the query.
-        status:
-          $ref: "#/components/schemas/QueryStatus"
-        query_kind:
-          $ref: "#/components/schemas/QueryKind"
-        chain_selector:
-          $ref: "#/components/schemas/ChainSelector"
-        created_at:
-          $ref: "#/components/schemas/Timestamp"
-        updated_at:
-          $ref: "#/components/schemas/Timestamp"
-        expires_at:
-          $ref: "#/components/schemas/Timestamp"
-        accepted_at:
-          $ref: "#/components/schemas/Timestamp"
-        sending_at:
-          $ref: "#/components/schemas/Timestamp"
-        sent_at:
-          $ref: "#/components/schemas/Timestamp"
-        completed_at:
-          $ref: "#/components/schemas/Timestamp"
-        failed_at:
-          $ref: "#/components/schemas/Timestamp"
-        expired_at:
-          $ref: "#/components/schemas/Timestamp"
-      required:
-        - query_id
-        - channel_id
-        - status
-        - query_kind
-        - chain_selector
-        - created_at
-        - updated_at
-
     Query:
       type: object
       description: Chain query resource loaded from chain_queries.
@@ -2390,6 +2293,7 @@ components:
 
     QueryList:
       type: object
+      description: Paginated list of queries.
       example:
         data:
           - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
@@ -2397,6 +2301,13 @@ components:
             status: "completed"
             query_kind: "evm_call"
             chain_selector: "16015286601757825753"
+            event_hash: "0xabc123def456"
+            verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
+            proof:
+              alg: "ocr2vrf"
+              ocr_report: "0xabc123"
+              ocr_context: "0xdef456"
+              signatures: ["0x789abc"]
             created_at: 1715698800
             updated_at: 1715698815
             expires_at: 1715702400
@@ -2406,9 +2317,7 @@ components:
         data:
           type: array
           items:
-            anyOf:
-              - $ref: "#/components/schemas/QuerySummary"
-              - $ref: "#/components/schemas/Query"
+            $ref: "#/components/schemas/Query"
         has_more:
           type: boolean
           description: True if there are more queries to fetch.
