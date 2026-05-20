@@ -711,6 +711,9 @@ type Query struct {
 	// Status Status of a chain query.
 	Status QueryStatus `json:"status"`
 
+	// Target Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
+	Target string `json:"target"`
+
 	// UpdatedAt Unix timestamp in seconds
 	UpdatedAt Timestamp `json:"updated_at"`
 
@@ -756,6 +759,9 @@ type QueryStatusPayload struct {
 
 	// Status Status of a chain query.
 	Status QueryStatus `json:"status"`
+
+	// Target Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
+	Target string `json:"target"`
 
 	// Timestamp Timestamp when the status event was created.
 	Timestamp int64 `json:"timestamp"`

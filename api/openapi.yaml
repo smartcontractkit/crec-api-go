@@ -548,7 +548,7 @@ paths:
       summary: Lists chain queries for a channel.
       description: |
         Returns chain query records for the channel.
-        Each item includes `event_hash`, `verifiable_result`, and `proof` when those fields are available.
+        Each item includes `target`, `event_hash`, `verifiable_result`, and `proof` when those fields are available.
       parameters:
         - in: path
           name: channel_id
@@ -596,6 +596,7 @@ paths:
                     status: "completed"
                     query_kind: "evm_call"
                     chain_selector: "16015286601757825753"
+                    target: "0x1111111111111111111111111111111111111111"
                     event_hash: "0xabc123def456"
                     verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
                     proof:
@@ -660,6 +661,7 @@ paths:
                 status: "completed"
                 query_kind: "evm_call"
                 chain_selector: "16015286601757825753"
+                target: "0x1111111111111111111111111111111111111111"
                 event_hash: "0xabc123def456"
                 verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
                 proof:
@@ -2227,6 +2229,7 @@ components:
         status: "completed"
         query_kind: "evm_call"
         chain_selector: "16015286601757825753"
+        target: "0x1111111111111111111111111111111111111111"
         event_hash: "0xabc123def456"
         verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
         proof:
@@ -2256,6 +2259,10 @@ components:
           $ref: "#/components/schemas/QueryKind"
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
+        target:
+          type: string
+          description: Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
+          example: "0x1111111111111111111111111111111111111111"
         event_hash:
           type: string
           description: Verifiable event hash for the terminal query result.
@@ -2288,6 +2295,7 @@ components:
         - status
         - query_kind
         - chain_selector
+        - target
         - created_at
         - updated_at
 
@@ -2301,6 +2309,7 @@ components:
             status: "completed"
             query_kind: "evm_call"
             chain_selector: "16015286601757825753"
+            target: "0x1111111111111111111111111111111111111111"
             event_hash: "0xabc123def456"
             verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
             proof:
@@ -2948,6 +2957,7 @@ components:
       example:
         query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
         status: "completed"
+        target: "0x1111111111111111111111111111111111111111"
         timestamp: 1715698815
         event_hash: "0xabc123def456"
         verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
@@ -2958,6 +2968,10 @@ components:
           description: Unique identifier for the query.
         status:
           $ref: "#/components/schemas/QueryStatus"
+        target:
+          type: string
+          description: Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
+          example: "0x1111111111111111111111111111111111111111"
         timestamp:
           type: integer
           format: int64
@@ -2971,6 +2985,7 @@ components:
       required:
         - query_id
         - status
+        - target
         - timestamp
     WatcherStatusPayload:
       description: Event payload for a watcher status change.
