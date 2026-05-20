@@ -2845,9 +2845,7 @@ components:
           items:
             anyOf:
               - $ref: "#/components/schemas/OCRProof"
-              - type: object
-                description: Generic proof object for future extensibility
-                additionalProperties: true
+              - $ref: "#/components/schemas/GenericProofObject"
           example: []
       required:
         - type
@@ -2862,6 +2860,16 @@ components:
             ocr_context: "0x0a0b0c"
             signatures:
               - "0x789abc"
+    GenericProofObject:
+      description: Generic proof object for future extensibility.
+      type: object
+      properties:
+        alg:
+          type: string
+          description: Optional algorithm used for the proof
+          example: "generic"
+      additionalProperties: true
+      x-is-free-form: false
     OCRProof:
       description: An OCR-based cryptographic proof attached to a verifiable event.
       type: object

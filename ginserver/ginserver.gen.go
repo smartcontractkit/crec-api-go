@@ -437,9 +437,6 @@ type EventHeaders struct {
 	Type EventType `json:"type"`
 }
 
-// EventHeadersProofs1 Generic proof object for future extensibility
-type EventHeadersProofs1 map[string]interface{}
-
 // EventHeaders_Proofs_Item defines model for EventHeaders.proofs.Item.
 type EventHeaders_Proofs_Item struct {
 	union json.RawMessage
@@ -479,6 +476,13 @@ type FinalizedBlockSelection struct {
 
 // FinalizedBlockSelectionType Resolve finalized to concrete block metadata before executing the call.
 type FinalizedBlockSelectionType string
+
+// GenericProofObject Generic proof object for future extensibility.
+type GenericProofObject struct {
+	// Alg Optional algorithm used for the proof
+	Alg                  *string                `json:"alg,omitempty"`
+	AdditionalProperties map[string]interface{} `json:"-"`
+}
 
 // HealthCheck Health check response.
 type HealthCheck struct {
@@ -1285,6 +1289,74 @@ type CreateWalletJSONRequestBody = CreateWallet
 // UpdateWalletJSONRequestBody defines body for UpdateWallet for application/json ContentType.
 type UpdateWalletJSONRequestBody = UpdateWallet
 
+// Getter for additional properties for GenericProofObject. Returns the specified
+// element and whether it was found
+func (a GenericProofObject) Get(fieldName string) (value interface{}, found bool) {
+	if a.AdditionalProperties != nil {
+		value, found = a.AdditionalProperties[fieldName]
+	}
+	return
+}
+
+// Setter for additional properties for GenericProofObject
+func (a *GenericProofObject) Set(fieldName string, value interface{}) {
+	if a.AdditionalProperties == nil {
+		a.AdditionalProperties = make(map[string]interface{})
+	}
+	a.AdditionalProperties[fieldName] = value
+}
+
+// Override default JSON handling for GenericProofObject to handle AdditionalProperties
+func (a *GenericProofObject) UnmarshalJSON(b []byte) error {
+	object := make(map[string]json.RawMessage)
+	err := json.Unmarshal(b, &object)
+	if err != nil {
+		return err
+	}
+
+	if raw, found := object["alg"]; found {
+		err = json.Unmarshal(raw, &a.Alg)
+		if err != nil {
+			return fmt.Errorf("error reading 'alg': %w", err)
+		}
+		delete(object, "alg")
+	}
+
+	if len(object) != 0 {
+		a.AdditionalProperties = make(map[string]interface{})
+		for fieldName, fieldBuf := range object {
+			var fieldVal interface{}
+			err := json.Unmarshal(fieldBuf, &fieldVal)
+			if err != nil {
+				return fmt.Errorf("error unmarshaling field %s: %w", fieldName, err)
+			}
+			a.AdditionalProperties[fieldName] = fieldVal
+		}
+	}
+	return nil
+}
+
+// Override default JSON handling for GenericProofObject to handle AdditionalProperties
+func (a GenericProofObject) MarshalJSON() ([]byte, error) {
+	var err error
+	object := make(map[string]json.RawMessage)
+
+	if a.Alg != nil {
+		object["alg"], err = json.Marshal(a.Alg)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling 'alg': %w", err)
+		}
+	}
+
+	for fieldName, field := range a.AdditionalProperties {
+		object[fieldName], err = json.Marshal(field)
+		if err != nil {
+			return nil, fmt.Errorf("error marshaling '%s': %w", fieldName, err)
+		}
+	}
+	return json.Marshal(object)
+}
+
 // AsCreateWatcherWithService returns the union data inside the CreateWatcher as a CreateWatcherWithService
 func (t CreateWatcher) AsCreateWatcherWithService() (CreateWatcherWithService, error) {
 	var body CreateWatcherWithService
@@ -1513,22 +1585,22 @@ func (t *EventHeaders_Proofs_Item) MergeOCRProof(v OCRProof) error {
 	return err
 }
 
-// AsEventHeadersProofs1 returns the union data inside the EventHeaders_Proofs_Item as a EventHeadersProofs1
-func (t EventHeaders_Proofs_Item) AsEventHeadersProofs1() (EventHeadersProofs1, error) {
-	var body EventHeadersProofs1
+// AsGenericProofObject returns the union data inside the EventHeaders_Proofs_Item as a GenericProofObject
+func (t EventHeaders_Proofs_Item) AsGenericProofObject() (GenericProofObject, error) {
+	var body GenericProofObject
 	err := json.Unmarshal(t.union, &body)
 	return body, err
 }
 
-// FromEventHeadersProofs1 overwrites any union data inside the EventHeaders_Proofs_Item as the provided EventHeadersProofs1
-func (t *EventHeaders_Proofs_Item) FromEventHeadersProofs1(v EventHeadersProofs1) error {
+// FromGenericProofObject overwrites any union data inside the EventHeaders_Proofs_Item as the provided GenericProofObject
+func (t *EventHeaders_Proofs_Item) FromGenericProofObject(v GenericProofObject) error {
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
 }
 
-// MergeEventHeadersProofs1 performs a merge with any union data inside the EventHeaders_Proofs_Item, using the provided EventHeadersProofs1
-func (t *EventHeaders_Proofs_Item) MergeEventHeadersProofs1(v EventHeadersProofs1) error {
+// MergeGenericProofObject performs a merge with any union data inside the EventHeaders_Proofs_Item, using the provided GenericProofObject
+func (t *EventHeaders_Proofs_Item) MergeGenericProofObject(v GenericProofObject) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
