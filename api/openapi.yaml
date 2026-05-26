@@ -549,7 +549,7 @@ paths:
       description: |
         Returns chain query records for the channel.
         Each item includes `target`, `event_hash`, `verifiable_result`, and `proof` when those fields are available.
-        Filters compose with logical AND. Pagination (`limit`/`offset`) is applied after filtering.
+        Filters compose with logical AND.
       parameters:
         - in: path
           name: channel_id
@@ -609,6 +609,21 @@ paths:
           description: Filter queries by chain selector (network).
           schema:
             $ref: "#/components/schemas/ChainSelector"
+        - in: query
+          name: sort_by
+          description: |
+            Field to sort the result by. `updated_at` (last update) is the default and matches the
+            previous unsorted-list behavior most closely. `target`, `query_id`, `query_kind`,
+            `chain_selector`, and `status` provide lexical/enum ordering for UI columns.
+          schema:
+            $ref: "#/components/schemas/QuerySortBy"
+          example: "updated_at"
+        - in: query
+          name: sort_order
+          description: Sort direction. Defaults to descending so the most recently updated queries appear first.
+          schema:
+            $ref: "#/components/schemas/SortOrder"
+          example: "desc"
       responses:
         "200":
           description: Successful operation
@@ -616,29 +631,125 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/QueryList"
-              example:
-                data:
-                  - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
-                    channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
-                    status: "completed"
-                    query_kind: "evm_call"
-                    chain_selector: "16015286601757825753"
-                    target: "0x1111111111111111111111111111111111111111"
-                    event_hash: "0xabc123def456"
-                    verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
-                    proof:
-                      alg: "ocr2vrf"
-                      ocr_report: "0xabc123"
-                      ocr_context: "0xdef456"
-                      signatures: ["0x789abc"]
-                    created_at: 1715698800
-                    updated_at: 1715698815
-                    expires_at: 1715702400
-                    accepted_at: 1715698800
-                    sending_at: 1715698801
-                    sent_at: 1715698802
-                    completed_at: 1715698815
-                has_more: false
+              examples:
+                defaultLastUpdatedDesc:
+                  summary: Default sort — sort_by=updated_at, sort_order=desc
+                  description: |
+                    `GET /channels/{channel_id}/queries?limit=20&offset=0`
+                    Most recently updated queries appear first.
+                  value:
+                    data:
+                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x1111111111111111111111111111111111111111"
+                        event_hash: "0xabc123def456"
+                        verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
+                        proof:
+                          alg: "ocr2vrf"
+                          ocr_report: "0xabc123"
+                          ocr_context: "0xdef456"
+                          signatures: ["0x789abc"]
+                        created_at: 1715698800
+                        updated_at: 1715698815
+                        expires_at: 1715702400
+                        accepted_at: 1715698800
+                        sending_at: 1715698801
+                        sent_at: 1715698802
+                        completed_at: 1715698815
+                      - query_id: "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "sent"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x2222222222222222222222222222222222222222"
+                        created_at: 1715698700
+                        updated_at: 1715698710
+                        expires_at: 1715702300
+                        accepted_at: 1715698700
+                        sending_at: 1715698705
+                        sent_at: 1715698710
+                    has_more: false
+                filterByStatusAndChainSortByTargetAsc:
+                  summary: Filter + sort — status=completed, chain_selector=16015286601757825753, sort_by=target, sort_order=asc
+                  description: |
+                    `GET /channels/{channel_id}/queries?status=completed&chain_selector=16015286601757825753&sort_by=target&sort_order=asc`
+                    Completed Sepolia queries ordered lexically by display target.
+                  value:
+                    data:
+                      - query_id: "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x1111111111111111111111111111111111111111"
+                        created_at: 1715698700
+                        updated_at: 1715698712
+                        completed_at: 1715698712
+                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x2222222222222222222222222222222222222222"
+                        created_at: 1715698800
+                        updated_at: 1715698815
+                        completed_at: 1715698815
+                    has_more: false
+                textSearchSortByStatus:
+                  summary: Text search + sort by status — q=0x1111, sort_by=status, sort_order=asc
+                  description: |
+                    `GET /channels/{channel_id}/queries?q=0x1111&sort_by=status&sort_order=asc`
+                    Returns queries whose display target contains "0x1111", ordered by status (alphabetical: accepted, completed, expired, failed, sending, sent).
+                  value:
+                    data:
+                      - query_id: "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "accepted"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x1111111111111111111111111111111111111111"
+                        created_at: 1715698900
+                        updated_at: 1715698900
+                        accepted_at: 1715698900
+                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x1111111111111111111111111111111111111111"
+                        created_at: 1715698800
+                        updated_at: 1715698815
+                        completed_at: 1715698815
+                    has_more: false
+                filterByKindSortByChainSelector:
+                  summary: Filter by kind + sort by network — query_kind=evm_call, sort_by=chain_selector, sort_order=asc
+                  description: |
+                    `GET /channels/{channel_id}/queries?query_kind=evm_call&sort_by=chain_selector&sort_order=asc`
+                    Useful for multi-network UIs that group queries by their target chain.
+                  value:
+                    data:
+                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "12922642891491394802"
+                        target: "0x3333333333333333333333333333333333333333"
+                        created_at: 1715698700
+                        updated_at: 1715698715
+                        completed_at: 1715698715
+                      - query_id: "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x1111111111111111111111111111111111111111"
+                        created_at: 1715698800
+                        updated_at: 1715698815
+                        completed_at: 1715698815
+                    has_more: false
         "404":
           description: Channel not found
           content:
@@ -1630,6 +1741,36 @@ components:
       x-enum-varnames:
         - QueryKindEVMCall
       example: "evm_call"
+    QuerySortBy:
+      type: string
+      description: Field to sort listed queries by.
+      enum:
+        - target
+        - query_id
+        - query_kind
+        - chain_selector
+        - updated_at
+        - status
+      x-enum-varnames:
+        - QuerySortByTarget
+        - QuerySortByQueryID
+        - QuerySortByQueryKind
+        - QuerySortByChainSelector
+        - QuerySortByUpdatedAt
+        - QuerySortByStatus
+      default: "updated_at"
+      example: "updated_at"
+    SortOrder:
+      type: string
+      description: Sort direction for a listing.
+      enum:
+        - asc
+        - desc
+      x-enum-varnames:
+        - SortOrderAsc
+        - SortOrderDesc
+      default: "desc"
+      example: "desc"
     SubjectType:
       type: string
       description: Type of subject used for audit identity and filtering.
