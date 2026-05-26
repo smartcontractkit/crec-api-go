@@ -549,6 +549,7 @@ paths:
       description: |
         Returns chain query records for the channel.
         Each item includes `target`, `event_hash`, `verifiable_result`, and `proof` when those fields are available.
+        Filters compose with logical AND. Pagination (`limit`/`offset`) is applied after filtering.
       parameters:
         - in: path
           name: channel_id
@@ -556,16 +557,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - in: query
-          name: status
-          description: Filter queries by status. Multiple values allowed.
-          schema:
-            type: array
-            items:
-              $ref: "#/components/schemas/QueryStatus"
-          style: form
-          explode: true
-          example: ["accepted", "completed"]
         - in: query
           name: limit
           description: Maximum number of queries to return
@@ -582,6 +573,42 @@ paths:
             format: int64
             minimum: 0
             default: 0
+        - in: query
+          name: q
+          description: |
+            Free-text search across the query's display `target` (case-insensitive partial match).
+            For `evm_call` queries the display target is the contract address, so this matches
+            substrings of the contract address (e.g. the last 6 hex characters).
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 255
+          example: "0x1111"
+        - in: query
+          name: status
+          description: Filter queries by status. Multiple values allowed.
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/QueryStatus"
+          style: form
+          explode: true
+          example: ["accepted", "completed"]
+        - in: query
+          name: query_kind
+          description: Filter queries by kind. Multiple values allowed.
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/QueryKind"
+          style: form
+          explode: true
+          example: ["evm_call"]
+        - in: query
+          name: chain_selector
+          description: Filter queries by chain selector (network).
+          schema:
+            $ref: "#/components/schemas/ChainSelector"
       responses:
         "200":
           description: Successful operation

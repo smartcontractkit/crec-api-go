@@ -1198,14 +1198,25 @@ type ListOperationsParams struct {
 
 // ListQueriesParams defines parameters for ListQueries.
 type ListQueriesParams struct {
-	// Status Filter queries by status. Multiple values allowed.
-	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
-
 	// Limit Maximum number of queries to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of queries to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Q Free-text search across the query's display `target` (case-insensitive partial match).
+	// For `evm_call` queries the display target is the contract address, so this matches
+	// substrings of the contract address (e.g. the last 6 hex characters).
+	Q *string `form:"q,omitempty" json:"q,omitempty"`
+
+	// Status Filter queries by status. Multiple values allowed.
+	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// QueryKind Filter queries by kind. Multiple values allowed.
+	QueryKind *[]QueryKind `form:"query_kind,omitempty" json:"query_kind,omitempty"`
+
+	// ChainSelector Filter queries by chain selector (network).
+	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -2510,14 +2521,6 @@ func (siw *ServerInterfaceWrapper) ListQueries(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ListQueriesParams
 
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
-		return
-	}
-
 	// ------------- Optional query parameter "limit" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
@@ -2531,6 +2534,38 @@ func (siw *ServerInterfaceWrapper) ListQueries(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "q" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "q", c.Request.URL.Query(), &params.Q)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter q: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "query_kind" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "query_kind", c.Request.URL.Query(), &params.QueryKind)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter query_kind: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_selector" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
 		return
 	}
 
