@@ -109,8 +109,10 @@ const (
 	QuerySortByChainSelector QuerySortBy = "chain_selector"
 	QuerySortByQueryID       QuerySortBy = "query_id"
 	QuerySortByQueryKind     QuerySortBy = "query_kind"
+	QuerySortBySelector      QuerySortBy = "selector"
 	QuerySortByStatus        QuerySortBy = "status"
 	QuerySortByTarget        QuerySortBy = "target"
+	QuerySortByTargetKind    QuerySortBy = "target_kind"
 	QuerySortByUpdatedAt     QuerySortBy = "updated_at"
 )
 
@@ -122,6 +124,17 @@ const (
 	QueryStatusFailed    QueryStatus = "failed"
 	QueryStatusSending   QueryStatus = "sending"
 	QueryStatusSent      QueryStatus = "sent"
+)
+
+// Defines values for QueryTargetKind.
+const (
+	QueryTargetKindAccount         QueryTargetKind = "account"
+	QueryTargetKindBlockNumber     QueryTargetKind = "block_number"
+	QueryTargetKindContractAddress QueryTargetKind = "contract_address"
+	QueryTargetKindEmitterContract QueryTargetKind = "emitter_contract"
+	QueryTargetKindFilterName      QueryTargetKind = "filter_name"
+	QueryTargetKindLogFilter       QueryTargetKind = "log_filter"
+	QueryTargetKindTxHash          QueryTargetKind = "tx_hash"
 )
 
 // Defines values for SortOrder.
@@ -720,6 +733,13 @@ type Query struct {
 	// QueryKind Kind of chain query.
 	QueryKind QueryKind `json:"query_kind"`
 
+	// Selector Optional sub-discriminator inside the query payload, denormalized at create time
+	// so it can be filtered and sorted without scanning the JSON params. For `evm_call`
+	// this is the 4-byte function selector (first 4 bytes of `call_data`, e.g. `0x18160ddd`).
+	// Other query kinds may populate it with their kind-specific sub-key (e.g. topic0
+	// for `filterLogs`) or leave it unset.
+	Selector *string `json:"selector,omitempty"`
+
 	// SendingAt Unix timestamp in seconds
 	SendingAt *Timestamp `json:"sending_at,omitempty"`
 
@@ -731,6 +751,15 @@ type Query struct {
 
 	// Target Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
 	Target string `json:"target"`
+
+	// TargetKind What the query's display `target` semantically represents. Decoupled from `query_kind`
+	// so UIs can label and filter by the kind of thing being looked up without knowing the
+	// full per-`query_kind` mapping. Today only `contract_address` is reachable (MVP supports
+	// `evm_call`); other values are reserved for the SDK read methods that will land later
+	// (`getTransactionByHash`/`getTransactionReceipt` → `tx_hash`, `headerByNumber` →
+	// `block_number`, `balanceAt` → `account`, `filterLogs` → `emitter_contract`,
+	// `registerLogTracking` → `log_filter`, `unregisterLogTracking` → `filter_name`).
+	TargetKind QueryTargetKind `json:"target_kind"`
 
 	// UpdatedAt Unix timestamp in seconds
 	UpdatedAt Timestamp `json:"updated_at"`
@@ -784,12 +813,30 @@ type QueryStatusPayload struct {
 	// Target Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
 	Target string `json:"target"`
 
+	// TargetKind What the query's display `target` semantically represents. Decoupled from `query_kind`
+	// so UIs can label and filter by the kind of thing being looked up without knowing the
+	// full per-`query_kind` mapping. Today only `contract_address` is reachable (MVP supports
+	// `evm_call`); other values are reserved for the SDK read methods that will land later
+	// (`getTransactionByHash`/`getTransactionReceipt` → `tx_hash`, `headerByNumber` →
+	// `block_number`, `balanceAt` → `account`, `filterLogs` → `emitter_contract`,
+	// `registerLogTracking` → `log_filter`, `unregisterLogTracking` → `filter_name`).
+	TargetKind QueryTargetKind `json:"target_kind"`
+
 	// Timestamp Timestamp when the status event was created.
 	Timestamp int64 `json:"timestamp"`
 
 	// VerifiableResult Base64-encoded verifiable query result for terminal query status events.
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
 }
+
+// QueryTargetKind What the query's display `target` semantically represents. Decoupled from `query_kind`
+// so UIs can label and filter by the kind of thing being looked up without knowing the
+// full per-`query_kind` mapping. Today only `contract_address` is reachable (MVP supports
+// `evm_call`); other values are reserved for the SDK read methods that will land later
+// (`getTransactionByHash`/`getTransactionReceipt` → `tx_hash`, `headerByNumber` →
+// `block_number`, `balanceAt` → `account`, `filterLogs` → `emitter_contract`,
+// `registerLogTracking` → `log_filter`, `unregisterLogTracking` → `filter_name`).
+type QueryTargetKind string
 
 // RSAPublicKey RSA public key with exponent and modulus
 type RSAPublicKey struct {
@@ -1226,11 +1273,6 @@ type ListQueriesParams struct {
 	// Offset Number of queries to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
 
-	// Q Free-text search across the query's display `target` (case-insensitive partial match).
-	// For `evm_call` queries the display target is the contract address, so this matches
-	// substrings of the contract address (e.g. the last 6 hex characters).
-	Q *string `form:"q,omitempty" json:"q,omitempty"`
-
 	// Status Filter queries by status. Multiple values allowed.
 	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
 
@@ -1240,9 +1282,26 @@ type ListQueriesParams struct {
 	// ChainSelector Filter queries by chain selector (network).
 	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
+	// Target Filter queries by their denormalized display `target`. Exact match, multiple values
+	// allowed. Use together with `target_kind` for kind-extensible UIs (e.g. show queries
+	// that targeted these contract addresses OR these transaction hashes).
+	Target *[]string `form:"target,omitempty" json:"target,omitempty"`
+
+	// TargetKind Filter by what `target` semantically represents (`contract_address`, `tx_hash`,
+	// `block_number`, `account`, `emitter_contract`, `log_filter`, `filter_name`).
+	// Lets UIs filter to a class of lookups without knowing the per-`query_kind` mapping.
+	// Multiple values allowed.
+	TargetKind *[]QueryTargetKind `form:"target_kind,omitempty" json:"target_kind,omitempty"`
+
+	// Selector Filter by the denormalized `selector` sub-discriminator (for `evm_call`, the 4-byte
+	// function selector). Exact match, multiple values allowed. Useful to surface
+	// e.g. all `balanceOf(...)` calls across many contracts.
+	Selector *[]string `form:"selector,omitempty" json:"selector,omitempty"`
+
 	// SortBy Field to sort the result by. `updated_at` (last update) is the default and matches the
-	// previous unsorted-list behavior most closely. `target`, `query_id`, `query_kind`,
-	// `chain_selector`, and `status` provide lexical/enum ordering for UI columns.
+	// previous unsorted-list behavior most closely. `target`, `target_kind`, `selector`,
+	// `query_id`, `query_kind`, `chain_selector`, and `status` provide lexical/enum ordering
+	// for UI columns.
 	SortBy *QuerySortBy `form:"sort_by,omitempty" json:"sort_by,omitempty"`
 
 	// SortOrder Sort direction. Defaults to descending so the most recently updated queries appear first.
@@ -2567,14 +2626,6 @@ func (siw *ServerInterfaceWrapper) ListQueries(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "q" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "q", c.Request.URL.Query(), &params.Q)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter q: %w", err), http.StatusBadRequest)
-		return
-	}
-
 	// ------------- Optional query parameter "status" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
@@ -2596,6 +2647,30 @@ func (siw *ServerInterfaceWrapper) ListQueries(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "target" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "target", c.Request.URL.Query(), &params.Target)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter target: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "target_kind" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "target_kind", c.Request.URL.Query(), &params.TargetKind)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter target_kind: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "selector" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "selector", c.Request.URL.Query(), &params.Selector)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter selector: %w", err), http.StatusBadRequest)
 		return
 	}
 

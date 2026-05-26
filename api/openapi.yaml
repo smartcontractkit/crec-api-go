@@ -574,17 +574,6 @@ paths:
             minimum: 0
             default: 0
         - in: query
-          name: q
-          description: |
-            Free-text search across the query's display `target` (case-insensitive partial match).
-            For `evm_call` queries the display target is the contract address, so this matches
-            substrings of the contract address (e.g. the last 6 hex characters).
-          schema:
-            type: string
-            minLength: 1
-            maxLength: 255
-          example: "0x1111"
-        - in: query
           name: status
           description: Filter queries by status. Multiple values allowed.
           schema:
@@ -610,11 +599,53 @@ paths:
           schema:
             $ref: "#/components/schemas/ChainSelector"
         - in: query
+          name: target
+          description: |
+            Filter queries by their denormalized display `target`. Exact match, multiple values
+            allowed. Use together with `target_kind` for kind-extensible UIs (e.g. show queries
+            that targeted these contract addresses OR these transaction hashes).
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+          example: ["0x1111111111111111111111111111111111111111"]
+        - in: query
+          name: target_kind
+          description: |
+            Filter by what `target` semantically represents (`contract_address`, `tx_hash`,
+            `block_number`, `account`, `emitter_contract`, `log_filter`, `filter_name`).
+            Lets UIs filter to a class of lookups without knowing the per-`query_kind` mapping.
+            Multiple values allowed.
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/QueryTargetKind"
+          style: form
+          explode: true
+          example: ["contract_address"]
+        - in: query
+          name: selector
+          description: |
+            Filter by the denormalized `selector` sub-discriminator (for `evm_call`, the 4-byte
+            function selector). Exact match, multiple values allowed. Useful to surface
+            e.g. all `balanceOf(...)` calls across many contracts.
+          schema:
+            type: array
+            items:
+              type: string
+              pattern: "^0x([a-fA-F0-9]{2})*$"
+          style: form
+          explode: true
+          example: ["0x18160ddd"]
+        - in: query
           name: sort_by
           description: |
             Field to sort the result by. `updated_at` (last update) is the default and matches the
-            previous unsorted-list behavior most closely. `target`, `query_id`, `query_kind`,
-            `chain_selector`, and `status` provide lexical/enum ordering for UI columns.
+            previous unsorted-list behavior most closely. `target`, `target_kind`, `selector`,
+            `query_id`, `query_kind`, `chain_selector`, and `status` provide lexical/enum ordering
+            for UI columns.
           schema:
             $ref: "#/components/schemas/QuerySortBy"
           example: "updated_at"
@@ -645,6 +676,8 @@ paths:
                         query_kind: "evm_call"
                         chain_selector: "16015286601757825753"
                         target: "0x1111111111111111111111111111111111111111"
+                        target_kind: "contract_address"
+                        selector: "0x18160ddd"
                         event_hash: "0xabc123def456"
                         verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
                         proof:
@@ -665,6 +698,8 @@ paths:
                         query_kind: "evm_call"
                         chain_selector: "16015286601757825753"
                         target: "0x2222222222222222222222222222222222222222"
+                        target_kind: "contract_address"
+                        selector: "0x70a08231"
                         created_at: 1715698700
                         updated_at: 1715698710
                         expires_at: 1715702300
@@ -685,6 +720,8 @@ paths:
                         query_kind: "evm_call"
                         chain_selector: "16015286601757825753"
                         target: "0x1111111111111111111111111111111111111111"
+                        target_kind: "contract_address"
+                        selector: "0x18160ddd"
                         created_at: 1715698700
                         updated_at: 1715698712
                         completed_at: 1715698712
@@ -694,15 +731,17 @@ paths:
                         query_kind: "evm_call"
                         chain_selector: "16015286601757825753"
                         target: "0x2222222222222222222222222222222222222222"
+                        target_kind: "contract_address"
+                        selector: "0x70a08231"
                         created_at: 1715698800
                         updated_at: 1715698815
                         completed_at: 1715698815
                     has_more: false
-                textSearchSortByStatus:
-                  summary: Text search + sort by status — q=0x1111, sort_by=status, sort_order=asc
+                filterByTargetsSortByStatus:
+                  summary: Filter by explicit targets + sort by status — target=0x1111…&target=0x2222…&sort_by=status&sort_order=asc
                   description: |
-                    `GET /channels/{channel_id}/queries?q=0x1111&sort_by=status&sort_order=asc`
-                    Returns queries whose display target contains "0x1111", ordered by status (alphabetical: accepted, completed, expired, failed, sending, sent).
+                    `GET /channels/{channel_id}/queries?target=0x1111111111111111111111111111111111111111&target=0x2222222222222222222222222222222222222222&sort_by=status&sort_order=asc`
+                    Exact-match across the denormalized `target` column for a small set of known contract addresses, ordered by status.
                   value:
                     data:
                       - query_id: "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10"
@@ -711,6 +750,8 @@ paths:
                         query_kind: "evm_call"
                         chain_selector: "16015286601757825753"
                         target: "0x1111111111111111111111111111111111111111"
+                        target_kind: "contract_address"
+                        selector: "0x18160ddd"
                         created_at: 1715698900
                         updated_at: 1715698900
                         accepted_at: 1715698900
@@ -719,16 +760,48 @@ paths:
                         status: "completed"
                         query_kind: "evm_call"
                         chain_selector: "16015286601757825753"
-                        target: "0x1111111111111111111111111111111111111111"
+                        target: "0x2222222222222222222222222222222222222222"
+                        target_kind: "contract_address"
+                        selector: "0x70a08231"
                         created_at: 1715698800
                         updated_at: 1715698815
                         completed_at: 1715698815
                     has_more: false
-                filterByKindSortByChainSelector:
-                  summary: Filter by kind + sort by network — query_kind=evm_call, sort_by=chain_selector, sort_order=asc
+                filterBySelectorAcrossContracts:
+                  summary: All `balanceOf(address)` lookups across contracts — selector=0x70a08231&sort_by=updated_at&sort_order=desc
                   description: |
-                    `GET /channels/{channel_id}/queries?query_kind=evm_call&sort_by=chain_selector&sort_order=asc`
-                    Useful for multi-network UIs that group queries by their target chain.
+                    `GET /channels/{channel_id}/queries?selector=0x70a08231&sort_by=updated_at&sort_order=desc`
+                    Returns every query whose denormalized `selector` is the 4-byte ERC-20 `balanceOf(address)` function selector, irrespective of the target contract.
+                  value:
+                    data:
+                      - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "16015286601757825753"
+                        target: "0x2222222222222222222222222222222222222222"
+                        target_kind: "contract_address"
+                        selector: "0x70a08231"
+                        created_at: 1715698800
+                        updated_at: 1715698815
+                        completed_at: 1715698815
+                      - query_id: "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10"
+                        channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+                        status: "completed"
+                        query_kind: "evm_call"
+                        chain_selector: "12922642891491394802"
+                        target: "0x3333333333333333333333333333333333333333"
+                        target_kind: "contract_address"
+                        selector: "0x70a08231"
+                        created_at: 1715698700
+                        updated_at: 1715698712
+                        completed_at: 1715698712
+                    has_more: false
+                filterByTargetKindSortByTargetKind:
+                  summary: Filter by target kind + sort by target_kind — target_kind=contract_address&sort_by=target_kind&sort_order=asc
+                  description: |
+                    `GET /channels/{channel_id}/queries?target_kind=contract_address&sort_by=target_kind&sort_order=asc`
+                    Useful for kind-extensible UIs that group lookups by what kind of thing the target is (contract, tx hash, account, etc.) once the SDK exposes more read methods. Today only `contract_address` is reachable.
                   value:
                     data:
                       - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
@@ -737,6 +810,8 @@ paths:
                         query_kind: "evm_call"
                         chain_selector: "12922642891491394802"
                         target: "0x3333333333333333333333333333333333333333"
+                        target_kind: "contract_address"
+                        selector: "0x18160ddd"
                         created_at: 1715698700
                         updated_at: 1715698715
                         completed_at: 1715698715
@@ -746,6 +821,8 @@ paths:
                         query_kind: "evm_call"
                         chain_selector: "16015286601757825753"
                         target: "0x1111111111111111111111111111111111111111"
+                        target_kind: "contract_address"
+                        selector: "0x70a08231"
                         created_at: 1715698800
                         updated_at: 1715698815
                         completed_at: 1715698815
@@ -1741,11 +1818,40 @@ components:
       x-enum-varnames:
         - QueryKindEVMCall
       example: "evm_call"
+    QueryTargetKind:
+      type: string
+      description: |
+        What the query's display `target` semantically represents. Decoupled from `query_kind`
+        so UIs can label and filter by the kind of thing being looked up without knowing the
+        full per-`query_kind` mapping. Today only `contract_address` is reachable (MVP supports
+        `evm_call`); other values are reserved for the SDK read methods that will land later
+        (`getTransactionByHash`/`getTransactionReceipt` → `tx_hash`, `headerByNumber` →
+        `block_number`, `balanceAt` → `account`, `filterLogs` → `emitter_contract`,
+        `registerLogTracking` → `log_filter`, `unregisterLogTracking` → `filter_name`).
+      enum:
+        - contract_address
+        - tx_hash
+        - block_number
+        - account
+        - emitter_contract
+        - log_filter
+        - filter_name
+      x-enum-varnames:
+        - QueryTargetKindContractAddress
+        - QueryTargetKindTxHash
+        - QueryTargetKindBlockNumber
+        - QueryTargetKindAccount
+        - QueryTargetKindEmitterContract
+        - QueryTargetKindLogFilter
+        - QueryTargetKindFilterName
+      example: "contract_address"
     QuerySortBy:
       type: string
       description: Field to sort listed queries by.
       enum:
         - target
+        - target_kind
+        - selector
         - query_id
         - query_kind
         - chain_selector
@@ -1753,6 +1859,8 @@ components:
         - status
       x-enum-varnames:
         - QuerySortByTarget
+        - QuerySortByTargetKind
+        - QuerySortBySelector
         - QuerySortByQueryID
         - QuerySortByQueryKind
         - QuerySortByChainSelector
@@ -2398,6 +2506,8 @@ components:
         query_kind: "evm_call"
         chain_selector: "16015286601757825753"
         target: "0x1111111111111111111111111111111111111111"
+        target_kind: "contract_address"
+        selector: "0x18160ddd"
         event_hash: "0xabc123def456"
         verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
         proof:
@@ -2431,6 +2541,18 @@ components:
           type: string
           description: Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
           example: "0x1111111111111111111111111111111111111111"
+        target_kind:
+          $ref: "#/components/schemas/QueryTargetKind"
+        selector:
+          type: string
+          description: |
+            Optional sub-discriminator inside the query payload, denormalized at create time
+            so it can be filtered and sorted without scanning the JSON params. For `evm_call`
+            this is the 4-byte function selector (first 4 bytes of `call_data`, e.g. `0x18160ddd`).
+            Other query kinds may populate it with their kind-specific sub-key (e.g. topic0
+            for `filterLogs`) or leave it unset.
+          pattern: "^0x([a-fA-F0-9]{2})*$"
+          example: "0x18160ddd"
         event_hash:
           type: string
           description: Verifiable event hash for the terminal query result.
@@ -2464,6 +2586,7 @@ components:
         - query_kind
         - chain_selector
         - target
+        - target_kind
         - created_at
         - updated_at
 
@@ -2478,6 +2601,8 @@ components:
             query_kind: "evm_call"
             chain_selector: "16015286601757825753"
             target: "0x1111111111111111111111111111111111111111"
+            target_kind: "contract_address"
+            selector: "0x18160ddd"
             event_hash: "0xabc123def456"
             verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
             proof:
@@ -3134,6 +3259,7 @@ components:
         query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
         status: "completed"
         target: "0x1111111111111111111111111111111111111111"
+        target_kind: "contract_address"
         timestamp: 1715698815
         event_hash: "0xabc123def456"
         verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
@@ -3148,6 +3274,8 @@ components:
           type: string
           description: Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
           example: "0x1111111111111111111111111111111111111111"
+        target_kind:
+          $ref: "#/components/schemas/QueryTargetKind"
         timestamp:
           type: integer
           format: int64
@@ -3162,6 +3290,7 @@ components:
         - query_id
         - status
         - target
+        - target_kind
         - timestamp
     WatcherStatusPayload:
       description: Event payload for a watcher status change.
