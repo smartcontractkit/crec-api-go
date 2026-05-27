@@ -16,19 +16,26 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
       - name: Setup Go
         uses: smartcontractkit/.github/actions/setup-golang@setup-golang/0.3.2
         with:
           go-version-file: ./go.mod
           use-go-cache: "true"
+
+      - name: Install Task
+        run: |
+          sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
       - name: Download Vacuum
         run: |
           curl -L "https://github.com/daveshanley/vacuum/releases/download/v${VACUUM_VERSION}/vacuum_${VACUUM_VERSION}_linux_x86_64.tar.gz" \
             -o vacuum.tar.gz
           tar -xzf vacuum.tar.gz
           sudo mv vacuum /usr/local/bin/vacuum
+
       - name: Lint OpenAPI spec
-        run: make validate-openapi
+        run: task validate-openapi
 
   generate:
     name: Verify Code Generation is Up-to-Date
@@ -44,14 +51,14 @@ jobs:
           use-go-cache: "true"
 
       - name: Install generation tools
-        run: make tools
+        run: task tools
 
       - name: Run code generation
-        run: make generate
+        run: task generate
 
       - name: Check for uncommitted changes
         run: |
-          git diff --exit-code || (echo "Generated code is out of date. Run 'make generate' and commit the changes." && exit 1)
+          git diff --exit-code || (echo "Generated code is out of date. Run 'task generate' and commit the changes." && exit 1)
 
       - name: Go build
         run: go build ./...
