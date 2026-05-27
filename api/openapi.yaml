@@ -1,7 +1,7 @@
 openapi: 3.0.4
 info:
   title: CRE Connect API
-  version: 0.4.0
+  version: 0.7.0
   description: API specification for CRE Connect resources
 
 servers:
@@ -720,7 +720,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "400":
           description: Invalid request data
           content:
@@ -863,7 +863,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "404":
           description: Channel or query not found
           content:
@@ -916,14 +916,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "202":
           description: Archive request accepted. The watcher is transitioning to archived state asynchronously.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "archiving", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "archiving", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "400":
           description: Invalid request data
           content:
@@ -1544,6 +1544,7 @@ components:
         - active
         - failed
         - archiving
+        - archive_failed
         - archived
       x-enum-varnames:
         - WatcherStatusPending
@@ -1572,6 +1573,8 @@ components:
         - sending
         - sent
         - broadcasting
+        - confirmed_latest
+        - confirmed_safe
         - confirmed
         - cancelled
         - expired
@@ -1812,8 +1815,6 @@ components:
           $ref: "#/components/schemas/ECDSASignersList"
         created_at:
           $ref: "#/components/schemas/Timestamp"
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - wallet_id
         - name
@@ -1878,8 +1879,6 @@ components:
           example: 1715698800
         type:
           $ref: "#/components/schemas/NetworkType"
-        default_confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - id
         - name
@@ -2367,8 +2366,6 @@ components:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -2401,8 +2398,6 @@ components:
             $ref: "#/components/schemas/EventABI"
           description: ABI definitions for the events to watch
           minItems: 1
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -2512,8 +2507,6 @@ components:
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
           example: {}
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - watcher_id
         - channel_id
@@ -2523,7 +2516,6 @@ components:
         - address
         - events
         - don_family
-        - confidence_level
     WatcherSummary:
       description: Summary view of a watcher.
       type: object
@@ -2563,8 +2555,6 @@ components:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
           example: "zone-a"
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - watcher_id
         - channel_id
@@ -2573,7 +2563,6 @@ components:
         - chain_selector
         - address
         - don_family
-        - confidence_level
     WatcherList:
       description: Paginated list of watchers.
       type: object

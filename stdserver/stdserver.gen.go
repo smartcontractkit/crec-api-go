@@ -92,6 +92,8 @@ const (
 	OperationStatusBroadcasting     OperationStatus = "broadcasting"
 	OperationStatusCancelled        OperationStatus = "cancelled"
 	OperationStatusConfirmed        OperationStatus = "confirmed"
+	OperationStatusConfirmedLatest  OperationStatus = "confirmed_latest"
+	OperationStatusConfirmedSafe    OperationStatus = "confirmed_safe"
 	OperationStatusExpired          OperationStatus = "expired"
 	OperationStatusFailed           OperationStatus = "failed"
 	OperationStatusPendingSignature OperationStatus = "pending_signature"
@@ -156,8 +158,9 @@ const (
 
 // Defines values for WatcherStatus.
 const (
+	Archived               WatcherStatus = "archived"
 	WatcherStatusActive    WatcherStatus = "active"
-	WatcherStatusArchived  WatcherStatus = "archived"
+	WatcherStatusArchived  WatcherStatus = "archive_failed"
 	WatcherStatusArchiving WatcherStatus = "archiving"
 	WatcherStatusFailed    WatcherStatus = "failed"
 	WatcherStatusPending   WatcherStatus = "pending"
@@ -322,9 +325,6 @@ type CreateWatcherWithABI struct {
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
 
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
-
 	// Events List of event names to watch for
 	Events []string `json:"events"`
 
@@ -339,9 +339,6 @@ type CreateWatcherWithService struct {
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
-
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
 
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
@@ -511,9 +508,6 @@ type Network struct {
 
 	// CreatedAt Timestamp of when the network was created
 	CreatedAt int64 `json:"created_at"`
-
-	// DefaultConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	DefaultConfidenceLevel *ConfidenceLevel `json:"default_confidence_level,omitempty"`
 
 	// Id Unique identifier for the network
 	Id openapi_types.UUID `json:"id"`
@@ -888,9 +882,6 @@ type Wallet struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
-
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
@@ -967,9 +958,6 @@ type Watcher struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
-
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel ConfidenceLevel `json:"confidence_level"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
@@ -1059,9 +1047,6 @@ type WatcherSummary struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
-
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel ConfidenceLevel `json:"confidence_level"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`

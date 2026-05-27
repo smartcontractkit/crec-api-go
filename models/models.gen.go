@@ -54,11 +54,20 @@ const (
 	ChainQueryVerifiableEventServiceCREC ChainQueryVerifiableEventService = "_crec"
 )
 
+// Defines values for EVMEventConfidence.
+const (
+	Finalized EVMEventConfidence = "finalized"
+	Latest    EVMEventConfidence = "latest"
+	Safe      EVMEventConfidence = "safe"
+)
+
 // Defines values for OperationStatusDataStatus.
 const (
-	Broadcasting OperationStatusDataStatus = "broadcasting"
-	Confirmed    OperationStatusDataStatus = "confirmed"
-	Failed       OperationStatusDataStatus = "failed"
+	Broadcasting    OperationStatusDataStatus = "broadcasting"
+	Confirmed       OperationStatusDataStatus = "confirmed"
+	ConfirmedLatest OperationStatusDataStatus = "confirmed_latest"
+	ConfirmedSafe   OperationStatusDataStatus = "confirmed_safe"
+	Failed          OperationStatusDataStatus = "failed"
 )
 
 // ChainQueryBlockNumberSelection defines model for ChainQueryBlockNumberSelection.
@@ -215,6 +224,9 @@ type EVMEvent struct {
 	// ChainId The chain ID of the EVM network
 	ChainId string `json:"chain_id"`
 
+	// Confidence The finality level of the event
+	Confidence EVMEventConfidence `json:"confidence"`
+
 	// EventSignature The signature of the event
 	EventSignature string `json:"event_signature"`
 
@@ -229,9 +241,12 @@ type EVMEvent struct {
 	TxHash string `json:"tx_hash"`
 }
 
+// EVMEventConfidence The finality level of the event
+type EVMEventConfidence string
+
 // OperationStatusData defines model for OperationStatusData.
 type OperationStatusData struct {
-	// Status Status of the operation (broadcasting, confirmed, failed).
+	// Status Status of the operation
 	Status OperationStatusDataStatus `json:"status"`
 
 	// StatusReason Reason for the status.
@@ -247,7 +262,7 @@ type OperationStatusData struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationStatusDataStatus Status of the operation (broadcasting, confirmed, failed).
+// OperationStatusDataStatus Status of the operation
 type OperationStatusDataStatus string
 
 // VerifiableEvent defines model for VerifiableEvent.

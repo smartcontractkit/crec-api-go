@@ -1,7 +1,7 @@
 openapi: 3.0.4
 info:
   title: CRE Connect Models Schema
-  version: 0.4.0
+  version: 0.7.0
   description: OpenAPI specification for the models used in CRE Connect
 
 paths: {}
@@ -51,6 +51,13 @@ components:
           type: integer
           format: uint64
           description: The timestamp of the block where the event was emitted
+        confidence:
+          type: string
+          description: The finality level of the event
+          enum:
+            - latest
+            - safe
+            - finalized
         tx_hash:
           type: string
           description: The transaction hash of the transaction that emitted the event
@@ -74,6 +81,7 @@ components:
         - chain_id
         - block_number
         - block_timestamp
+        - confidence
         - tx_hash
         - address
         - topic_hash
@@ -91,9 +99,11 @@ components:
           description: Wallet address associated with the operation
         status:
           type: string
-          description: Status of the operation (broadcasting, confirmed, failed).
+          description: Status of the operation
           enum:
             - broadcasting
+            - confirmed_latest
+            - confirmed_safe
             - confirmed
             - failed
         status_reason:
