@@ -104,6 +104,16 @@ const (
 	QueryKindEVMCall QueryKind = "evm_call"
 )
 
+// Defines values for QuerySortBy.
+const (
+	QuerySortByChainSelector QuerySortBy = "chain_selector"
+	QuerySortByQueryID       QuerySortBy = "query_id"
+	QuerySortByQueryKind     QuerySortBy = "query_kind"
+	QuerySortByStatus        QuerySortBy = "status"
+	QuerySortByTarget        QuerySortBy = "target"
+	QuerySortByUpdatedAt     QuerySortBy = "updated_at"
+)
+
 // Defines values for QueryStatus.
 const (
 	QueryStatusAccepted  QueryStatus = "accepted"
@@ -112,6 +122,12 @@ const (
 	QueryStatusFailed    QueryStatus = "failed"
 	QueryStatusSending   QueryStatus = "sending"
 	QueryStatusSent      QueryStatus = "sent"
+)
+
+// Defines values for SortOrder.
+const (
+	SortOrderAsc  SortOrder = "asc"
+	SortOrderDesc SortOrder = "desc"
 )
 
 // Defines values for SubjectType.
@@ -748,6 +764,9 @@ type QueryList struct {
 	HasMore bool `json:"has_more"`
 }
 
+// QuerySortBy Field to sort listed queries by.
+type QuerySortBy string
+
 // QueryStatus Status of a chain query.
 type QueryStatus string
 
@@ -783,6 +802,9 @@ type RSAPublicKey struct {
 
 // RSASignersList List of allowed RSA public signing keys
 type RSASignersList = []RSAPublicKey
+
+// SortOrder Sort direction for a listing.
+type SortOrder string
 
 // Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 type Subject struct {
@@ -1198,14 +1220,28 @@ type ListOperationsParams struct {
 
 // ListQueriesParams defines parameters for ListQueries.
 type ListQueriesParams struct {
-	// Status Filter queries by status. Multiple values allowed.
-	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
-
 	// Limit Maximum number of queries to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
 
 	// Offset Number of queries to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Status Filter queries by status. Multiple values allowed.
+	Status *[]QueryStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// QueryKind Filter queries by kind. Multiple values allowed.
+	QueryKind *[]QueryKind `form:"query_kind,omitempty" json:"query_kind,omitempty"`
+
+	// ChainSelector Filter queries by chain selector (network).
+	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// SortBy Field to sort the result by. `updated_at` (last update) is the default and matches the
+	// previous unsorted-list behavior most closely. `target`, `query_id`, `query_kind`,
+	// `chain_selector`, and `status` provide lexical/enum ordering for UI columns.
+	SortBy *QuerySortBy `form:"sort_by,omitempty" json:"sort_by,omitempty"`
+
+	// SortOrder Sort direction. Defaults to descending so the most recently updated queries appear first.
+	SortOrder *SortOrder `form:"sort_order,omitempty" json:"sort_order,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -2510,14 +2546,6 @@ func (siw *ServerInterfaceWrapper) ListQueries(c *gin.Context) {
 	// Parameter object where we will unmarshal all parameters from the context
 	var params ListQueriesParams
 
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
-		return
-	}
-
 	// ------------- Optional query parameter "limit" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "limit", c.Request.URL.Query(), &params.Limit)
@@ -2531,6 +2559,46 @@ func (siw *ServerInterfaceWrapper) ListQueries(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "offset", c.Request.URL.Query(), &params.Offset)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter offset: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", c.Request.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter status: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "query_kind" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "query_kind", c.Request.URL.Query(), &params.QueryKind)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter query_kind: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "chain_selector" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_selector", c.Request.URL.Query(), &params.ChainSelector)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_selector: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "sort_by" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "sort_by", c.Request.URL.Query(), &params.SortBy)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter sort_by: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "sort_order" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "sort_order", c.Request.URL.Query(), &params.SortOrder)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter sort_order: %w", err), http.StatusBadRequest)
 		return
 	}
 
