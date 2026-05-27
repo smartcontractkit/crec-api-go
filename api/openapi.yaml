@@ -1652,6 +1652,7 @@ components:
         - WatcherStatusActive
         - WatcherStatusFailed
         - WatcherStatusArchiving
+        - WatcherStatusArchivingFailed
         - WatcherStatusArchived
       example: "pending"
     WatcherEventStatus:
