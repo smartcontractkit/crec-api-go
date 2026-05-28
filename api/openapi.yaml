@@ -3180,18 +3180,6 @@ components:
         - ChannelStatusActive
         - ChannelStatusArchived
       example: "active"
-    ConfidenceLevel:
-      type: string
-      description: Confidence level. If not specified, the default confidence level for the network will be used.
-      enum:
-        - "latest"
-        - "safe"
-        - "finalized"
-      example: "latest"
-      x-enum-varnames:
-        - ConfidenceLevelLatest
-        - ConfidenceLevelSafe
-        - ConfidenceLevelFinalized
     NetworkType:
       type: string
       description: Type of chain

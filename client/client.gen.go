@@ -46,13 +46,6 @@ const (
 	ChannelStatusArchived ChannelStatus = "archived"
 )
 
-// Defines values for ConfidenceLevel.
-const (
-	ConfidenceLevelFinalized ConfidenceLevel = "finalized"
-	ConfidenceLevelLatest    ConfidenceLevel = "latest"
-	ConfidenceLevelSafe      ConfidenceLevel = "safe"
-)
-
 // Defines values for EventABIType.
 const (
 	EventABITypeEvent EventABIType = "event"
@@ -212,9 +205,6 @@ type ChannelList struct {
 
 // ChannelStatus Status of a channel
 type ChannelStatus string
-
-// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-type ConfidenceLevel string
 
 // CreateChannel Request body for creating a new channel.
 type CreateChannel struct {
