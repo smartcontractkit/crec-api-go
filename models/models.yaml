@@ -52,12 +52,7 @@ components:
           format: uint64
           description: The timestamp of the block where the event was emitted
         confidence:
-          type: string
-          description: The finality level of the event
-          enum:
-            - latest
-            - safe
-            - finalized
+          $ref: "#/components/schemas/ConfidenceLevel"
         tx_hash:
           type: string
           description: The transaction hash of the transaction that emitted the event
@@ -87,6 +82,17 @@ components:
         - topic_hash
         - log_index
         - event_signature
+    ConfidenceLevel:
+      type: string
+      description: The finality level of the event
+      enum:
+        - latest
+        - safe
+        - finalized
+      x-enum-varnames:
+        - ConfidenceLevelLatest
+        - ConfidenceLevelSafe
+        - ConfidenceLevelFinalized
     # OperationStatusData is used as the "data" object field in a VerifiableEvent that corresponds to an operation status update.
     OperationStatusData:
       type: object

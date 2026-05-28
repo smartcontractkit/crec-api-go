@@ -54,11 +54,11 @@ const (
 	ChainQueryVerifiableEventServiceCREC ChainQueryVerifiableEventService = "_crec"
 )
 
-// Defines values for EVMEventConfidence.
+// Defines values for ConfidenceLevel.
 const (
-	Finalized EVMEventConfidence = "finalized"
-	Latest    EVMEventConfidence = "latest"
-	Safe      EVMEventConfidence = "safe"
+	ConfidenceLevelFinalized ConfidenceLevel = "finalized"
+	ConfidenceLevelLatest    ConfidenceLevel = "latest"
+	ConfidenceLevelSafe      ConfidenceLevel = "safe"
 )
 
 // Defines values for OperationStatusDataStatus.
@@ -210,6 +210,9 @@ type ChainQueryVerifiableEventName string
 // ChainQueryVerifiableEventService CRE Connect service namespace for chain query verifiable results.
 type ChainQueryVerifiableEventService string
 
+// ConfidenceLevel The finality level of the event
+type ConfidenceLevel string
+
 // EVMEvent defines model for EVMEvent.
 type EVMEvent struct {
 	// Address The contract address that emitted the event
@@ -225,7 +228,7 @@ type EVMEvent struct {
 	ChainId string `json:"chain_id"`
 
 	// Confidence The finality level of the event
-	Confidence EVMEventConfidence `json:"confidence"`
+	Confidence ConfidenceLevel `json:"confidence"`
 
 	// EventSignature The signature of the event
 	EventSignature string `json:"event_signature"`
@@ -240,9 +243,6 @@ type EVMEvent struct {
 	// TxHash The transaction hash of the transaction that emitted the event
 	TxHash string `json:"tx_hash"`
 }
-
-// EVMEventConfidence The finality level of the event
-type EVMEventConfidence string
 
 // OperationStatusData defines model for OperationStatusData.
 type OperationStatusData struct {
