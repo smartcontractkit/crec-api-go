@@ -2871,6 +2871,8 @@ components:
           type: string
           enum:
             - accepted
+          x-enum-varnames:
+            - FinalizeOperationStatusAccepted
           description: Marks the operation as accepted/finalized.
           example: "accepted"
         signature:
@@ -2894,6 +2896,8 @@ components:
           type: string
           enum:
             - cancelled
+          x-enum-varnames:
+            - CancelOperationStatusCancelled
           description: Marks the operation as cancelled.
           example: "cancelled"
       required:

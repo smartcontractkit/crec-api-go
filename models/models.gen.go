@@ -61,13 +61,13 @@ const (
 	ConfidenceLevelSafe      ConfidenceLevel = "safe"
 )
 
-// Defines values for OperationStatusDataStatus.
+// Defines values for OperationStatusUpdateStatus.
 const (
-	Broadcasting    OperationStatusDataStatus = "broadcasting"
-	Confirmed       OperationStatusDataStatus = "confirmed"
-	ConfirmedLatest OperationStatusDataStatus = "confirmed_latest"
-	ConfirmedSafe   OperationStatusDataStatus = "confirmed_safe"
-	Failed          OperationStatusDataStatus = "failed"
+	OperationStatusUpdateBroadcasting    OperationStatusUpdateStatus = "broadcasting"
+	OperationStatusUpdateConfirmed       OperationStatusUpdateStatus = "confirmed"
+	OperationStatusUpdateConfirmedLatest OperationStatusUpdateStatus = "confirmed_latest"
+	OperationStatusUpdateConfirmedSafe   OperationStatusUpdateStatus = "confirmed_safe"
+	OperationStatusUpdateFailed          OperationStatusUpdateStatus = "failed"
 )
 
 // ChainQueryBlockNumberSelection defines model for ChainQueryBlockNumberSelection.
@@ -244,10 +244,10 @@ type EVMEvent struct {
 	TxHash string `json:"tx_hash"`
 }
 
-// OperationStatusData defines model for OperationStatusData.
-type OperationStatusData struct {
+// OperationStatusUpdate defines model for OperationStatusUpdate.
+type OperationStatusUpdate struct {
 	// Status Status of the operation
-	Status OperationStatusDataStatus `json:"status"`
+	Status OperationStatusUpdateStatus `json:"status"`
 
 	// StatusReason Reason for the status.
 	StatusReason string `json:"status_reason"`
@@ -262,8 +262,8 @@ type OperationStatusData struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationStatusDataStatus Status of the operation
-type OperationStatusDataStatus string
+// OperationStatusUpdateStatus Status of the operation
+type OperationStatusUpdateStatus string
 
 // VerifiableEvent defines model for VerifiableEvent.
 type VerifiableEvent struct {

@@ -37,7 +37,7 @@ const (
 
 // Defines values for CancelOperationStatus.
 const (
-	Cancelled CancelOperationStatus = "cancelled"
+	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
 )
 
 // Defines values for ChannelStatus.
@@ -69,7 +69,7 @@ const (
 
 // Defines values for FinalizeOperationStatus.
 const (
-	Accepted FinalizeOperationStatus = "accepted"
+	FinalizeOperationStatusAccepted FinalizeOperationStatus = "accepted"
 )
 
 // Defines values for FinalizedBlockSelectionType.

@@ -93,8 +93,8 @@ components:
         - ConfidenceLevelLatest
         - ConfidenceLevelSafe
         - ConfidenceLevelFinalized
-    # OperationStatusData is used as the "data" object field in a VerifiableEvent that corresponds to an operation status update.
-    OperationStatusData:
+    # OperationStatusUpdate is used as the "data" object field in a VerifiableEvent that corresponds to an operation status update.
+    OperationStatusUpdate:
       type: object
       properties:
         wallet_operation_id:
@@ -112,6 +112,12 @@ components:
             - confirmed_safe
             - confirmed
             - failed
+          x-enum-varnames:
+            - OperationStatusUpdateBroadcasting
+            - OperationStatusUpdateConfirmedLatest
+            - OperationStatusUpdateConfirmedSafe
+            - OperationStatusUpdateConfirmed
+            - OperationStatusUpdateFailed
         status_reason:
           type: string
           description: Reason for the status.
