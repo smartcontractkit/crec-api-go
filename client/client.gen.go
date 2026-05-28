@@ -108,16 +108,6 @@ const (
 	QueryKindEVMCall QueryKind = "evm_call"
 )
 
-// Defines values for QuerySortBy.
-const (
-	QuerySortByChainSelector QuerySortBy = "chain_selector"
-	QuerySortByQueryID       QuerySortBy = "query_id"
-	QuerySortByQueryKind     QuerySortBy = "query_kind"
-	QuerySortByStatus        QuerySortBy = "status"
-	QuerySortByTarget        QuerySortBy = "target"
-	QuerySortByUpdatedAt     QuerySortBy = "updated_at"
-)
-
 // Defines values for QueryStatus.
 const (
 	QueryStatusAccepted  QueryStatus = "accepted"
@@ -126,12 +116,6 @@ const (
 	QueryStatusFailed    QueryStatus = "failed"
 	QueryStatusSending   QueryStatus = "sending"
 	QueryStatusSent      QueryStatus = "sent"
-)
-
-// Defines values for SortOrder.
-const (
-	SortOrderAsc  SortOrder = "asc"
-	SortOrderDesc SortOrder = "desc"
 )
 
 // Defines values for SubjectType.
@@ -740,9 +724,6 @@ type QueryList struct {
 	HasMore bool `json:"has_more"`
 }
 
-// QuerySortBy Field to sort listed queries by.
-type QuerySortBy string
-
 // QueryStatus Status of a chain query.
 type QueryStatus string
 
@@ -778,9 +759,6 @@ type RSAPublicKey struct {
 
 // RSASignersList List of allowed RSA public signing keys
 type RSASignersList = []RSAPublicKey
-
-// SortOrder Sort direction for a listing.
-type SortOrder string
 
 // Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 type Subject struct {
@@ -1195,14 +1173,6 @@ type ListQueriesParams struct {
 
 	// ChainSelector Filter queries by chain selector (network).
 	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
-
-	// SortBy Field to sort the result by. `updated_at` (last update) is the default and matches the
-	// previous unsorted-list behavior most closely. `target`, `query_id`, `query_kind`,
-	// `chain_selector`, and `status` provide lexical/enum ordering for UI columns.
-	SortBy *QuerySortBy `form:"sort_by,omitempty" json:"sort_by,omitempty"`
-
-	// SortOrder Sort direction. Defaults to descending so the most recently updated queries appear first.
-	SortOrder *SortOrder `form:"sort_order,omitempty" json:"sort_order,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -3483,38 +3453,6 @@ func NewListQueriesRequest(server string, channelId openapi_types.UUID, params *
 		if params.ChainSelector != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_selector", runtime.ParamLocationQuery, *params.ChainSelector); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.SortBy != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort_by", runtime.ParamLocationQuery, *params.SortBy); err != nil {
-				return nil, err
-			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
-				return nil, err
-			} else {
-				for k, v := range parsed {
-					for _, v2 := range v {
-						queryValues.Add(k, v2)
-					}
-				}
-			}
-
-		}
-
-		if params.SortOrder != nil {
-
-			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "sort_order", runtime.ParamLocationQuery, *params.SortOrder); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
