@@ -598,21 +598,6 @@ paths:
           description: Filter queries by chain selector (network).
           schema:
             $ref: "#/components/schemas/ChainSelector"
-        - in: query
-          name: sort_by
-          description: |
-            Field to sort the result by. `updated_at` (last update) is the default and matches the
-            previous unsorted-list behavior most closely. `target`, `query_id`, `query_kind`,
-            `chain_selector`, and `status` provide lexical/enum ordering for UI columns.
-          schema:
-            $ref: "#/components/schemas/QuerySortBy"
-          example: "updated_at"
-        - in: query
-          name: sort_order
-          description: Sort direction. Defaults to descending so the most recently updated queries appear first.
-          schema:
-            $ref: "#/components/schemas/SortOrder"
-          example: "desc"
       responses:
         "200":
           description: Successful operation
@@ -621,11 +606,10 @@ paths:
               schema:
                 $ref: "#/components/schemas/QueryList"
               examples:
-                defaultLastUpdatedDesc:
-                  summary: Default sort — sort_by=updated_at, sort_order=desc
+                defaultList:
+                  summary: Default list — limit=20, offset=0
                   description: |
                     `GET /channels/{channel_id}/queries?limit=20&offset=0`
-                    Most recently updated queries appear first.
                   value:
                     data:
                       - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
@@ -661,11 +645,11 @@ paths:
                         sending_at: 1715698705
                         sent_at: 1715698710
                     has_more: false
-                filterByStatusAndChainSortByTargetAsc:
-                  summary: Filter + sort — status=completed, chain_selector=16015286601757825753, sort_by=target, sort_order=asc
+                filterByStatusAndChain:
+                  summary: Filter — status=completed, chain_selector=16015286601757825753
                   description: |
-                    `GET /channels/{channel_id}/queries?status=completed&chain_selector=16015286601757825753&sort_by=target&sort_order=asc`
-                    Completed Sepolia queries ordered lexically by display target.
+                    `GET /channels/{channel_id}/queries?status=completed&chain_selector=16015286601757825753`
+                    Completed Sepolia queries for the channel.
                   value:
                     data:
                       - query_id: "9b1a52d7-3c11-4e88-9e1e-7b9a4b2c3d10"
@@ -687,11 +671,11 @@ paths:
                         updated_at: 1715698815
                         completed_at: 1715698815
                     has_more: false
-                filterByKindSortByChainSelector:
-                  summary: Filter by kind + sort by network — query_kind=evm_call, sort_by=chain_selector, sort_order=asc
+                filterByKind:
+                  summary: Filter by kind — query_kind=evm_call
                   description: |
-                    `GET /channels/{channel_id}/queries?query_kind=evm_call&sort_by=chain_selector&sort_order=asc`
-                    Useful for multi-network UIs that group queries by their target chain.
+                    `GET /channels/{channel_id}/queries?query_kind=evm_call`
+                    EVM call queries for the channel.
                   value:
                     data:
                       - query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
@@ -1704,36 +1688,6 @@ components:
       x-enum-varnames:
         - QueryKindEVMCall
       example: "evm_call"
-    QuerySortBy:
-      type: string
-      description: Field to sort listed queries by.
-      enum:
-        - target
-        - query_id
-        - query_kind
-        - chain_selector
-        - updated_at
-        - status
-      x-enum-varnames:
-        - QuerySortByTarget
-        - QuerySortByQueryID
-        - QuerySortByQueryKind
-        - QuerySortByChainSelector
-        - QuerySortByUpdatedAt
-        - QuerySortByStatus
-      default: "updated_at"
-      example: "updated_at"
-    SortOrder:
-      type: string
-      description: Sort direction for a listing.
-      enum:
-        - asc
-        - desc
-      x-enum-varnames:
-        - SortOrderAsc
-        - SortOrderDesc
-      default: "desc"
-      example: "desc"
     SubjectType:
       type: string
       description: Type of subject used for audit identity and filtering.
