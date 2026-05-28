@@ -1,6 +1,6 @@
 module github.com/smartcontractkit/crec-api-go
 
-go 1.25.3
+go 1.26.3
 
 require (
 	github.com/gin-gonic/gin v1.10.1

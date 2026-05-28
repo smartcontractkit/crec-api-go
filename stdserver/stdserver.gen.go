@@ -44,13 +44,6 @@ const (
 	ChannelStatusArchived ChannelStatus = "archived"
 )
 
-// Defines values for ConfidenceLevel.
-const (
-	Finalized ConfidenceLevel = "finalized"
-	Latest    ConfidenceLevel = "latest"
-	Safe      ConfidenceLevel = "safe"
-)
-
 // Defines values for EventABIType.
 const (
 	EventABITypeEvent EventABIType = "event"
@@ -67,7 +60,7 @@ const (
 
 // Defines values for FinalizeOperationStatus.
 const (
-	Accepted FinalizeOperationStatus = "accepted"
+	FinalizeOperationStatusAccepted FinalizeOperationStatus = "accepted"
 )
 
 // Defines values for FinalizedBlockSelectionType.
@@ -82,8 +75,8 @@ const (
 
 // Defines values for NetworkType.
 const (
-	Mainnet NetworkType = "mainnet"
-	Testnet NetworkType = "testnet"
+	NetworkTypeMainnet NetworkType = "mainnet"
+	NetworkTypeTestnet NetworkType = "testnet"
 )
 
 // Defines values for OperationStatus.
@@ -92,6 +85,8 @@ const (
 	OperationStatusBroadcasting     OperationStatus = "broadcasting"
 	OperationStatusCancelled        OperationStatus = "cancelled"
 	OperationStatusConfirmed        OperationStatus = "confirmed"
+	OperationStatusConfirmedLatest  OperationStatus = "confirmed_latest"
+	OperationStatusConfirmedSafe    OperationStatus = "confirmed_safe"
 	OperationStatusExpired          OperationStatus = "expired"
 	OperationStatusFailed           OperationStatus = "failed"
 	OperationStatusPendingSignature OperationStatus = "pending_signature"
@@ -120,15 +115,6 @@ const (
 	SubjectTypeUser   SubjectType = "user"
 )
 
-// Defines values for WalletEventStatus.
-const (
-	WalletEventStatusArchived  WalletEventStatus = "archived"
-	WalletEventStatusDeployed  WalletEventStatus = "deployed"
-	WalletEventStatusDeploying WalletEventStatus = "deploying"
-	WalletEventStatusFailed    WalletEventStatus = "failed"
-	WalletEventStatusPending   WalletEventStatus = "pending"
-)
-
 // Defines values for WalletStatus.
 const (
 	WalletStatusArchived  WalletStatus = "archived"
@@ -140,18 +126,8 @@ const (
 
 // Defines values for WalletType.
 const (
-	Ecdsa WalletType = "ecdsa"
-	Rsa   WalletType = "rsa"
-)
-
-// Defines values for WatcherEventStatus.
-const (
-	WatcherEventStatusActive        WatcherEventStatus = "active"
-	WatcherEventStatusArchiveFailed WatcherEventStatus = "archive_failed"
-	WatcherEventStatusArchived      WatcherEventStatus = "archived"
-	WatcherEventStatusArchiving     WatcherEventStatus = "archiving"
-	WatcherEventStatusFailed        WatcherEventStatus = "failed"
-	WatcherEventStatusPending       WatcherEventStatus = "pending"
+	WalletTypeECDSA WalletType = "ecdsa"
+	WalletTypeRSA   WalletType = "rsa"
 )
 
 // Defines values for WatcherStatus.
@@ -227,9 +203,6 @@ type ChannelList struct {
 
 // ChannelStatus Status of a channel
 type ChannelStatus string
-
-// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-type ConfidenceLevel string
 
 // CreateChannel Request body for creating a new channel.
 type CreateChannel struct {
@@ -322,9 +295,6 @@ type CreateWatcherWithABI struct {
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
 
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
-
 	// Events List of event names to watch for
 	Events []string `json:"events"`
 
@@ -339,9 +309,6 @@ type CreateWatcherWithService struct {
 
 	// ChainSelector The chain selector to identify the chain where the watcher will run
 	ChainSelector string `json:"chain_selector"`
-
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
 
 	// Events List of event names to watch for within the service
 	Events []string `json:"events"`
@@ -511,9 +478,6 @@ type Network struct {
 
 	// CreatedAt Timestamp of when the network was created
 	CreatedAt int64 `json:"created_at"`
-
-	// DefaultConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	DefaultConfidenceLevel *ConfidenceLevel `json:"default_confidence_level,omitempty"`
 
 	// Id Unique identifier for the network
 	Id openapi_types.UUID `json:"id"`
@@ -888,9 +852,6 @@ type Wallet struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel *ConfidenceLevel `json:"confidence_level,omitempty"`
-
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
@@ -916,9 +877,6 @@ type Wallet struct {
 	WalletType WalletType `json:"wallet_type"`
 }
 
-// WalletEventStatus Status of a wallet in events (includes archived state for filtering)
-type WalletEventStatus string
-
 // WalletList Paginated list of wallets.
 type WalletList struct {
 	Data []Wallet `json:"data"`
@@ -938,8 +896,8 @@ type WalletStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
-	// Status Status of a wallet in events (includes archived state for filtering)
-	Status WalletEventStatus `json:"status"`
+	// Status Status of a wallet entity
+	Status WalletStatus `json:"status"`
 
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`
@@ -967,9 +925,6 @@ type Watcher struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
-
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel ConfidenceLevel `json:"confidence_level"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`
@@ -1014,9 +969,6 @@ type WatcherEventPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
-// WatcherEventStatus Status of a watcher in events (includes transitional and archival states for filtering)
-type WatcherEventStatus string
-
 // WatcherList Paginated list of watchers.
 type WatcherList struct {
 	Data []WatcherSummary `json:"data"`
@@ -1036,8 +988,8 @@ type WatcherStatusPayload struct {
 	// Service Service namespace of the watcher
 	Service *string `json:"service,omitempty"`
 
-	// Status Status of a watcher in events (includes transitional and archival states for filtering)
-	Status WatcherEventStatus `json:"status"`
+	// Status Status of a watcher entity
+	Status WatcherStatus `json:"status"`
 
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`
@@ -1059,9 +1011,6 @@ type WatcherSummary struct {
 
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
-
-	// ConfidenceLevel Confidence level. If not specified, the default confidence level for the network will be used.
-	ConfidenceLevel ConfidenceLevel `json:"confidence_level"`
 
 	// CreatedAt Timestamp of when the watcher was created
 	CreatedAt int64 `json:"created_at"`

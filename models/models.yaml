@@ -1,7 +1,7 @@
 openapi: 3.0.4
 info:
   title: CRE Connect Models Schema
-  version: 0.4.0
+  version: 0.7.0
   description: OpenAPI specification for the models used in CRE Connect
 
 paths: {}
@@ -51,6 +51,8 @@ components:
           type: integer
           format: uint64
           description: The timestamp of the block where the event was emitted
+        confidence:
+          $ref: "#/components/schemas/ConfidenceLevel"
         tx_hash:
           type: string
           description: The transaction hash of the transaction that emitted the event
@@ -74,13 +76,25 @@ components:
         - chain_id
         - block_number
         - block_timestamp
+        - confidence
         - tx_hash
         - address
         - topic_hash
         - log_index
         - event_signature
-    # OperationStatusData is used as the "data" object field in a VerifiableEvent that corresponds to an operation status update.
-    OperationStatusData:
+    ConfidenceLevel:
+      type: string
+      description: The finality level of the event
+      enum:
+        - latest
+        - safe
+        - finalized
+      x-enum-varnames:
+        - ConfidenceLevelLatest
+        - ConfidenceLevelSafe
+        - ConfidenceLevelFinalized
+    # OperationStatusUpdate is used as the "data" object field in a VerifiableEvent that corresponds to an operation status update.
+    OperationStatusUpdate:
       type: object
       properties:
         wallet_operation_id:
@@ -91,11 +105,19 @@ components:
           description: Wallet address associated with the operation
         status:
           type: string
-          description: Status of the operation (broadcasting, confirmed, failed).
+          description: Status of the operation
           enum:
             - broadcasting
+            - confirmed_latest
+            - confirmed_safe
             - confirmed
             - failed
+          x-enum-varnames:
+            - OperationStatusUpdateBroadcasting
+            - OperationStatusUpdateConfirmedLatest
+            - OperationStatusUpdateConfirmedSafe
+            - OperationStatusUpdateConfirmed
+            - OperationStatusUpdateFailed
         status_reason:
           type: string
           description: Reason for the status.

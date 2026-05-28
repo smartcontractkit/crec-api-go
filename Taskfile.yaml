@@ -1,0 +1,32 @@
+version: "3"
+
+tasks:
+  default:
+    silent: true
+    desc: "List all available tasks"
+    cmds:
+      - task --list
+
+  # ---------------------------------------------------------------------------
+  # Development Tasks
+  # ---------------------------------------------------------------------------
+
+  generate:
+    silent: true
+    desc: "generate code"
+    cmds:
+      - go generate ./
+
+  tools:
+    silent: true
+    desc: "Install tools"
+    vars:
+      VACUUM_VERSION: '{{.VACUUM_VERSION | default "0.20.5"}}'
+    cmds:
+      - go install github.com/daveshanley/vacuum@v{{.VACUUM_VERSION}}
+
+  validate-openapi:
+    silent: true
+    desc: "Validate openapi spec"
+    cmds:
+      - vacuum lint --ruleset .vacuum.yaml ./api/openapi.yaml

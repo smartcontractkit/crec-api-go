@@ -74,7 +74,7 @@ When adding a new error type, update the enum in `api/openapi.yaml` **before** t
 After modifying `api/openapi.yaml` or `models/models.yaml`:
 
 ```bash
-make tools && make generate
+task tools && task generate
 ```
 
 This runs oapi-codegen for the client, server stubs, and models.
@@ -82,7 +82,7 @@ This runs oapi-codegen for the client, server stubs, and models.
 ## Validating the OpenAPI Spec
 
 ```bash
-make validate-openapi
+task validate-openapi
 ```
 
 ## Related

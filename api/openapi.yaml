@@ -1,7 +1,7 @@
 openapi: 3.0.4
 info:
   title: CRE Connect API
-  version: 0.4.0
+  version: 0.7.0
   description: API specification for CRE Connect resources
 
 servers:
@@ -805,7 +805,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "400":
           description: Invalid request data
           content:
@@ -948,7 +948,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "404":
           description: Channel or query not found
           content:
@@ -1001,14 +1001,14 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "active", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "202":
           description: Archive request accepted. The watcher is transitioning to archived state asynchronously.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Watcher"
-              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "archiving", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a", confidence_level: "finalized"}
+              example: {watcher_id: "a8098c1a-f86e-11da-bd1a-00112444be1e", channel_id: "7c9e6679-7425-40de-944b-e07fc1f90ae7", created_at: 1715698800, status: "archiving", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", events: ["SubscriptionRequested"], don_family: "zone-a"}
         "400":
           description: Invalid request data
           content:
@@ -1610,16 +1610,12 @@ components:
         - deployed
         - archived
         - failed
-      example: "pending"
-    WalletEventStatus:
-      type: string
-      description: Status of a wallet in events (includes archived state for filtering)
-      enum:
-        - pending
-        - deploying
-        - deployed
-        - failed
-        - archived
+      x-enum-varnames:
+        - WalletStatusPending
+        - WalletStatusDeploying
+        - WalletStatusDeployed
+        - WalletStatusArchived
+        - WalletStatusFailed
       example: "pending"
     WatcherStatus:
       type: string
@@ -1637,17 +1633,6 @@ components:
         - WatcherStatusArchiving
         - WatcherStatusArchived
       example: "pending"
-    WatcherEventStatus:
-      type: string
-      description: Status of a watcher in events (includes transitional and archival states for filtering)
-      enum:
-        - pending
-        - active
-        - failed
-        - archiving
-        - archive_failed
-        - archived
-      example: "pending"
     OperationStatus:
       type: string
       description: Status of an operation
@@ -1657,10 +1642,24 @@ components:
         - sending
         - sent
         - broadcasting
+        - confirmed_latest
+        - confirmed_safe
         - confirmed
         - cancelled
         - expired
         - failed
+      x-enum-varnames:
+        - OperationStatusAccepted
+        - OperationStatusPendingSignature
+        - OperationStatusSending
+        - OperationStatusSent
+        - OperationStatusBroadcasting
+        - OperationStatusConfirmedLatest
+        - OperationStatusConfirmedSafe
+        - OperationStatusConfirmed
+        - OperationStatusCancelled
+        - OperationStatusExpired
+        - OperationStatusFailed
       example: "accepted"
     QueryStatus:
       type: string
@@ -1704,6 +1703,9 @@ components:
       enum:
         - ecdsa
         - rsa
+      x-enum-varnames:
+        - WalletTypeECDSA
+        - WalletTypeRSA
       example: "ecdsa"
     EventType:
       type: string
@@ -1714,7 +1716,6 @@ components:
         - watcher.status
         - watcher.event
         - wallet.status
-      # Custom varnames to avoid Go naming collision with OperationStatus, WatcherStatus, WalletStatus types
       x-enum-varnames:
         - EventTypeOperationStatus
         - EventTypeQueryStatus
@@ -1897,8 +1898,6 @@ components:
           $ref: "#/components/schemas/ECDSASignersList"
         created_at:
           $ref: "#/components/schemas/Timestamp"
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - wallet_id
         - name
@@ -1963,8 +1962,6 @@ components:
           example: 1715698800
         type:
           $ref: "#/components/schemas/NetworkType"
-        default_confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - id
         - name
@@ -2452,8 +2449,6 @@ components:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -2486,8 +2481,6 @@ components:
             $ref: "#/components/schemas/EventABI"
           description: ABI definitions for the events to watch
           minItems: 1
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - name
         - chain_selector
@@ -2597,8 +2590,6 @@ components:
           description: Optional service-specific configuration (e.g. secondary contract addresses)
           additionalProperties: true
           example: {}
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - watcher_id
         - channel_id
@@ -2608,7 +2599,6 @@ components:
         - address
         - events
         - don_family
-        - confidence_level
     WatcherSummary:
       description: Summary view of a watcher.
       type: object
@@ -2648,8 +2638,6 @@ components:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
           example: "zone-a"
-        confidence_level:
-          $ref: "#/components/schemas/ConfidenceLevel"
       required:
         - watcher_id
         - channel_id
@@ -2658,7 +2646,6 @@ components:
         - chain_selector
         - address
         - don_family
-        - confidence_level
     WatcherList:
       description: Paginated list of watchers.
       type: object
@@ -2838,6 +2825,8 @@ components:
           type: string
           enum:
             - accepted
+          x-enum-varnames:
+            - FinalizeOperationStatusAccepted
           description: Marks the operation as accepted/finalized.
           example: "accepted"
         signature:
@@ -2861,6 +2850,8 @@ components:
           type: string
           enum:
             - cancelled
+          x-enum-varnames:
+            - CancelOperationStatusCancelled
           description: Marks the operation as cancelled.
           example: "cancelled"
       required:
@@ -3085,7 +3076,7 @@ components:
       type: object
       properties:
         status:
-          $ref: "#/components/schemas/WatcherEventStatus"
+          $ref: "#/components/schemas/WatcherStatus"
         status_reason:
           type: string
           description: Reason for the status
@@ -3149,7 +3140,7 @@ components:
       type: object
       properties:
         status:
-          $ref: "#/components/schemas/WalletEventStatus"
+          $ref: "#/components/schemas/WalletStatus"
         status_reason:
           type: string
           description: Reason for the status
@@ -3185,23 +3176,17 @@ components:
       enum:
         - active
         - archived
-      example: "active"
-    ConfidenceLevel:
-      type: string
-      description: Confidence level. If not specified, the default confidence level for the network will be used.
-      enum:
-        - "latest"
-        - "safe"
-        - "finalized"
-      example: "latest"
       x-enum-varnames:
-        - Latest
-        - Safe
-        - Finalized
+        - ChannelStatusActive
+        - ChannelStatusArchived
+      example: "active"
     NetworkType:
       type: string
       description: Type of chain
       enum:
         - "mainnet"
         - "testnet"
+      x-enum-varnames:
+        - NetworkTypeMainnet
+        - NetworkTypeTestnet
       example: "mainnet"

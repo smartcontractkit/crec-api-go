@@ -54,11 +54,20 @@ const (
 	ChainQueryVerifiableEventServiceCREC ChainQueryVerifiableEventService = "_crec"
 )
 
-// Defines values for OperationStatusDataStatus.
+// Defines values for ConfidenceLevel.
 const (
-	Broadcasting OperationStatusDataStatus = "broadcasting"
-	Confirmed    OperationStatusDataStatus = "confirmed"
-	Failed       OperationStatusDataStatus = "failed"
+	ConfidenceLevelFinalized ConfidenceLevel = "finalized"
+	ConfidenceLevelLatest    ConfidenceLevel = "latest"
+	ConfidenceLevelSafe      ConfidenceLevel = "safe"
+)
+
+// Defines values for OperationStatusUpdateStatus.
+const (
+	OperationStatusUpdateBroadcasting    OperationStatusUpdateStatus = "broadcasting"
+	OperationStatusUpdateConfirmed       OperationStatusUpdateStatus = "confirmed"
+	OperationStatusUpdateConfirmedLatest OperationStatusUpdateStatus = "confirmed_latest"
+	OperationStatusUpdateConfirmedSafe   OperationStatusUpdateStatus = "confirmed_safe"
+	OperationStatusUpdateFailed          OperationStatusUpdateStatus = "failed"
 )
 
 // ChainQueryBlockNumberSelection defines model for ChainQueryBlockNumberSelection.
@@ -201,6 +210,9 @@ type ChainQueryVerifiableEventName string
 // ChainQueryVerifiableEventService CRE Connect service namespace for chain query verifiable results.
 type ChainQueryVerifiableEventService string
 
+// ConfidenceLevel The finality level of the event
+type ConfidenceLevel string
+
 // EVMEvent defines model for EVMEvent.
 type EVMEvent struct {
 	// Address The contract address that emitted the event
@@ -214,6 +226,9 @@ type EVMEvent struct {
 
 	// ChainId The chain ID of the EVM network
 	ChainId string `json:"chain_id"`
+
+	// Confidence The finality level of the event
+	Confidence ConfidenceLevel `json:"confidence"`
 
 	// EventSignature The signature of the event
 	EventSignature string `json:"event_signature"`
@@ -229,10 +244,10 @@ type EVMEvent struct {
 	TxHash string `json:"tx_hash"`
 }
 
-// OperationStatusData defines model for OperationStatusData.
-type OperationStatusData struct {
-	// Status Status of the operation (broadcasting, confirmed, failed).
-	Status OperationStatusDataStatus `json:"status"`
+// OperationStatusUpdate defines model for OperationStatusUpdate.
+type OperationStatusUpdate struct {
+	// Status Status of the operation
+	Status OperationStatusUpdateStatus `json:"status"`
 
 	// StatusReason Reason for the status.
 	StatusReason string `json:"status_reason"`
@@ -247,8 +262,8 @@ type OperationStatusData struct {
 	WalletOperationId string `json:"wallet_operation_id"`
 }
 
-// OperationStatusDataStatus Status of the operation (broadcasting, confirmed, failed).
-type OperationStatusDataStatus string
+// OperationStatusUpdateStatus Status of the operation
+type OperationStatusUpdateStatus string
 
 // VerifiableEvent defines model for VerifiableEvent.
 type VerifiableEvent struct {
