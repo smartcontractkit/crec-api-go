@@ -35,7 +35,7 @@ const (
 
 // Defines values for CancelOperationStatus.
 const (
-	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
+	Cancelled CancelOperationStatus = "cancelled"
 )
 
 // Defines values for ChannelStatus.
@@ -46,9 +46,9 @@ const (
 
 // Defines values for ConfidenceLevel.
 const (
-	Finalized ConfidenceLevel = "finalized"
-	Latest    ConfidenceLevel = "latest"
-	Safe      ConfidenceLevel = "safe"
+	ConfidenceLevelFinalized ConfidenceLevel = "finalized"
+	ConfidenceLevelLatest    ConfidenceLevel = "latest"
+	ConfidenceLevelSafe      ConfidenceLevel = "safe"
 )
 
 // Defines values for EventABIType.
@@ -82,8 +82,8 @@ const (
 
 // Defines values for NetworkType.
 const (
-	Mainnet NetworkType = "mainnet"
-	Testnet NetworkType = "testnet"
+	NetworkTypeMainnet NetworkType = "mainnet"
+	NetworkTypeTestnet NetworkType = "testnet"
 )
 
 // Defines values for OperationStatus.
@@ -138,15 +138,6 @@ const (
 	SubjectTypeUser   SubjectType = "user"
 )
 
-// Defines values for WalletEventStatus.
-const (
-	WalletEventStatusArchived  WalletEventStatus = "archived"
-	WalletEventStatusDeployed  WalletEventStatus = "deployed"
-	WalletEventStatusDeploying WalletEventStatus = "deploying"
-	WalletEventStatusFailed    WalletEventStatus = "failed"
-	WalletEventStatusPending   WalletEventStatus = "pending"
-)
-
 // Defines values for WalletStatus.
 const (
 	WalletStatusArchived  WalletStatus = "archived"
@@ -158,28 +149,17 @@ const (
 
 // Defines values for WalletType.
 const (
-	Ecdsa WalletType = "ecdsa"
-	Rsa   WalletType = "rsa"
-)
-
-// Defines values for WatcherEventStatus.
-const (
-	WatcherEventStatusActive        WatcherEventStatus = "active"
-	WatcherEventStatusArchiveFailed WatcherEventStatus = "archive_failed"
-	WatcherEventStatusArchived      WatcherEventStatus = "archived"
-	WatcherEventStatusArchiving     WatcherEventStatus = "archiving"
-	WatcherEventStatusFailed        WatcherEventStatus = "failed"
-	WatcherEventStatusPending       WatcherEventStatus = "pending"
+	WalletTypeECDSA WalletType = "ecdsa"
+	WalletTypeRSA   WalletType = "rsa"
 )
 
 // Defines values for WatcherStatus.
 const (
-	WatcherStatusActive        WatcherStatus = "active"
-	WatcherStatusArchiveFailed WatcherStatus = "archive_failed"
-	WatcherStatusArchived      WatcherStatus = "archived"
-	WatcherStatusArchiving     WatcherStatus = "archiving"
-	WatcherStatusFailed        WatcherStatus = "failed"
-	WatcherStatusPending       WatcherStatus = "pending"
+	WatcherStatusActive    WatcherStatus = "active"
+	WatcherStatusArchived  WatcherStatus = "archived"
+	WatcherStatusArchiving WatcherStatus = "archiving"
+	WatcherStatusFailed    WatcherStatus = "failed"
+	WatcherStatusPending   WatcherStatus = "pending"
 )
 
 // ApplicationError Standard error response body.
@@ -929,9 +909,6 @@ type Wallet struct {
 	WalletType WalletType `json:"wallet_type"`
 }
 
-// WalletEventStatus Status of a wallet in events (includes archived state for filtering)
-type WalletEventStatus string
-
 // WalletList Paginated list of wallets.
 type WalletList struct {
 	Data []Wallet `json:"data"`
@@ -951,8 +928,8 @@ type WalletStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
-	// Status Status of a wallet in events (includes archived state for filtering)
-	Status WalletEventStatus `json:"status"`
+	// Status Status of a wallet entity
+	Status WalletStatus `json:"status"`
 
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`
@@ -1024,9 +1001,6 @@ type WatcherEventPayload struct {
 	WatcherId string `json:"watcher_id"`
 }
 
-// WatcherEventStatus Status of a watcher in events (includes transitional and archival states for filtering)
-type WatcherEventStatus string
-
 // WatcherList Paginated list of watchers.
 type WatcherList struct {
 	Data []WatcherSummary `json:"data"`
@@ -1046,8 +1020,8 @@ type WatcherStatusPayload struct {
 	// Service Service namespace of the watcher
 	Service *string `json:"service,omitempty"`
 
-	// Status Status of a watcher in events (includes transitional and archival states for filtering)
-	Status WatcherEventStatus `json:"status"`
+	// Status Status of a watcher entity
+	Status WatcherStatus `json:"status"`
 
 	// StatusReason Reason for the status
 	StatusReason string `json:"status_reason"`

@@ -1626,16 +1626,12 @@ components:
         - deployed
         - archived
         - failed
-      example: "pending"
-    WalletEventStatus:
-      type: string
-      description: Status of a wallet in events (includes archived state for filtering)
-      enum:
-        - pending
-        - deploying
-        - deployed
-        - failed
-        - archived
+      x-enum-varnames:
+        - WalletStatusPending
+        - WalletStatusDeploying
+        - WalletStatusDeployed
+        - WalletStatusArchived
+        - WalletStatusFailed
       example: "pending"
     WatcherStatus:
       type: string
@@ -1645,26 +1641,13 @@ components:
         - active
         - failed
         - archiving
-        - archive_failed
         - archived
       x-enum-varnames:
         - WatcherStatusPending
         - WatcherStatusActive
         - WatcherStatusFailed
         - WatcherStatusArchiving
-        - WatcherStatusArchiveFailed
         - WatcherStatusArchived
-      example: "pending"
-    WatcherEventStatus:
-      type: string
-      description: Status of a watcher in events (includes transitional and archival states for filtering)
-      enum:
-        - pending
-        - active
-        - failed
-        - archiving
-        - archive_failed
-        - archived
       example: "pending"
     OperationStatus:
       type: string
@@ -1681,6 +1664,18 @@ components:
         - cancelled
         - expired
         - failed
+      x-enum-varnames:
+        - OperationStatusAccepted
+        - OperationStatusPendingSignature
+        - OperationStatusSending
+        - OperationStatusSent
+        - OperationStatusBroadcasting
+        - OperationStatusConfirmedLatest
+        - OperationStatusConfirmedSafe
+        - OperationStatusConfirmed
+        - OperationStatusCancelled
+        - OperationStatusExpired
+        - OperationStatusFailed
       example: "accepted"
     QueryStatus:
       type: string
@@ -1754,6 +1749,9 @@ components:
       enum:
         - ecdsa
         - rsa
+      x-enum-varnames:
+        - WalletTypeECDSA
+        - WalletTypeRSA
       example: "ecdsa"
     EventType:
       type: string
@@ -1764,7 +1762,6 @@ components:
         - watcher.status
         - watcher.event
         - wallet.status
-      # Custom varnames to avoid Go naming collision with OperationStatus, WatcherStatus, WalletStatus types
       x-enum-varnames:
         - EventTypeOperationStatus
         - EventTypeQueryStatus
@@ -3121,7 +3118,7 @@ components:
       type: object
       properties:
         status:
-          $ref: "#/components/schemas/WatcherEventStatus"
+          $ref: "#/components/schemas/WatcherStatus"
         status_reason:
           type: string
           description: Reason for the status
@@ -3185,7 +3182,7 @@ components:
       type: object
       properties:
         status:
-          $ref: "#/components/schemas/WalletEventStatus"
+          $ref: "#/components/schemas/WalletStatus"
         status_reason:
           type: string
           description: Reason for the status
@@ -3221,6 +3218,9 @@ components:
       enum:
         - active
         - archived
+      x-enum-varnames:
+        - ChannelStatusActive
+        - ChannelStatusArchived
       example: "active"
     ConfidenceLevel:
       type: string
@@ -3231,13 +3231,16 @@ components:
         - "finalized"
       example: "latest"
       x-enum-varnames:
-        - Latest
-        - Safe
-        - Finalized
+        - ConfidenceLevelLatest
+        - ConfidenceLevelSafe
+        - ConfidenceLevelFinalized
     NetworkType:
       type: string
       description: Type of chain
       enum:
         - "mainnet"
         - "testnet"
+      x-enum-varnames:
+        - NetworkTypeMainnet
+        - NetworkTypeTestnet
       example: "mainnet"
