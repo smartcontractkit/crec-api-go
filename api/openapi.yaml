@@ -1501,6 +1501,11 @@ paths:
           schema:
             type: string
         - in: query
+          name: query_id
+          description: Filter by query ID (applies to query.status type)
+          schema:
+            type: string
+        - in: query
           name: event_name
           description: Filter by event name (applies to watcher.event type)
           schema:

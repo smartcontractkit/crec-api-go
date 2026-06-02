@@ -1105,6 +1105,9 @@ type SearchChannelEventsParams struct {
 	// OperationId Filter by operation ID (applies to operation.status type)
 	OperationId *string `form:"operation_id,omitempty" json:"operation_id,omitempty"`
 
+	// QueryId Filter by query ID (applies to query.status type)
+	QueryId *string `form:"query_id,omitempty" json:"query_id,omitempty"`
+
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 
@@ -2167,6 +2170,14 @@ func (siw *ServerInterfaceWrapper) SearchChannelEvents(c *gin.Context) {
 	err = runtime.BindQueryParameter("form", true, false, "operation_id", c.Request.URL.Query(), &params.OperationId)
 	if err != nil {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter operation_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Optional query parameter "query_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "query_id", c.Request.URL.Query(), &params.QueryId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter query_id: %w", err), http.StatusBadRequest)
 		return
 	}
 

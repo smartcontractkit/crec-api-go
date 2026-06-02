@@ -1107,6 +1107,9 @@ type SearchChannelEventsParams struct {
 	// OperationId Filter by operation ID (applies to operation.status type)
 	OperationId *string `form:"operation_id,omitempty" json:"operation_id,omitempty"`
 
+	// QueryId Filter by query ID (applies to query.status type)
+	QueryId *string `form:"query_id,omitempty" json:"query_id,omitempty"`
+
 	// EventName Filter by event name (applies to watcher.event type)
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 
@@ -2882,6 +2885,22 @@ func NewSearchChannelEventsRequest(server string, channelId openapi_types.UUID, 
 		if params.OperationId != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "operation_id", runtime.ParamLocationQuery, *params.OperationId); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.QueryId != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "query_id", runtime.ParamLocationQuery, *params.QueryId); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
