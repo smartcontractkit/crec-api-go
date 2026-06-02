@@ -76,7 +76,6 @@ components:
         - chain_id
         - block_number
         - block_timestamp
-        - confidence
         - tx_hash
         - address
         - topic_hash
