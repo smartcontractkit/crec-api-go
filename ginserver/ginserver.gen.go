@@ -530,6 +530,9 @@ type Operation struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
+	// ConfirmedAt Unix timestamp in seconds
+	ConfirmedAt *Timestamp `json:"confirmed_at,omitempty"`
+
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt Timestamp `json:"created_at"`
 
@@ -555,6 +558,9 @@ type Operation struct {
 
 	// Transactions List of transactions associated with the operation.
 	Transactions []Transaction `json:"transactions"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt Timestamp `json:"updated_at"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
