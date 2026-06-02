@@ -2763,7 +2763,11 @@ components:
           $ref: "#/components/schemas/Timestamp"
         cancelled_at:
           $ref: "#/components/schemas/Timestamp"
+        confirmed_at:
+          $ref: "#/components/schemas/Timestamp"
         created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
           $ref: "#/components/schemas/Timestamp"
       required:
         - operation_id
@@ -2775,6 +2779,7 @@ components:
         - transactions
         - signature
         - created_at
+        - updated_at
     OperationResponse:
       description: Response body for a created operation.
       type: object
