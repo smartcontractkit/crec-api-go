@@ -228,7 +228,7 @@ type EVMEvent struct {
 	ChainId string `json:"chain_id"`
 
 	// Confidence The finality level of the event
-	Confidence ConfidenceLevel `json:"confidence"`
+	Confidence *ConfidenceLevel `json:"confidence,omitempty"`
 
 	// EventSignature The signature of the event
 	EventSignature string `json:"event_signature"`
