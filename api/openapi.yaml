@@ -1192,6 +1192,7 @@ paths:
                     initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}
                     signature: null
                     created_at: 1715698800
+                    updated_at: 1715698800
                 has_more: false
         "404":
           description: Channel not found
@@ -1238,7 +1239,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Operation"
-              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "accepted", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800}
+              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "accepted", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800, updated_at: 1715698800}
         "404":
           description: Channel or operation not found
           content:
@@ -1292,7 +1293,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Operation"
-              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "cancelled", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800}
+              example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "cancelled", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800, updated_at: 1715698800}
         "400":
           description: Invalid request data
           content:

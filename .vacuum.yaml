@@ -9,6 +9,7 @@ rules:
   operation-description: true
   oas3-missing-example: true
   component-description: true
+  oas3-valid-schema-example: error
 
   # snake_case JSON property names are the intentional wire format for this API;
   # renaming to camelCase would be a breaking change.
