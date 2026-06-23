@@ -723,6 +723,9 @@ type QueryStatus string
 
 // QueryStatusPayload Minimal top-level payload for query.status channel events.
 type QueryStatusPayload struct {
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector string `json:"chain_selector"`
+
 	// EventHash Verifiable event hash for terminal query status events.
 	EventHash *string `json:"event_hash,omitempty"`
 

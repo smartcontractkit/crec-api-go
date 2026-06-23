@@ -1386,7 +1386,7 @@ paths:
 
         Note: Some query parameters only apply to specific event types. Invalid parameter combinations for a given event type will result in a 400 Bad Request response:
         - operation.status: status, chain_selector, address, wallet_operation_id
-        - query.status: status
+        - query.status: status, chain_selector, query_id
         - watcher.status: watcher_id, status, chain_selector
         - watcher.event: watcher_id, chain_selector, address, event_name, service
         - wallet.status: wallet_id, status, chain_selector, address
@@ -3053,6 +3053,7 @@ components:
         query_id: "5e4b3c2a-1f0e-4d9c-8b7a-6f5e4d3c2b1a"
         status: "completed"
         target: "0x1111111111111111111111111111111111111111"
+        chain_selector: "16015286601757825753"
         timestamp: 1715698815
         event_hash: "0xabc123def456"
         verifiable_result: "eyJzZXJ2aWNlIjoiX2NyZWMiLCJuYW1lIjoiQ2hhaW5RdWVyeSJ9"
@@ -3067,6 +3068,10 @@ components:
           type: string
           description: Client-display query target selected from the query inner read type. getTransactionByHash and getTransactionReceipt use targetTxHash; headerByNumber uses targetBlockNumber; registerLogTracking uses targetLogFilter; unregisterLogTracking uses targetFilterName; estimateGas and callContract use targetContract; balanceAt uses targetAccount; filterLogs uses targetEmitterContract.
           example: "0x1111111111111111111111111111111111111111"
+        chain_selector:
+          type: string
+          description: Chain selector identifier for the blockchain network
+          example: "16015286601757825753"
         timestamp:
           type: integer
           format: int64
@@ -3081,6 +3086,7 @@ components:
         - query_id
         - status
         - target
+        - chain_selector
         - timestamp
     WatcherStatusPayload:
       description: Event payload for a watcher status change.
