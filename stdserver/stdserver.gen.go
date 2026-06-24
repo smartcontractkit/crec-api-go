@@ -212,7 +212,7 @@ type ChannelStatus string
 
 // CreateChannel Request body for creating a new channel.
 type CreateChannel struct {
-	// Description Description of the channel
+	// Description Description of the channel. Send empty string to omit.
 	Description *string `json:"description,omitempty"`
 
 	// Name Name of the channel
@@ -269,7 +269,7 @@ type CreateWallet struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// Description Description of the wallet
+	// Description Description of the wallet. Send empty string to omit.
 	Description *string `json:"description,omitempty"`
 
 	// Name Name of the wallet

@@ -1821,8 +1821,9 @@ components:
           example: "my-wallet"
         description:
           type: string
-          description: Description of the wallet
+          description: Description of the wallet. Send empty string to omit.
           example: "My wallet description"
+          maxLength: 255
         wallet_owner_address:
           $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
@@ -2105,8 +2106,9 @@ components:
           example: "my-channel"
         description:
           type: string
-          description: Description of the channel
+          description: Description of the channel. Send empty string to omit.
           example: "My channel description"
+          maxLength: 255
       required:
         - name
     PatchChannel:
