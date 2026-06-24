@@ -1735,12 +1735,12 @@ components:
       example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
     CREWorkflowId:
       type: string
-      description: CRE workflow deployment identifier (0x-prefixed hex). Used to deep-link to the workflow in CRE UI.
-      example: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+      description: CRE workflow deployment identifier (0x-prefixed hex).
+      example: "0x3f8e2a1b9c4d7650e1f2a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f8"
     CREWorkflowExecutionId:
       type: string
-      description: CRE workflow execution identifier (0x-prefixed hex). Identifies a specific workflow run in CRE UI. Present when the workflow run produced an OCR proof.
-      example: "0xabababababababababababababababababababababababababababababababab"
+      description: CRE workflow execution identifier (0x-prefixed hex). Present when the workflow run produced an OCR proof.
+      example: "0x8b4f2e7a1c9d3056b2e4f1a8c7d9e0b3f5a6c8d0e2f4a6b8c0d2e4f6a8b0c2d4"
     RSAPublicKey:
       type: object
       description: RSA public key with exponent and modulus
@@ -2790,15 +2790,19 @@ components:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
-        workflow_id:
+        operation_writer_workflow_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowId"
-          description: CRE operation-writer workflow that executes signed operations for this tenant.
+          description: CRE workflow that executed the operation.
+        operation_writer_workflow_execution_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowExecutionId"
+          description: CRE execution ID from the operation-writer workflow run that executed the operation.
         operation_status_workflow_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowId"
-          description: CRE operation-status workflow that monitors on-chain status for the operation's wallet.
-        workflow_execution_id:
+          description: CRE workflow that received blockchain events that confirm the operation was executed.
+        operation_status_workflow_execution_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowExecutionId"
           description: CRE execution ID from the operation-status workflow run that confirmed the operation. Present when status is confirmed and OCR proof was received.
@@ -3070,18 +3074,22 @@ components:
           format: int64
           description: Timestamp when the event was created
           example: 1715698800
-        workflow_id:
+        operation_writer_workflow_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowId"
-          description: CRE operation-writer workflow that executes operations for this tenant.
+          description: CRE workflow that executed the operation.
+        operation_writer_workflow_execution_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowExecutionId"
+          description: CRE execution ID from the operation-writer workflow run that executed the operation.
         operation_status_workflow_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowId"
-          description: CRE operation-status workflow that monitors on-chain status for the operation's wallet.
-        workflow_execution_id:
+          description: CRE workflow that received blockchain events that confirm the operation was executed.
+        operation_status_workflow_execution_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowExecutionId"
-          description: CRE execution ID from the operation-status workflow run. Present when status is confirmed and OCR proof was received.
+          description: CRE execution ID from the operation-status workflow run that confirmed the operation. Present when status is confirmed and OCR proof was received.
       required:
         - status
         - status_reason
