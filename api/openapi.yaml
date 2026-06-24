@@ -1733,6 +1733,14 @@ components:
       description: 42-character hex Ethereum address
       pattern: "^0x[a-fA-F0-9]{40}$"
       example: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+    CREWorkflowId:
+      type: string
+      description: CRE workflow deployment identifier (0x-prefixed hex). Used to deep-link to the workflow in CRE UI.
+      example: "0xdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
+    CREWorkflowExecutionId:
+      type: string
+      description: CRE workflow execution identifier (0x-prefixed hex). Identifies a specific workflow run in CRE UI. Present when the workflow run produced an OCR proof.
+      example: "0xabababababababababababababababababababababababababababababababab"
     RSAPublicKey:
       type: object
       description: RSA public key with exponent and modulus
@@ -2377,6 +2385,14 @@ components:
           $ref: "#/components/schemas/Timestamp"
         expired_at:
           $ref: "#/components/schemas/Timestamp"
+        workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE chain-query workflow that executes read queries for this tenant.
+        workflow_execution_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowExecutionId"
+          description: CRE execution ID from the chain-query workflow run. Present when the query completed with an OCR proof.
       required:
         - query_id
         - channel_id
@@ -2591,6 +2607,8 @@ components:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
           example: "zone-a"
+        workflow_id:
+          $ref: "#/components/schemas/CREWorkflowId"
         service_config:
           type: object
           description: Optional service-specific configuration (e.g. secondary contract addresses)
@@ -2644,6 +2662,8 @@ components:
           type: string
           description: DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
           example: "zone-a"
+        workflow_id:
+          $ref: "#/components/schemas/CREWorkflowId"
       required:
         - watcher_id
         - channel_id
@@ -2770,6 +2790,18 @@ components:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
+        workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE operation-writer workflow that executes signed operations for this tenant.
+        operation_status_workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE operation-status workflow that monitors on-chain status for the operation's wallet.
+        workflow_execution_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowExecutionId"
+          description: CRE execution ID from the operation-status workflow run that confirmed the operation. Present when status is confirmed and OCR proof was received.
       required:
         - operation_id
         - status
@@ -3038,6 +3070,18 @@ components:
           format: int64
           description: Timestamp when the event was created
           example: 1715698800
+        workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE operation-writer workflow that executes operations for this tenant.
+        operation_status_workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE operation-status workflow that monitors on-chain status for the operation's wallet.
+        workflow_execution_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowExecutionId"
+          description: CRE execution ID from the operation-status workflow run. Present when status is confirmed and OCR proof was received.
       required:
         - status
         - status_reason
@@ -3082,6 +3126,14 @@ components:
         verifiable_result:
           type: string
           description: Base64-encoded verifiable query result for terminal query status events.
+        workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE chain-query workflow that executed this query.
+        workflow_execution_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowExecutionId"
+          description: CRE execution ID from the chain-query workflow run. Present when the query completed with an OCR proof.
       required:
         - query_id
         - status
@@ -3115,6 +3167,10 @@ components:
           type: string
           description: Service namespace of the watcher
           example: "dta"
+        workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE event-watcher workflow deployed for this watcher.
       required:
         - status
         - status_reason
@@ -3146,6 +3202,14 @@ components:
           format: int64
           description: Timestamp when the event was created
           example: 1715698800
+        workflow_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowId"
+          description: CRE event-watcher workflow deployed for this watcher.
+        workflow_execution_id:
+          allOf:
+            - $ref: "#/components/schemas/CREWorkflowExecutionId"
+          description: CRE execution ID from the event-watcher workflow run that detected this on-chain event.
       required:
         - watcher_id
         - event_hash

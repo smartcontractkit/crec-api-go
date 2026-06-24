@@ -163,6 +163,12 @@ type BlockNumberBlockSelection struct {
 // BlockNumberBlockSelectionType Execute against an explicit block number after resolving header metadata.
 type BlockNumberBlockSelectionType string
 
+// CREWorkflowExecutionId CRE workflow execution identifier (0x-prefixed hex). Identifies a specific workflow run in CRE UI. Present when the workflow run produced an OCR proof.
+type CREWorkflowExecutionId = string
+
+// CREWorkflowId CRE workflow deployment identifier (0x-prefixed hex). Used to deep-link to the workflow in CRE UI.
+type CREWorkflowId = string
+
 // CancelOperation PATCH body for cancelling a pending operation.
 type CancelOperation struct {
 	// Status Marks the operation as cancelled.
@@ -546,6 +552,9 @@ type Operation struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
+	// OperationStatusWorkflowId CRE operation-status workflow that monitors on-chain status for the operation's wallet.
+	OperationStatusWorkflowId *CREWorkflowId `json:"operation_status_workflow_id,omitempty"`
+
 	// Signature EIP-712 signature of the operation. Draft rows may have a null signature until finalized.
 	Signature *string `json:"signature"`
 
@@ -564,6 +573,12 @@ type Operation struct {
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
+
+	// WorkflowExecutionId CRE execution ID from the operation-status workflow run that confirmed the operation. Present when status is confirmed and OCR proof was received.
+	WorkflowExecutionId *CREWorkflowExecutionId `json:"workflow_execution_id,omitempty"`
+
+	// WorkflowId CRE operation-writer workflow that executes signed operations for this tenant.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // OperationList Paginated list of operations.
@@ -600,6 +615,9 @@ type OperationStatusPayload struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 
+	// OperationStatusWorkflowId CRE operation-status workflow that monitors on-chain status for the operation's wallet.
+	OperationStatusWorkflowId *CREWorkflowId `json:"operation_status_workflow_id,omitempty"`
+
 	// Status Status of an operation
 	Status OperationStatus `json:"status"`
 
@@ -617,6 +635,12 @@ type OperationStatusPayload struct {
 
 	// WalletOperationId Wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
+
+	// WorkflowExecutionId CRE execution ID from the operation-status workflow run. Present when status is confirmed and OCR proof was received.
+	WorkflowExecutionId *CREWorkflowExecutionId `json:"workflow_execution_id,omitempty"`
+
+	// WorkflowId CRE operation-writer workflow that executes operations for this tenant.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // PatchChannel Request body for updating a channel.
@@ -691,6 +715,12 @@ type Query struct {
 
 	// VerifiableResult Base64-encoded verifiable query result.
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
+
+	// WorkflowExecutionId CRE execution ID from the chain-query workflow run. Present when the query completed with an OCR proof.
+	WorkflowExecutionId *CREWorkflowExecutionId `json:"workflow_execution_id,omitempty"`
+
+	// WorkflowId CRE chain-query workflow that executes read queries for this tenant.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // QueryAcceptedResponse defines model for QueryAcceptedResponse.
@@ -743,6 +773,12 @@ type QueryStatusPayload struct {
 
 	// VerifiableResult Base64-encoded verifiable query result for terminal query status events.
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
+
+	// WorkflowExecutionId CRE execution ID from the chain-query workflow run. Present when the query completed with an OCR proof.
+	WorkflowExecutionId *CREWorkflowExecutionId `json:"workflow_execution_id,omitempty"`
+
+	// WorkflowId CRE chain-query workflow that executed this query.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // RSAPublicKey RSA public key with exponent and modulus
@@ -958,6 +994,9 @@ type Watcher struct {
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
+
+	// WorkflowId CRE workflow deployment identifier (0x-prefixed hex). Used to deep-link to the workflow in CRE UI.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // WatcherEventPayload Event payload for an on-chain event detected by a watcher.
@@ -976,6 +1015,12 @@ type WatcherEventPayload struct {
 
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
+
+	// WorkflowExecutionId CRE execution ID from the event-watcher workflow run that detected this on-chain event.
+	WorkflowExecutionId *CREWorkflowExecutionId `json:"workflow_execution_id,omitempty"`
+
+	// WorkflowId CRE event-watcher workflow deployed for this watcher.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // WatcherList Paginated list of watchers.
@@ -1008,6 +1053,9 @@ type WatcherStatusPayload struct {
 
 	// WatcherId Unique watcher identifier
 	WatcherId string `json:"watcher_id"`
+
+	// WorkflowId CRE event-watcher workflow deployed for this watcher.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // WatcherSummary Summary view of a watcher.
@@ -1038,6 +1086,9 @@ type WatcherSummary struct {
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
+
+	// WorkflowId CRE workflow deployment identifier (0x-prefixed hex). Used to deep-link to the workflow in CRE UI.
+	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
 // ListChannelsParams defines parameters for ListChannels.
