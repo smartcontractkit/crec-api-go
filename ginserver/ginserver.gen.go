@@ -22,10 +22,11 @@ const (
 
 // Defines values for ApplicationErrorType.
 const (
-	CONFLICT        ApplicationErrorType = "CONFLICT"
-	INTERNALERROR   ApplicationErrorType = "INTERNAL_ERROR"
-	NOTFOUND        ApplicationErrorType = "NOT_FOUND"
-	VALIDATIONERROR ApplicationErrorType = "VALIDATION_ERROR"
+	CONFLICT             ApplicationErrorType = "CONFLICT"
+	INTERNALERROR        ApplicationErrorType = "INTERNAL_ERROR"
+	NOTFOUND             ApplicationErrorType = "NOT_FOUND"
+	ORGANIZATIONNOTFOUND ApplicationErrorType = "ORGANIZATION_NOT_FOUND"
+	VALIDATIONERROR      ApplicationErrorType = "VALIDATION_ERROR"
 )
 
 // Defines values for BlockNumberBlockSelectionType.
@@ -1096,6 +1097,9 @@ type WatcherSummary struct {
 	// WorkflowId CRE workflow deployment identifier (0x-prefixed hex).
 	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
+
+// OrganizationNotFound Standard error response body.
+type OrganizationNotFound = ApplicationError
 
 // ListChannelsParams defines parameters for ListChannels.
 type ListChannelsParams struct {
@@ -3076,6 +3080,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PATCH(options.BaseURL+"/wallets/:wallet_id", wrapper.UpdateWallet)
 }
 
+type OrganizationNotFoundJSONResponse ApplicationError
+
 type ListChannelsRequestObject struct {
 	Params ListChannelsParams
 }
@@ -3089,6 +3095,17 @@ type ListChannels200JSONResponse ChannelList
 func (response ListChannels200JSONResponse) VisitListChannelsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListChannels401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response ListChannels401JSONResponse) VisitListChannelsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3128,6 +3145,17 @@ func (response CreateChannel400JSONResponse) VisitCreateChannelResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateChannel401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response CreateChannel401JSONResponse) VisitCreateChannelResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateChannel500JSONResponse ApplicationError
 
 func (response CreateChannel500JSONResponse) VisitCreateChannelResponse(w http.ResponseWriter) error {
@@ -3150,6 +3178,17 @@ type GetChannel200JSONResponse Channel
 func (response GetChannel200JSONResponse) VisitGetChannelResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetChannel401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response GetChannel401JSONResponse) VisitGetChannelResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3199,6 +3238,17 @@ func (response UpdateChannel400JSONResponse) VisitUpdateChannelResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type UpdateChannel401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response UpdateChannel401JSONResponse) VisitUpdateChannelResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type UpdateChannel404JSONResponse ApplicationError
 
 func (response UpdateChannel404JSONResponse) VisitUpdateChannelResponse(w http.ResponseWriter) error {
@@ -3240,6 +3290,17 @@ type ListChannelEvents400JSONResponse ApplicationError
 func (response ListChannelEvents400JSONResponse) VisitListChannelEventsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListChannelEvents401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response ListChannelEvents401JSONResponse) VisitListChannelEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3289,6 +3350,17 @@ func (response SearchChannelEvents400JSONResponse) VisitSearchChannelEventsRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type SearchChannelEvents401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response SearchChannelEvents401JSONResponse) VisitSearchChannelEventsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type SearchChannelEvents404JSONResponse ApplicationError
 
 func (response SearchChannelEvents404JSONResponse) VisitSearchChannelEventsResponse(w http.ResponseWriter) error {
@@ -3325,6 +3397,17 @@ func (response GetChannelEvent200JSONResponse) VisitGetChannelEventResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetChannelEvent401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response GetChannelEvent401JSONResponse) VisitGetChannelEventResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetChannelEvent404JSONResponse ApplicationError
 
 func (response GetChannelEvent404JSONResponse) VisitGetChannelEventResponse(w http.ResponseWriter) error {
@@ -3357,6 +3440,17 @@ type ListOperations200JSONResponse OperationList
 func (response ListOperations200JSONResponse) VisitListOperationsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListOperations401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response ListOperations401JSONResponse) VisitListOperationsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3406,6 +3500,17 @@ func (response CreateOperation400JSONResponse) VisitCreateOperationResponse(w ht
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateOperation401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response CreateOperation401JSONResponse) VisitCreateOperationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateOperation404JSONResponse ApplicationError
 
 func (response CreateOperation404JSONResponse) VisitCreateOperationResponse(w http.ResponseWriter) error {
@@ -3438,6 +3543,17 @@ type GetOperation200JSONResponse Operation
 func (response GetOperation200JSONResponse) VisitGetOperationResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetOperation401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response GetOperation401JSONResponse) VisitGetOperationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3488,6 +3604,17 @@ func (response FinalizeOrCancelOperation400JSONResponse) VisitFinalizeOrCancelOp
 	return json.NewEncoder(w).Encode(response)
 }
 
+type FinalizeOrCancelOperation401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response FinalizeOrCancelOperation401JSONResponse) VisitFinalizeOrCancelOperationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type FinalizeOrCancelOperation404JSONResponse ApplicationError
 
 func (response FinalizeOrCancelOperation404JSONResponse) VisitFinalizeOrCancelOperationResponse(w http.ResponseWriter) error {
@@ -3520,6 +3647,17 @@ type ListQueries200JSONResponse QueryList
 func (response ListQueries200JSONResponse) VisitListQueriesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListQueries401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response ListQueries401JSONResponse) VisitListQueriesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3565,6 +3703,17 @@ type CreateQuery400JSONResponse ApplicationError
 func (response CreateQuery400JSONResponse) VisitCreateQueryResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateQuery401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response CreateQuery401JSONResponse) VisitCreateQueryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3623,6 +3772,17 @@ func (response GetQuery200JSONResponse) VisitGetQueryResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetQuery401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response GetQuery401JSONResponse) VisitGetQueryResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetQuery404JSONResponse ApplicationError
 
 func (response GetQuery404JSONResponse) VisitGetQueryResponse(w http.ResponseWriter) error {
@@ -3655,6 +3815,17 @@ type ListWatchers200JSONResponse WatcherList
 func (response ListWatchers200JSONResponse) VisitListWatchersResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListWatchers401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response ListWatchers401JSONResponse) VisitListWatchersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3704,6 +3875,17 @@ func (response CreateWatcher400JSONResponse) VisitCreateWatcherResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateWatcher401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response CreateWatcher401JSONResponse) VisitCreateWatcherResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateWatcher404JSONResponse ApplicationError
 
 func (response CreateWatcher404JSONResponse) VisitCreateWatcherResponse(w http.ResponseWriter) error {
@@ -3736,6 +3918,17 @@ type GetWatcher200JSONResponse Watcher
 func (response GetWatcher200JSONResponse) VisitGetWatcherResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWatcher401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response GetWatcher401JSONResponse) VisitGetWatcherResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3795,6 +3988,17 @@ func (response UpdateWatcher400JSONResponse) VisitUpdateWatcherResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type UpdateWatcher401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response UpdateWatcher401JSONResponse) VisitUpdateWatcherResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type UpdateWatcher404JSONResponse ApplicationError
 
 func (response UpdateWatcher404JSONResponse) VisitUpdateWatcherResponse(w http.ResponseWriter) error {
@@ -3845,6 +4049,17 @@ func (response ListNetworks200JSONResponse) VisitListNetworksResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type ListNetworks401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response ListNetworks401JSONResponse) VisitListNetworksResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type ListNetworks500JSONResponse ApplicationError
 
 func (response ListNetworks500JSONResponse) VisitListNetworksResponse(w http.ResponseWriter) error {
@@ -3867,6 +4082,17 @@ type ListWallets200JSONResponse WalletList
 func (response ListWallets200JSONResponse) VisitListWalletsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type ListWallets401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response ListWallets401JSONResponse) VisitListWalletsResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3906,6 +4132,17 @@ func (response CreateWallet400JSONResponse) VisitCreateWalletResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateWallet401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response CreateWallet401JSONResponse) VisitCreateWalletResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateWallet500JSONResponse ApplicationError
 
 func (response CreateWallet500JSONResponse) VisitCreateWalletResponse(w http.ResponseWriter) error {
@@ -3928,6 +4165,17 @@ type GetWallet200JSONResponse Wallet
 func (response GetWallet200JSONResponse) VisitGetWalletResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetWallet401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response GetWallet401JSONResponse) VisitGetWalletResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3973,6 +4221,17 @@ type UpdateWallet400JSONResponse ApplicationError
 func (response UpdateWallet400JSONResponse) VisitUpdateWalletResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWallet401JSONResponse struct {
+	OrganizationNotFoundJSONResponse
+}
+
+func (response UpdateWallet401JSONResponse) VisitUpdateWalletResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
