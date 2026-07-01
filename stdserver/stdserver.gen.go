@@ -222,8 +222,8 @@ type CreateChannel struct {
 
 // CreateOperation Request body for creating a signed operation or a draft when the signature is omitted.
 type CreateOperation struct {
-	// Address Wallet address performing the operation
-	Address string `json:"address"`
+	// Address 42-character hex Ethereum address
+	Address EthereumAddress `json:"address"`
 
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
@@ -231,14 +231,14 @@ type CreateOperation struct {
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
-	// Signature EIP-712 signature of the operation. Optional for draft creation.
-	Signature *string `json:"signature,omitempty"`
+	// Signature 0x-prefixed 65-byte ECDSA or 256-byte RSA signature hex. Optional on create; signer authorization is enforced at runtime.
+	Signature *OperationSignature `json:"signature,omitempty"`
 
 	// Transactions List of transactions to execute. Each transaction may include optional preview data.
 	Transactions []TransactionRequest `json:"transactions"`
 
-	// WalletOperationId Unique wallet operation identifier
-	WalletOperationId string `json:"wallet_operation_id"`
+	// WalletOperationId Base-10 non-negative integer within uint256 range. Leading zeros are accepted on input but normalized at runtime.
+	WalletOperationId WalletOperationId `json:"wallet_operation_id"`
 }
 
 // CreateQuery Request body for creating a chain query.
@@ -329,6 +329,9 @@ type CreateWatcherWithService struct {
 	// ServiceConfig Optional service-specific configuration (e.g. secondary contract addresses)
 	ServiceConfig *map[string]interface{} `json:"service_config,omitempty"`
 }
+
+// DecimalString Base-10 decimal string.
+type DecimalString = string
 
 // ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
 type ECDSASignersList = []EthereumAddress
@@ -462,6 +465,9 @@ type GenericProofObject struct {
 type HealthCheck struct {
 	Status string `json:"status"`
 }
+
+// HexCalldata Even-length hex-encoded calldata bytes. The 0x prefix is optional; both 0xdeadbeef and deadbeef are accepted. Org-scoped aggregate byte limits are enforced at runtime.
+type HexCalldata = string
 
 // LatestBlockSelection defines model for LatestBlockSelection.
 type LatestBlockSelection struct {
@@ -598,6 +604,9 @@ type OperationResponse struct {
 	// OperationId Unique identifier for the operation
 	OperationId openapi_types.UUID `json:"operation_id"`
 }
+
+// OperationSignature 0x-prefixed 65-byte ECDSA or 256-byte RSA signature hex. Optional on create; signer authorization is enforced at runtime.
+type OperationSignature = string
 
 // OperationStatus Status of an operation
 type OperationStatus string
@@ -856,17 +865,17 @@ type TransactionPreviewSnapshot struct {
 
 // TransactionRequest Transaction payload for operation creation.
 type TransactionRequest struct {
-	// Data Hex-encoded calldata for the transaction
-	Data string `json:"data"`
+	// Data Even-length hex-encoded calldata bytes. The 0x prefix is optional; both 0xdeadbeef and deadbeef are accepted. Org-scoped aggregate byte limits are enforced at runtime.
+	Data HexCalldata `json:"data"`
 
 	// Preview Preview metadata attached to a draft transaction before signing.
 	Preview *TransactionPreview `json:"preview,omitempty"`
 
-	// To Address receiving the transaction
-	To string `json:"to"`
+	// To 42-character hex Ethereum address
+	To EthereumAddress `json:"to"`
 
-	// Value Amount of native token value being sent in the transaction
-	Value string `json:"value"`
+	// Value Base-10 decimal string.
+	Value DecimalString `json:"value"`
 }
 
 // UpdateWallet Request body for updating a wallet.
@@ -936,6 +945,9 @@ type WalletList struct {
 	// HasMore True if there are more wallets to fetch
 	HasMore bool `json:"has_more"`
 }
+
+// WalletOperationId Base-10 non-negative integer within uint256 range. Leading zeros are accepted on input but normalized at runtime.
+type WalletOperationId = string
 
 // WalletStatus Status of a wallet entity
 type WalletStatus string
