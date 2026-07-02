@@ -22,10 +22,11 @@ const (
 
 // Defines values for ApplicationErrorType.
 const (
-	CONFLICT        ApplicationErrorType = "CONFLICT"
-	INTERNALERROR   ApplicationErrorType = "INTERNAL_ERROR"
-	NOTFOUND        ApplicationErrorType = "NOT_FOUND"
-	VALIDATIONERROR ApplicationErrorType = "VALIDATION_ERROR"
+	CONFLICT             ApplicationErrorType = "CONFLICT"
+	INTERNALERROR        ApplicationErrorType = "INTERNAL_ERROR"
+	NOTFOUND             ApplicationErrorType = "NOT_FOUND"
+	ORGANIZATIONNOTFOUND ApplicationErrorType = "ORGANIZATION_NOT_FOUND"
+	VALIDATIONERROR      ApplicationErrorType = "VALIDATION_ERROR"
 )
 
 // Defines values for ApplicationErrorCode.
@@ -1111,6 +1112,9 @@ type WatcherSummary struct {
 	// WorkflowId CRE workflow deployment identifier (0x-prefixed hex).
 	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
+
+// OrganizationNotFound Standard error response body.
+type OrganizationNotFound = ApplicationError
 
 // ListChannelsParams defines parameters for ListChannels.
 type ListChannelsParams struct {

@@ -50,6 +50,8 @@ paths:
       operationId: listNetworks
       summary: Retrieves available networks.
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Successful operation
           content:
@@ -79,6 +81,8 @@ paths:
               $ref: "#/components/schemas/CreateWallet"
             example: {name: "my-wallet", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa"}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "201":
           description: Wallet created successfully
           content:
@@ -160,6 +164,8 @@ paths:
             minimum: 0
             default: 0
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Successful operation
           content:
@@ -189,6 +195,8 @@ paths:
             type: string
             format: uuid
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Wallet found
           content:
@@ -232,6 +240,8 @@ paths:
               $ref: "#/components/schemas/UpdateWallet"
             example: {name: "updated-wallet"}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Wallet updated successfully
           content:
@@ -276,6 +286,8 @@ paths:
               $ref: "#/components/schemas/CreateChannel"
             example: {name: "my-channel"}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "201":
           description: Channel created successfully
           content:
@@ -337,6 +349,8 @@ paths:
             minimum: 0
             default: 0
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Successful operation
           content:
@@ -366,6 +380,8 @@ paths:
             type: string
             format: uuid
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Channel found
           content:
@@ -412,6 +428,8 @@ paths:
               $ref: "#/components/schemas/PatchChannel"
             example: {name: "updated-channel"}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Channel updated successfully
           content:
@@ -499,6 +517,8 @@ paths:
                       type: "block_number"
                       block_number: "6500000"
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "202":
           description: Query accepted for execution.
           content:
@@ -599,6 +619,8 @@ paths:
           schema:
             $ref: "#/components/schemas/ChainSelector"
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Successful operation
           content:
@@ -734,6 +756,8 @@ paths:
             type: string
             format: uuid
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Query found
           content:
@@ -799,6 +823,8 @@ paths:
               $ref: "#/components/schemas/CreateWatcher"
             example: {name: "my-watcher", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", service: "dta", events: ["SubscriptionRequested"]}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "201":
           description: Watcher created successfully
           content:
@@ -899,6 +925,8 @@ paths:
           schema:
             type: string
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Successful operation
           content:
@@ -942,6 +970,8 @@ paths:
             type: string
             format: uuid
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Watcher found
           content:
@@ -995,6 +1025,8 @@ paths:
               $ref: "#/components/schemas/UpdateWatcher"
             example: {name: "updated-watcher"}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Watcher updated successfully
           content:
@@ -1059,6 +1091,8 @@ paths:
               $ref: "#/components/schemas/CreateOperation"
             example: {chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "op-12345", deadline: 0, transactions: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "201":
           description: Operation created successfully
           content:
@@ -1178,6 +1212,8 @@ paths:
           schema:
             type: string
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Successful operation
           content:
@@ -1237,6 +1273,8 @@ paths:
             type: string
             format: uuid
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Operation found
           content:
@@ -1291,6 +1329,8 @@ paths:
               $ref: "#/components/schemas/PatchOperation"
             example: {status: "cancelled"}
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Operation updated successfully
           content:
@@ -1350,6 +1390,8 @@ paths:
             format: int64
             minimum: 0
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Events retrieved successfully
           content:
@@ -1526,6 +1568,8 @@ paths:
           style: form
           explode: true
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Events retrieved successfully
           content:
@@ -1577,6 +1621,8 @@ paths:
             type: string
             format: uuid
       responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
         "200":
           description: Event found
           content:
@@ -1610,6 +1656,16 @@ components:
       name: Authorization
       description: |
         Send `Authorization: Apikey <api-key>`.
+  responses:
+    OrganizationNotFound:
+      description: >
+        The authenticated organization is not onboarded in CRE Connect. The
+        caller's credentials are valid, but no matching organization exists.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApplicationError"
+          example: {type: "ORGANIZATION_NOT_FOUND", message: "organization not found"}
   schemas:
     WalletStatus:
       type: string
@@ -2109,6 +2165,7 @@ components:
             - "VALIDATION_ERROR"
             - "CONFLICT"
             - "INTERNAL_ERROR"
+            - "ORGANIZATION_NOT_FOUND"
         code:
           $ref: "#/components/schemas/ApplicationErrorCode"
         message:
