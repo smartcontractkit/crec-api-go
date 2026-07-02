@@ -2111,7 +2111,6 @@ components:
             - "INTERNAL_ERROR"
         code:
           $ref: "#/components/schemas/ApplicationErrorCode"
-          description: Machine-readable error code. Present on NOT_FOUND responses for tenant resources.
         message:
           type: string
           description: Error message describing the issue
