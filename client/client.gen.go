@@ -49,7 +49,7 @@ const (
 
 // Defines values for EcdsaWalletConfigurationWalletType.
 const (
-	Ecdsa EcdsaWalletConfigurationWalletType = "ecdsa"
+	EcdsaWalletConfigurationWalletTypeECDSA EcdsaWalletConfigurationWalletType = "ecdsa"
 )
 
 // Defines values for EventABIType.
@@ -104,7 +104,7 @@ const (
 
 // Defines values for ProtectedEcdsaWalletConfigurationWalletType.
 const (
-	ProtectedEcdsa ProtectedEcdsaWalletConfigurationWalletType = "protected_ecdsa"
+	ProtectedEcdsaWalletConfigurationWalletTypeProtectedECDSA ProtectedEcdsaWalletConfigurationWalletType = "protected_ecdsa"
 )
 
 // Defines values for QueryKind.
@@ -124,7 +124,7 @@ const (
 
 // Defines values for RsaWalletConfigurationWalletType.
 const (
-	Rsa RsaWalletConfigurationWalletType = "rsa"
+	RsaWalletConfigurationWalletTypeRSA RsaWalletConfigurationWalletType = "rsa"
 )
 
 // Defines values for SubjectType.
@@ -945,6 +945,8 @@ type UpdateWatcher struct {
 }
 
 // Wallet A wallet resource.
+//
+// The wallet type is determined by `configuration.wallet_type`.
 type Wallet struct {
 	// Address 42-character hex Ethereum address
 	Address EthereumAddress `json:"address"`
@@ -975,9 +977,6 @@ type Wallet struct {
 
 	// WalletOwnerAddress 42-character hex Ethereum address
 	WalletOwnerAddress EthereumAddress `json:"wallet_owner_address"`
-
-	// WalletType Type of wallet
-	WalletType WalletType `json:"wallet_type"`
 }
 
 // WalletConfiguration Wallet-specific configuration (allowed signers, policy engine, etc.). The discriminator is `wallet_type`.

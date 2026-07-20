@@ -89,7 +89,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
-              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
         "400":
           description: Invalid request data
           content:
@@ -203,7 +203,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
-              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
         "404":
           description: Wallet not found
           content:
@@ -248,7 +248,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
-              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "updated-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "updated-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
         "400":
           description: Invalid request data
           content:
@@ -1894,6 +1894,8 @@ components:
         wallet_type:
           type: string
           enum: [ecdsa]
+          x-enum-varnames:
+            - EcdsaWalletConfigurationWalletTypeECDSA
         allowed_signers:
           $ref: "#/components/schemas/ECDSASignersList"
       required:
@@ -1908,6 +1910,8 @@ components:
         wallet_type:
           type: string
           enum: [rsa]
+          x-enum-varnames:
+            - RsaWalletConfigurationWalletTypeRSA
         allowed_signers:
           $ref: "#/components/schemas/RSASignersList"
       required:
@@ -1922,6 +1926,8 @@ components:
         wallet_type:
           type: string
           enum: [protected_ecdsa]
+          x-enum-varnames:
+            - ProtectedEcdsaWalletConfigurationWalletTypeProtectedECDSA
         allowed_signers:
           $ref: "#/components/schemas/ECDSASignersList"
         policy_engine_address:
@@ -2032,8 +2038,6 @@ components:
           $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
-        wallet_type:
-          $ref: "#/components/schemas/WalletType"
         status:
           $ref: "#/components/schemas/WalletStatus"
         status_channel_id:
@@ -2050,7 +2054,6 @@ components:
         - name
         - address
         - chain_selector
-        - wallet_type
         - wallet_owner_address
         - status
         - configuration
