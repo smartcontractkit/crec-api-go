@@ -136,8 +136,9 @@ const (
 
 // Defines values for WalletType.
 const (
-	WalletTypeECDSA WalletType = "ecdsa"
-	WalletTypeRSA   WalletType = "rsa"
+	WalletTypeECDSA          WalletType = "ecdsa"
+	WalletTypeProtectedECDSA WalletType = "protected_ecdsa"
+	WalletTypeRSA            WalletType = "rsa"
 )
 
 // Defines values for WatcherStatus.
@@ -276,14 +277,11 @@ type CreateQuery struct {
 
 // CreateWallet Request body for creating a new wallet.
 type CreateWallet struct {
-	// AllowedEcdsaSigners List of allowed ECDSA public signing keys (Ethereum addresses)
-	AllowedEcdsaSigners *ECDSASignersList `json:"allowed_ecdsa_signers,omitempty"`
-
-	// AllowedRsaSigners List of allowed RSA public signing keys
-	AllowedRsaSigners *RSASignersList `json:"allowed_rsa_signers,omitempty"`
-
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// Configuration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
+	Configuration WalletConfiguration `json:"configuration"`
 
 	// Description Description of the wallet. Send empty string to omit.
 	Description *string `json:"description,omitempty"`
@@ -347,9 +345,6 @@ type CreateWatcherWithService struct {
 
 // DecimalString Base-10 decimal string.
 type DecimalString = string
-
-// ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
-type ECDSASignersList = []EthereumAddress
 
 // EVMCallQueryParams Parameters for an evm_call chain query.
 type EVMCallQueryParams struct {
@@ -812,18 +807,6 @@ type QueryStatusPayload struct {
 	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
-// RSAPublicKey RSA public key with exponent and modulus
-type RSAPublicKey struct {
-	// E RSA public exponent (hex encoded, 2-17 bytes)
-	E string `json:"e"`
-
-	// N RSA modulus (hex encoded, min 2048 bits)
-	N string `json:"n"`
-}
-
-// RSASignersList List of allowed RSA public signing keys
-type RSASignersList = []RSAPublicKey
-
 // Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 type Subject struct {
 	// SubjectId Stable subject identifier used for filtering and equality.
@@ -919,14 +902,11 @@ type Wallet struct {
 	// Address 42-character hex Ethereum address
 	Address EthereumAddress `json:"address"`
 
-	// AllowedEcdsaSigners List of allowed ECDSA public signing keys (Ethereum addresses)
-	AllowedEcdsaSigners ECDSASignersList `json:"allowed_ecdsa_signers"`
-
-	// AllowedRsaSigners List of allowed RSA public signing keys
-	AllowedRsaSigners RSASignersList `json:"allowed_rsa_signers"`
-
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// Configuration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
+	Configuration WalletConfiguration `json:"configuration"`
 
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
@@ -952,6 +932,9 @@ type Wallet struct {
 	// WalletType Type of wallet
 	WalletType WalletType `json:"wallet_type"`
 }
+
+// WalletConfiguration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
+type WalletConfiguration map[string]interface{}
 
 // WalletList Paginated list of wallets.
 type WalletList struct {
