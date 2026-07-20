@@ -31,6 +31,15 @@ const (
 	VALIDATIONERROR      ApplicationErrorType = "VALIDATION_ERROR"
 )
 
+// Defines values for ApplicationErrorCode.
+const (
+	ApplicationErrorCodeChannelNotFound   ApplicationErrorCode = "CHANNEL_NOT_FOUND"
+	ApplicationErrorCodeOperationNotFound ApplicationErrorCode = "OPERATION_NOT_FOUND"
+	ApplicationErrorCodeQueryNotFound     ApplicationErrorCode = "QUERY_NOT_FOUND"
+	ApplicationErrorCodeWalletNotFound    ApplicationErrorCode = "WALLET_NOT_FOUND"
+	ApplicationErrorCodeWatcherNotFound   ApplicationErrorCode = "WATCHER_NOT_FOUND"
+)
+
 // Defines values for BlockNumberBlockSelectionType.
 const (
 	BlockNumberBlockSelectionTypeBlockNumber BlockNumberBlockSelectionType = "block_number"
@@ -160,6 +169,9 @@ const (
 
 // ApplicationError Standard error response body.
 type ApplicationError struct {
+	// Code Machine-readable error code for NOT_FOUND responses.
+	Code *ApplicationErrorCode `json:"code,omitempty"`
+
 	// Message Error message describing the issue
 	Message string `json:"message"`
 
@@ -169,6 +181,9 @@ type ApplicationError struct {
 
 // ApplicationErrorType Error type
 type ApplicationErrorType string
+
+// ApplicationErrorCode Machine-readable error code for NOT_FOUND responses.
+type ApplicationErrorCode string
 
 // BlockNumberBlockSelection defines model for BlockNumberBlockSelection.
 type BlockNumberBlockSelection struct {
