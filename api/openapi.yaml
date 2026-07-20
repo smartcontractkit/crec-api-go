@@ -1,8 +1,8 @@
 openapi: 3.0.4
 info:
   title: CRE Connect API
-  version: 0.8.0
-  description: API specification for CRE Connect resources.
+  version: 0.7.0
+  description: API specification for CRE Connect resources
 
 servers:
   - url: https://cre-connect.api.chain.link/v1
@@ -79,7 +79,7 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/CreateWallet"
-            example: {name: "my-wallet", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
+            example: {name: "my-wallet", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa"}
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
@@ -89,7 +89,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
-              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", allowed_rsa_signers: [], allowed_ecdsa_signers: []}
         "400":
           description: Invalid request data
           content:
@@ -203,7 +203,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
-              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "my-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", allowed_rsa_signers: [], allowed_ecdsa_signers: []}
         "404":
           description: Wallet not found
           content:
@@ -248,7 +248,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Wallet"
-              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "updated-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", configuration: {wallet_type: "ecdsa", allowed_signers: ["0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"]}}
+              example: {wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6", name: "updated-wallet", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", chain_selector: "16015286601757825753", wallet_type: "ecdsa", wallet_owner_address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", status: "deployed", allowed_rsa_signers: [], allowed_ecdsa_signers: []}
         "400":
           description: Invalid request data
           content:
@@ -1769,11 +1769,9 @@ components:
       enum:
         - ecdsa
         - rsa
-        - protected_ecdsa
       x-enum-varnames:
         - WalletTypeECDSA
         - WalletTypeRSA
-        - WalletTypeProtectedECDSA
       example: "ecdsa"
     EventType:
       type: string
@@ -1876,71 +1874,6 @@ components:
       example:
         - "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
         - "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-
-    WalletConfiguration:
-      oneOf:
-        - $ref: "#/components/schemas/EcdsaWalletConfiguration"
-        - $ref: "#/components/schemas/RsaWalletConfiguration"
-        - $ref: "#/components/schemas/ProtectedEcdsaWalletConfiguration"
-      discriminator:
-        propertyName: wallet_type
-        mapping:
-          ecdsa: "#/components/schemas/EcdsaWalletConfiguration"
-          rsa: "#/components/schemas/RsaWalletConfiguration"
-          protected_ecdsa: "#/components/schemas/ProtectedEcdsaWalletConfiguration"
-      description: Wallet-specific configuration (allowed signers, policy engine, etc.). The discriminator is `wallet_type`.
-
-    EcdsaWalletConfiguration:
-      type: object
-      additionalProperties: false
-      description: ECDSA wallet configuration.
-      properties:
-        wallet_type:
-          type: string
-          enum: [ecdsa]
-          x-enum-varnames:
-            - EcdsaWalletConfigurationWalletTypeECDSA
-        allowed_signers:
-          $ref: "#/components/schemas/ECDSASignersList"
-      required:
-        - wallet_type
-        - allowed_signers
-
-    RsaWalletConfiguration:
-      type: object
-      additionalProperties: false
-      description: RSA wallet configuration.
-      properties:
-        wallet_type:
-          type: string
-          enum: [rsa]
-          x-enum-varnames:
-            - RsaWalletConfigurationWalletTypeRSA
-        allowed_signers:
-          $ref: "#/components/schemas/RSASignersList"
-      required:
-        - wallet_type
-        - allowed_signers
-
-    ProtectedEcdsaWalletConfiguration:
-      type: object
-      additionalProperties: false
-      description: Protected ECDSA wallet configuration.
-      properties:
-        wallet_type:
-          type: string
-          enum: [protected_ecdsa]
-          x-enum-varnames:
-            - ProtectedEcdsaWalletConfigurationWalletTypeProtectedECDSA
-        allowed_signers:
-          $ref: "#/components/schemas/ECDSASignersList"
-        policy_engine_address:
-          $ref: "#/components/schemas/EthereumAddress"
-      required:
-        - wallet_type
-        - allowed_signers
-        - policy_engine_address
-
     ChainSelector:
       type: string
       description: Chain selector identifier for the blockchain network
@@ -1976,8 +1909,12 @@ components:
           $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
-        configuration:
-          $ref: "#/components/schemas/WalletConfiguration"
+        wallet_type:
+          $ref: "#/components/schemas/WalletType"
+        allowed_rsa_signers:
+          $ref: "#/components/schemas/RSASignersList"
+        allowed_ecdsa_signers:
+          $ref: "#/components/schemas/ECDSASignersList"
         status_channel_id:
           type: string
           format: uuid
@@ -1987,7 +1924,7 @@ components:
         - name
         - wallet_owner_address
         - chain_selector
-        - configuration
+        - wallet_type
     UpdateWallet:
       description: Request body for updating a wallet.
       type: object
@@ -2042,6 +1979,8 @@ components:
           $ref: "#/components/schemas/EthereumAddress"
         chain_selector:
           $ref: "#/components/schemas/ChainSelector"
+        wallet_type:
+          $ref: "#/components/schemas/WalletType"
         status:
           $ref: "#/components/schemas/WalletStatus"
         status_channel_id:
@@ -2049,8 +1988,10 @@ components:
           format: uuid
           description: Channel ID where wallet status events are published
           example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
-        configuration:
-          $ref: "#/components/schemas/WalletConfiguration"
+        allowed_rsa_signers:
+          $ref: "#/components/schemas/RSASignersList"
+        allowed_ecdsa_signers:
+          $ref: "#/components/schemas/ECDSASignersList"
         created_at:
           $ref: "#/components/schemas/Timestamp"
       required:
@@ -2058,9 +1999,11 @@ components:
         - name
         - address
         - chain_selector
+        - wallet_type
         - wallet_owner_address
         - status
-        - configuration
+        - allowed_rsa_signers
+        - allowed_ecdsa_signers
     WalletList:
       description: Paginated list of wallets.
       type: object
