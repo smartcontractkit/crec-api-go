@@ -1108,12 +1108,16 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "404":
-          description: Channel not found
+          description: Channel or wallet not found
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "NOT_FOUND", message: "The requested channel was not found."}
+              examples:
+                channelNotFound:
+                  value: {type: "NOT_FOUND", code: "CHANNEL_NOT_FOUND", message: "channel with ID abc not found"}
+                walletNotFound:
+                  value: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with address 0x742d35Cc6634C0532925a3b844Bc454e4438f44e and chain_selector 16015286601757825753 not found"}
         "500":
           description: Internal server error
           content:
@@ -2208,6 +2212,22 @@ components:
         - to
         - value
         - data
+    ApplicationErrorCode:
+      type: string
+      description: Machine-readable error code for NOT_FOUND responses.
+      enum:
+        - CHANNEL_NOT_FOUND
+        - WALLET_NOT_FOUND
+        - OPERATION_NOT_FOUND
+        - WATCHER_NOT_FOUND
+        - QUERY_NOT_FOUND
+      x-enum-varnames:
+        - ApplicationErrorCodeChannelNotFound
+        - ApplicationErrorCodeWalletNotFound
+        - ApplicationErrorCodeOperationNotFound
+        - ApplicationErrorCodeWatcherNotFound
+        - ApplicationErrorCodeQueryNotFound
+      example: "WALLET_NOT_FOUND"
     ApplicationError:
       description: Standard error response body.
       type: object
@@ -2222,6 +2242,8 @@ components:
             - "CONFLICT"
             - "INTERNAL_ERROR"
             - "ORGANIZATION_NOT_FOUND"
+        code:
+          $ref: "#/components/schemas/ApplicationErrorCode"
         message:
           type: string
           description: Error message describing the issue
