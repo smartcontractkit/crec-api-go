@@ -958,8 +958,6 @@ type UpdateWatcher struct {
 }
 
 // Wallet A wallet resource.
-//
-// The wallet type is determined by `configuration.wallet_type`.
 type Wallet struct {
 	// Address 42-character hex Ethereum address
 	Address EthereumAddress `json:"address"`
