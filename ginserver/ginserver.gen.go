@@ -64,11 +64,6 @@ const (
 	ChannelStatusArchived ChannelStatus = "archived"
 )
 
-// Defines values for EcdsaWalletConfigurationWalletType.
-const (
-	EcdsaWalletConfigurationWalletTypeECDSA EcdsaWalletConfigurationWalletType = "ecdsa"
-)
-
 // Defines values for EventABIType.
 const (
 	EventABITypeEvent EventABIType = "event"
@@ -119,11 +114,6 @@ const (
 	OperationStatusSent             OperationStatus = "sent"
 )
 
-// Defines values for ProtectedEcdsaWalletConfigurationWalletType.
-const (
-	ProtectedEcdsaWalletConfigurationWalletTypeProtectedECDSA ProtectedEcdsaWalletConfigurationWalletType = "protected_ecdsa"
-)
-
 // Defines values for QueryKind.
 const (
 	QueryKindEVMCall QueryKind = "evm_call"
@@ -137,11 +127,6 @@ const (
 	QueryStatusFailed    QueryStatus = "failed"
 	QueryStatusSending   QueryStatus = "sending"
 	QueryStatusSent      QueryStatus = "sent"
-)
-
-// Defines values for RsaWalletConfigurationWalletType.
-const (
-	RsaWalletConfigurationWalletTypeRSA RsaWalletConfigurationWalletType = "rsa"
 )
 
 // Defines values for SubjectType.
@@ -305,7 +290,7 @@ type CreateWallet struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// Configuration Wallet-specific configuration (allowed signers, policy engine, etc.). The discriminator is `wallet_type`.
+	// Configuration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
 	Configuration WalletConfiguration `json:"configuration"`
 
 	// Description Description of the wallet. Send empty string to omit.
@@ -319,6 +304,9 @@ type CreateWallet struct {
 
 	// WalletOwnerAddress 42-character hex Ethereum address
 	WalletOwnerAddress EthereumAddress `json:"wallet_owner_address"`
+
+	// WalletType Type of wallet
+	WalletType WalletType `json:"wallet_type"`
 }
 
 // CreateWatcher Request body for creating a new watcher (service-based or ABI-based).
@@ -368,9 +356,6 @@ type CreateWatcherWithService struct {
 // DecimalString Base-10 decimal string.
 type DecimalString = string
 
-// ECDSASignersList List of allowed ECDSA public signing keys (Ethereum addresses)
-type ECDSASignersList = []EthereumAddress
-
 // EVMCallQueryParams Parameters for an evm_call chain query.
 type EVMCallQueryParams struct {
 	// BlockSelection Explicit block selector for a chain query. MVP supports latest, finalized, and explicit block_number only.
@@ -385,16 +370,6 @@ type EVMCallQueryParams struct {
 	// FromAddress 42-character hex Ethereum address
 	FromAddress *EthereumAddress `json:"from_address,omitempty"`
 }
-
-// EcdsaWalletConfiguration ECDSA wallet configuration.
-type EcdsaWalletConfiguration struct {
-	// AllowedSigners List of allowed ECDSA public signing keys (Ethereum addresses)
-	AllowedSigners ECDSASignersList                   `json:"allowed_signers"`
-	WalletType     EcdsaWalletConfigurationWalletType `json:"wallet_type"`
-}
-
-// EcdsaWalletConfigurationWalletType defines model for EcdsaWalletConfiguration.WalletType.
-type EcdsaWalletConfigurationWalletType string
 
 // EthereumAddress 42-character hex Ethereum address
 type EthereumAddress = string
@@ -721,19 +696,6 @@ type PatchOperation struct {
 	union json.RawMessage
 }
 
-// ProtectedEcdsaWalletConfiguration Protected ECDSA wallet configuration.
-type ProtectedEcdsaWalletConfiguration struct {
-	// AllowedSigners List of allowed ECDSA public signing keys (Ethereum addresses)
-	AllowedSigners ECDSASignersList `json:"allowed_signers"`
-
-	// PolicyEngineAddress 42-character hex Ethereum address
-	PolicyEngineAddress EthereumAddress                             `json:"policy_engine_address"`
-	WalletType          ProtectedEcdsaWalletConfigurationWalletType `json:"wallet_type"`
-}
-
-// ProtectedEcdsaWalletConfigurationWalletType defines model for ProtectedEcdsaWalletConfiguration.WalletType.
-type ProtectedEcdsaWalletConfigurationWalletType string
-
 // Query Chain query resource loaded from chain_queries.
 type Query struct {
 	// AcceptedAt Unix timestamp in seconds
@@ -855,28 +817,6 @@ type QueryStatusPayload struct {
 	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
-// RSAPublicKey RSA public key with exponent and modulus
-type RSAPublicKey struct {
-	// E RSA public exponent (hex encoded, 2-17 bytes)
-	E string `json:"e"`
-
-	// N RSA modulus (hex encoded, min 2048 bits)
-	N string `json:"n"`
-}
-
-// RSASignersList List of allowed RSA public signing keys
-type RSASignersList = []RSAPublicKey
-
-// RsaWalletConfiguration RSA wallet configuration.
-type RsaWalletConfiguration struct {
-	// AllowedSigners List of allowed RSA public signing keys
-	AllowedSigners RSASignersList                   `json:"allowed_signers"`
-	WalletType     RsaWalletConfigurationWalletType `json:"wallet_type"`
-}
-
-// RsaWalletConfigurationWalletType defines model for RsaWalletConfiguration.WalletType.
-type RsaWalletConfigurationWalletType string
-
 // Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 type Subject struct {
 	// SubjectId Stable subject identifier used for filtering and equality.
@@ -975,7 +915,7 @@ type Wallet struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
-	// Configuration Wallet-specific configuration (allowed signers, policy engine, etc.). The discriminator is `wallet_type`.
+	// Configuration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
 	Configuration WalletConfiguration `json:"configuration"`
 
 	// CreatedAt Unix timestamp in seconds
@@ -998,12 +938,13 @@ type Wallet struct {
 
 	// WalletOwnerAddress 42-character hex Ethereum address
 	WalletOwnerAddress EthereumAddress `json:"wallet_owner_address"`
+
+	// WalletType Type of wallet
+	WalletType WalletType `json:"wallet_type"`
 }
 
-// WalletConfiguration Wallet-specific configuration (allowed signers, policy engine, etc.). The discriminator is `wallet_type`.
-type WalletConfiguration struct {
-	union json.RawMessage
-}
+// WalletConfiguration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
+type WalletConfiguration map[string]interface{}
 
 // WalletList Paginated list of wallets.
 type WalletList struct {
@@ -1932,125 +1873,6 @@ func (t QueryBlockSelection) MarshalJSON() ([]byte, error) {
 }
 
 func (t *QueryBlockSelection) UnmarshalJSON(b []byte) error {
-	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsEcdsaWalletConfiguration returns the union data inside the WalletConfiguration as a EcdsaWalletConfiguration
-func (t WalletConfiguration) AsEcdsaWalletConfiguration() (EcdsaWalletConfiguration, error) {
-	var body EcdsaWalletConfiguration
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromEcdsaWalletConfiguration overwrites any union data inside the WalletConfiguration as the provided EcdsaWalletConfiguration
-func (t *WalletConfiguration) FromEcdsaWalletConfiguration(v EcdsaWalletConfiguration) error {
-	v.WalletType = "ecdsa"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeEcdsaWalletConfiguration performs a merge with any union data inside the WalletConfiguration, using the provided EcdsaWalletConfiguration
-func (t *WalletConfiguration) MergeEcdsaWalletConfiguration(v EcdsaWalletConfiguration) error {
-	v.WalletType = "ecdsa"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsRsaWalletConfiguration returns the union data inside the WalletConfiguration as a RsaWalletConfiguration
-func (t WalletConfiguration) AsRsaWalletConfiguration() (RsaWalletConfiguration, error) {
-	var body RsaWalletConfiguration
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromRsaWalletConfiguration overwrites any union data inside the WalletConfiguration as the provided RsaWalletConfiguration
-func (t *WalletConfiguration) FromRsaWalletConfiguration(v RsaWalletConfiguration) error {
-	v.WalletType = "rsa"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeRsaWalletConfiguration performs a merge with any union data inside the WalletConfiguration, using the provided RsaWalletConfiguration
-func (t *WalletConfiguration) MergeRsaWalletConfiguration(v RsaWalletConfiguration) error {
-	v.WalletType = "rsa"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsProtectedEcdsaWalletConfiguration returns the union data inside the WalletConfiguration as a ProtectedEcdsaWalletConfiguration
-func (t WalletConfiguration) AsProtectedEcdsaWalletConfiguration() (ProtectedEcdsaWalletConfiguration, error) {
-	var body ProtectedEcdsaWalletConfiguration
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromProtectedEcdsaWalletConfiguration overwrites any union data inside the WalletConfiguration as the provided ProtectedEcdsaWalletConfiguration
-func (t *WalletConfiguration) FromProtectedEcdsaWalletConfiguration(v ProtectedEcdsaWalletConfiguration) error {
-	v.WalletType = "protected_ecdsa"
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeProtectedEcdsaWalletConfiguration performs a merge with any union data inside the WalletConfiguration, using the provided ProtectedEcdsaWalletConfiguration
-func (t *WalletConfiguration) MergeProtectedEcdsaWalletConfiguration(v ProtectedEcdsaWalletConfiguration) error {
-	v.WalletType = "protected_ecdsa"
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-func (t WalletConfiguration) Discriminator() (string, error) {
-	var discriminator struct {
-		Discriminator string `json:"wallet_type"`
-	}
-	err := json.Unmarshal(t.union, &discriminator)
-	return discriminator.Discriminator, err
-}
-
-func (t WalletConfiguration) ValueByDiscriminator() (interface{}, error) {
-	discriminator, err := t.Discriminator()
-	if err != nil {
-		return nil, err
-	}
-	switch discriminator {
-	case "ecdsa":
-		return t.AsEcdsaWalletConfiguration()
-	case "protected_ecdsa":
-		return t.AsProtectedEcdsaWalletConfiguration()
-	case "rsa":
-		return t.AsRsaWalletConfiguration()
-	default:
-		return nil, errors.New("unknown discriminator value: " + discriminator)
-	}
-}
-
-func (t WalletConfiguration) MarshalJSON() ([]byte, error) {
-	b, err := t.union.MarshalJSON()
-	return b, err
-}
-
-func (t *WalletConfiguration) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
 	return err
 }
