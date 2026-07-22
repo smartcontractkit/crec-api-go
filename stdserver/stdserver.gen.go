@@ -31,11 +31,21 @@ const (
 
 // Defines values for ApplicationErrorCode.
 const (
-	ApplicationErrorCodeChannelNotFound   ApplicationErrorCode = "CHANNEL_NOT_FOUND"
-	ApplicationErrorCodeOperationNotFound ApplicationErrorCode = "OPERATION_NOT_FOUND"
-	ApplicationErrorCodeQueryNotFound     ApplicationErrorCode = "QUERY_NOT_FOUND"
-	ApplicationErrorCodeWalletNotFound    ApplicationErrorCode = "WALLET_NOT_FOUND"
-	ApplicationErrorCodeWatcherNotFound   ApplicationErrorCode = "WATCHER_NOT_FOUND"
+	ApplicationErrorCodeChainUnavailable         ApplicationErrorCode = "CHAIN_UNAVAILABLE"
+	ApplicationErrorCodeChannelAlreadyExists     ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
+	ApplicationErrorCodeChannelNotFound          ApplicationErrorCode = "CHANNEL_NOT_FOUND"
+	ApplicationErrorCodeIdempotencyKeyMismatch   ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
+	ApplicationErrorCodeOperationDeadlineElapsed ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
+	ApplicationErrorCodeOperationNotCancellable  ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
+	ApplicationErrorCodeOperationNotFinalizable  ApplicationErrorCode = "OPERATION_NOT_FINALIZABLE"
+	ApplicationErrorCodeOperationNotFound        ApplicationErrorCode = "OPERATION_NOT_FOUND"
+	ApplicationErrorCodeQueryNotFound            ApplicationErrorCode = "QUERY_NOT_FOUND"
+	ApplicationErrorCodeResourceVersionConflict  ApplicationErrorCode = "RESOURCE_VERSION_CONFLICT"
+	ApplicationErrorCodeWalletAlreadyArchived    ApplicationErrorCode = "WALLET_ALREADY_ARCHIVED"
+	ApplicationErrorCodeWalletAlreadyExists      ApplicationErrorCode = "WALLET_ALREADY_EXISTS"
+	ApplicationErrorCodeWalletNotFound           ApplicationErrorCode = "WALLET_NOT_FOUND"
+	ApplicationErrorCodeWatcherAlreadyExists     ApplicationErrorCode = "WATCHER_ALREADY_EXISTS"
+	ApplicationErrorCodeWatcherNotFound          ApplicationErrorCode = "WATCHER_NOT_FOUND"
 )
 
 // Defines values for BlockNumberBlockSelectionType.
@@ -152,7 +162,7 @@ const (
 
 // ApplicationError Standard error response body.
 type ApplicationError struct {
-	// Code Machine-readable error code for NOT_FOUND responses.
+	// Code Machine-readable error code for NOT_FOUND and CONFLICT responses.
 	Code *ApplicationErrorCode `json:"code,omitempty"`
 
 	// Message Error message describing the issue
@@ -165,7 +175,7 @@ type ApplicationError struct {
 // ApplicationErrorType Error type
 type ApplicationErrorType string
 
-// ApplicationErrorCode Machine-readable error code for NOT_FOUND responses.
+// ApplicationErrorCode Machine-readable error code for NOT_FOUND and CONFLICT responses.
 type ApplicationErrorCode string
 
 // BlockNumberBlockSelection defines model for BlockNumberBlockSelection.

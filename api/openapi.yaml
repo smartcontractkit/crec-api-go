@@ -97,6 +97,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
+        "409":
+          description: Wallet name already exists in the organization.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", code: "WALLET_ALREADY_EXISTS", message: "wallet name already exists in this organization"}
         "500":
           description: Internal server error
           content:
@@ -263,6 +270,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "NOT_FOUND", message: "The requested resource was not found."}
+        "409":
+          description: Wallet is already archived, or was modified concurrently by another request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", code: "WALLET_ALREADY_ARCHIVED", message: "conflict error: wallet already in archived state"}
         "500":
           description: Internal server error
           content:
@@ -302,6 +316,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
+        "409":
+          description: Channel with the same name already exists in the organization.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", code: "CHANNEL_ALREADY_EXISTS", message: "resource already exists: channel with the same name already exists in this organization"}
         "500":
           description: Internal server error
           content:
@@ -451,6 +472,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "NOT_FOUND", message: "The requested resource was not found."}
+        "409":
+          description: Channel name already exists, or the channel cannot be archived because it has active watchers.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", code: "CHANNEL_ALREADY_EXISTS", message: "resource already exists: channel with the same name already exists in this organization"}
         "500":
           description: Internal server error
           content:
@@ -546,7 +574,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "CONFLICT", message: "Idempotency key reused with a different canonical request."}
+              example: {type: "CONFLICT", code: "IDEMPOTENCY_KEY_MISMATCH", message: "Idempotency key reused with a different canonical request."}
         "429":
           description: Query create quota or workflow admission rate limit exceeded.
           content:
@@ -846,6 +874,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "NOT_FOUND", message: "The requested channel was not found."}
+        "409":
+          description: Watcher with the same name already exists in the channel.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", code: "WATCHER_ALREADY_EXISTS", message: "conflict error: a watcher with name 'my-watcher' already exists in this channel"}
         "500":
           description: Internal server error
           content:
@@ -1055,6 +1090,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "NOT_FOUND", message: "The requested resource was not found."}
+        "409":
+          description: Watcher with the same name already exists in the channel, or the watcher was modified concurrently by another request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", code: "WATCHER_ALREADY_EXISTS", message: "conflict error: a watcher with name 'updated-watcher' already exists in this channel"}
         "500":
           description: Internal server error
           content:
@@ -1118,6 +1160,13 @@ paths:
                   value: {type: "NOT_FOUND", code: "CHANNEL_NOT_FOUND", message: "channel with ID abc not found"}
                 walletNotFound:
                   value: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with address 0x742d35Cc6634C0532925a3b844Bc454e4438f44e and chain_selector 16015286601757825753 not found"}
+        "409":
+          description: Wallet is archived and can no longer accept operations.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "CONFLICT", code: "WALLET_ALREADY_ARCHIVED", message: "conflict error: cannot create operations on an archived wallet"}
         "500":
           description: Internal server error
           content:
@@ -1353,12 +1402,18 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "NOT_FOUND", message: "The requested resource was not found."}
         "409":
-          description: Operation could not be finalized or cancelled because.
+          description: Operation could not be finalized or cancelled because it is in an invalid state, its deadline elapsed, or it was modified concurrently.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "CONFLICT", message: "Operation is in a state that does not allow this transition."}
+              examples:
+                notFinalizable:
+                  value: {type: "CONFLICT", code: "OPERATION_NOT_FINALIZABLE", message: "conflict error: operation is not in a finalizable state"}
+                notCancellable:
+                  value: {type: "CONFLICT", code: "OPERATION_NOT_CANCELLABLE", message: "conflict error: operation is not in a cancellable state"}
+                deadlineElapsed:
+                  value: {type: "CONFLICT", code: "OPERATION_DEADLINE_ELAPSED", message: "conflict error: operation deadline has elapsed"}
 
   /channels/{channel_id}/events:
     get:
@@ -2113,19 +2168,39 @@ components:
         - data
     ApplicationErrorCode:
       type: string
-      description: Machine-readable error code for NOT_FOUND responses.
+      description: Machine-readable error code for NOT_FOUND and CONFLICT responses.
       enum:
         - CHANNEL_NOT_FOUND
         - WALLET_NOT_FOUND
         - OPERATION_NOT_FOUND
         - WATCHER_NOT_FOUND
         - QUERY_NOT_FOUND
+        - CHANNEL_ALREADY_EXISTS
+        - WALLET_ALREADY_EXISTS
+        - WATCHER_ALREADY_EXISTS
+        - IDEMPOTENCY_KEY_MISMATCH
+        - OPERATION_NOT_FINALIZABLE
+        - OPERATION_NOT_CANCELLABLE
+        - OPERATION_DEADLINE_ELAPSED
+        - RESOURCE_VERSION_CONFLICT
+        - WALLET_ALREADY_ARCHIVED
+        - CHAIN_UNAVAILABLE
       x-enum-varnames:
         - ApplicationErrorCodeChannelNotFound
         - ApplicationErrorCodeWalletNotFound
         - ApplicationErrorCodeOperationNotFound
         - ApplicationErrorCodeWatcherNotFound
         - ApplicationErrorCodeQueryNotFound
+        - ApplicationErrorCodeChannelAlreadyExists
+        - ApplicationErrorCodeWalletAlreadyExists
+        - ApplicationErrorCodeWatcherAlreadyExists
+        - ApplicationErrorCodeIdempotencyKeyMismatch
+        - ApplicationErrorCodeOperationNotFinalizable
+        - ApplicationErrorCodeOperationNotCancellable
+        - ApplicationErrorCodeOperationDeadlineElapsed
+        - ApplicationErrorCodeResourceVersionConflict
+        - ApplicationErrorCodeWalletAlreadyArchived
+        - ApplicationErrorCodeChainUnavailable
       example: "WALLET_NOT_FOUND"
     ApplicationError:
       description: Standard error response body.
