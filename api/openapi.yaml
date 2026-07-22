@@ -98,7 +98,7 @@ paths:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
         "409":
-          description: Wallet name already exists in the organization, or the entrypoint for the chain is not ready.
+          description: Wallet name already exists in the organization.
           content:
             application/json:
               schema:
@@ -2184,7 +2184,7 @@ components:
         - OPERATION_DEADLINE_ELAPSED
         - RESOURCE_VERSION_CONFLICT
         - WALLET_ALREADY_ARCHIVED
-        - ENTRYPOINT_NOT_READY
+        - CHAIN_UNAVAILABLE
       x-enum-varnames:
         - ApplicationErrorCodeChannelNotFound
         - ApplicationErrorCodeWalletNotFound
@@ -2200,7 +2200,7 @@ components:
         - ApplicationErrorCodeOperationDeadlineElapsed
         - ApplicationErrorCodeResourceVersionConflict
         - ApplicationErrorCodeWalletAlreadyArchived
-        - ApplicationErrorCodeEntrypointNotReady
+        - ApplicationErrorCodeChainUnavailable
       example: "WALLET_NOT_FOUND"
     ApplicationError:
       description: Standard error response body.

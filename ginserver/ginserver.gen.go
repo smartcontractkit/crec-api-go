@@ -31,9 +31,9 @@ const (
 
 // Defines values for ApplicationErrorCode.
 const (
+	ApplicationErrorCodeChainUnavailable         ApplicationErrorCode = "CHAIN_UNAVAILABLE"
 	ApplicationErrorCodeChannelAlreadyExists     ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
 	ApplicationErrorCodeChannelNotFound          ApplicationErrorCode = "CHANNEL_NOT_FOUND"
-	ApplicationErrorCodeEntrypointNotReady       ApplicationErrorCode = "ENTRYPOINT_NOT_READY"
 	ApplicationErrorCodeIdempotencyKeyMismatch   ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
 	ApplicationErrorCodeOperationDeadlineElapsed ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
 	ApplicationErrorCodeOperationNotCancellable  ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
