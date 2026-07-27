@@ -1873,6 +1873,18 @@ components:
           $ref: "#/components/schemas/WalletType"
         configuration:
           $ref: "#/components/schemas/WalletConfiguration"
+        allowed_rsa_signers:
+          type: "array"
+          description: "DEPRECATED - use configuration parameter"
+          items: {
+            type: "string"
+          }
+        allowed_ecdsa_signers:
+          type: "array"
+          description: "DEPRECATED - use configuration parameter"
+          items: {
+            type: "string"
+          }
         status_channel_id:
           type: string
           format: uuid
