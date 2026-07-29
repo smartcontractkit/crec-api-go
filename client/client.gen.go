@@ -279,6 +279,12 @@ type CreateQuery struct {
 
 // CreateWallet Request body for creating a new wallet.
 type CreateWallet struct {
+	// AllowedEcdsaSigners DEPRECATED - use configuration parameter
+	AllowedEcdsaSigners *[]string `json:"allowed_ecdsa_signers,omitempty"`
+
+	// AllowedRsaSigners DEPRECATED - use configuration parameter
+	AllowedRsaSigners *[]string `json:"allowed_rsa_signers,omitempty"`
+
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
