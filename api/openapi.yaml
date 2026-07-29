@@ -1770,10 +1770,12 @@ components:
         - ecdsa
         - rsa
         - protected_ecdsa
+        - protected_rsa
       x-enum-varnames:
         - WalletTypeECDSA
         - WalletTypeRSA
         - WalletTypeProtectedECDSA
+        - WalletTypeProtectedRSA
       example: "ecdsa"
     EventType:
       type: string
