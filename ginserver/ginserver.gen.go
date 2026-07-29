@@ -138,6 +138,7 @@ const (
 const (
 	WalletTypeECDSA          WalletType = "ecdsa"
 	WalletTypeProtectedECDSA WalletType = "protected_ecdsa"
+	WalletTypeProtectedRSA   WalletType = "protected_rsa"
 	WalletTypeRSA            WalletType = "rsa"
 )
 
