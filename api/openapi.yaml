@@ -148,8 +148,8 @@ paths:
           style: form
           explode: true
         - in: query
-          name: environment
-          description: Filter wallets by environment (mainnet or testnet). If omitted, returns all environments.
+          name: chain_environment
+          description: Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
             $ref: "#/components/schemas/NetworkType"
         - in: query
@@ -624,8 +624,8 @@ paths:
           schema:
             $ref: "#/components/schemas/ChainSelector"
         - in: query
-          name: environment
-          description: Filter queries by environment (mainnet or testnet). If omitted, returns all environments.
+          name: chain_environment
+          description: Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
             $ref: "#/components/schemas/NetworkType"
       responses:
@@ -915,8 +915,8 @@ paths:
           schema:
             type: string
         - in: query
-          name: environment
-          description: Filter watchers by environment (mainnet or testnet). If omitted, returns all environments.
+          name: chain_environment
+          description: Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
             $ref: "#/components/schemas/NetworkType"
         - in: query
@@ -1186,8 +1186,8 @@ paths:
           schema:
             type: string
         - in: query
-          name: environment
-          description: Filter operations by environment (mainnet or testnet). If omitted, returns all environments.
+          name: chain_environment
+          description: Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
             $ref: "#/components/schemas/NetworkType"
         - in: query
@@ -1526,8 +1526,8 @@ paths:
           style: form
           explode: true
         - in: query
-          name: environment
-          description: Filter by environment (mainnet or testnet). If omitted, returns all environments.
+          name: chain_environment
+          description: Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
             $ref: "#/components/schemas/NetworkType"
         - in: query

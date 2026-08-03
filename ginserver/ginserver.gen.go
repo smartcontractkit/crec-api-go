@@ -1168,8 +1168,8 @@ type SearchChannelEventsParams struct {
 	// ChainSelector Filter by chain selector
 	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Environment Filter by environment (mainnet or testnet). If omitted, returns all environments.
-	Environment *NetworkType `form:"environment,omitempty" json:"environment,omitempty"`
+	// ChainEnvironment Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
@@ -1213,8 +1213,8 @@ type ListOperationsParams struct {
 	// ChainSelector Filter operations by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Environment Filter operations by environment (mainnet or testnet). If omitted, returns all environments.
-	Environment *NetworkType `form:"environment,omitempty" json:"environment,omitempty"`
+	// ChainEnvironment Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -1258,8 +1258,8 @@ type ListQueriesParams struct {
 	// ChainSelector Filter queries by chain selector (network).
 	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Environment Filter queries by environment (mainnet or testnet). If omitted, returns all environments.
-	Environment *NetworkType `form:"environment,omitempty" json:"environment,omitempty"`
+	// ChainEnvironment Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -1279,8 +1279,8 @@ type ListWatchersParams struct {
 	// ChainSelector Filter watchers by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
-	// Environment Filter watchers by environment (mainnet or testnet). If omitted, returns all environments.
-	Environment *NetworkType `form:"environment,omitempty" json:"environment,omitempty"`
+	// ChainEnvironment Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -1312,8 +1312,8 @@ type ListWalletsParams struct {
 	// Status Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.
 	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
 
-	// Environment Filter wallets by environment (mainnet or testnet). If omitted, returns all environments.
-	Environment *NetworkType `form:"environment,omitempty" json:"environment,omitempty"`
+	// ChainEnvironment Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -2221,11 +2221,11 @@ func (siw *ServerInterfaceWrapper) SearchChannelEvents(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "environment" -------------
+	// ------------- Optional query parameter "chain_environment" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "environment", c.Request.URL.Query(), &params.Environment)
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", c.Request.URL.Query(), &params.ChainEnvironment)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter environment: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_environment: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -2397,11 +2397,11 @@ func (siw *ServerInterfaceWrapper) ListOperations(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "environment" -------------
+	// ------------- Optional query parameter "chain_environment" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "environment", c.Request.URL.Query(), &params.Environment)
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", c.Request.URL.Query(), &params.ChainEnvironment)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter environment: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_environment: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -2634,11 +2634,11 @@ func (siw *ServerInterfaceWrapper) ListQueries(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "environment" -------------
+	// ------------- Optional query parameter "chain_environment" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "environment", c.Request.URL.Query(), &params.Environment)
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", c.Request.URL.Query(), &params.ChainEnvironment)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter environment: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_environment: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -2772,11 +2772,11 @@ func (siw *ServerInterfaceWrapper) ListWatchers(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "environment" -------------
+	// ------------- Optional query parameter "chain_environment" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "environment", c.Request.URL.Query(), &params.Environment)
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", c.Request.URL.Query(), &params.ChainEnvironment)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter environment: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_environment: %w", err), http.StatusBadRequest)
 		return
 	}
 
@@ -2998,11 +2998,11 @@ func (siw *ServerInterfaceWrapper) ListWallets(c *gin.Context) {
 		return
 	}
 
-	// ------------- Optional query parameter "environment" -------------
+	// ------------- Optional query parameter "chain_environment" -------------
 
-	err = runtime.BindQueryParameter("form", true, false, "environment", c.Request.URL.Query(), &params.Environment)
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", c.Request.URL.Query(), &params.ChainEnvironment)
 	if err != nil {
-		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter environment: %w", err), http.StatusBadRequest)
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter chain_environment: %w", err), http.StatusBadRequest)
 		return
 	}
 
