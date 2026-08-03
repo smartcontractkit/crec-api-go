@@ -148,6 +148,11 @@ paths:
           style: form
           explode: true
         - in: query
+          name: chain_environment
+          description: Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+          schema:
+            $ref: "#/components/schemas/NetworkType"
+        - in: query
           name: limit
           description: Maximum number of wallets to return
           schema:
@@ -618,6 +623,11 @@ paths:
           description: Filter queries by chain selector (network).
           schema:
             $ref: "#/components/schemas/ChainSelector"
+        - in: query
+          name: chain_environment
+          description: Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+          schema:
+            $ref: "#/components/schemas/NetworkType"
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
@@ -905,6 +915,11 @@ paths:
           schema:
             type: string
         - in: query
+          name: chain_environment
+          description: Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+          schema:
+            $ref: "#/components/schemas/NetworkType"
+        - in: query
           name: address
           description: Filter watchers by contract address
           schema:
@@ -1170,6 +1185,11 @@ paths:
           description: Filter operations by chain selector
           schema:
             type: string
+        - in: query
+          name: chain_environment
+          description: Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+          schema:
+            $ref: "#/components/schemas/NetworkType"
         - in: query
           name: address
           description: Filter operations by wallet address
@@ -1505,6 +1525,11 @@ paths:
               type: string
           style: form
           explode: true
+        - in: query
+          name: chain_environment
+          description: Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+          schema:
+            $ref: "#/components/schemas/NetworkType"
         - in: query
           name: status
           description: Filter by operation status. Multiple values allowed.
