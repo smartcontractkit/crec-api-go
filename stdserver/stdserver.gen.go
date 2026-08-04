@@ -1178,6 +1178,9 @@ type SearchChannelEventsParams struct {
 	// ChainSelector Filter by chain selector
 	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
+	// ChainEnvironment Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+
 	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
 
@@ -1220,6 +1223,9 @@ type ListOperationsParams struct {
 	// ChainSelector Filter operations by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
+	// ChainEnvironment Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+
 	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 
@@ -1261,6 +1267,9 @@ type ListQueriesParams struct {
 
 	// ChainSelector Filter queries by chain selector (network).
 	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// ChainEnvironment Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -1279,6 +1288,9 @@ type ListWatchersParams struct {
 
 	// ChainSelector Filter watchers by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// ChainEnvironment Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -1309,6 +1321,9 @@ type ListWalletsParams struct {
 
 	// Status Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.
 	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainEnvironment Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -2245,6 +2260,14 @@ func (siw *ServerInterfaceWrapper) SearchChannelEvents(w http.ResponseWriter, r 
 		return
 	}
 
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
+		return
+	}
+
 	// ------------- Optional query parameter "status" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
@@ -2420,6 +2443,14 @@ func (siw *ServerInterfaceWrapper) ListOperations(w http.ResponseWriter, r *http
 	err = runtime.BindQueryParameter("form", true, false, "chain_selector", r.URL.Query(), &params.ChainSelector)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_selector", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
 		return
 	}
 
@@ -2672,6 +2703,14 @@ func (siw *ServerInterfaceWrapper) ListQueries(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListQueries(w, r, channelId, params)
 	}))
@@ -2814,6 +2853,14 @@ func (siw *ServerInterfaceWrapper) ListWatchers(w http.ResponseWriter, r *http.R
 	err = runtime.BindQueryParameter("form", true, false, "chain_selector", r.URL.Query(), &params.ChainSelector)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_selector", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
 		return
 	}
 
@@ -3062,6 +3109,14 @@ func (siw *ServerInterfaceWrapper) ListWallets(w http.ResponseWriter, r *http.Re
 	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
 		return
 	}
 
