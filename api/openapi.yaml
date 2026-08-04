@@ -151,7 +151,7 @@ paths:
           name: chain_environment
           description: Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
-            $ref: "#/components/schemas/NetworkType"
+            $ref: "#/components/schemas/ChainEnvironment"
         - in: query
           name: limit
           description: Maximum number of wallets to return
@@ -627,7 +627,7 @@ paths:
           name: chain_environment
           description: Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
-            $ref: "#/components/schemas/NetworkType"
+            $ref: "#/components/schemas/ChainEnvironment"
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
@@ -918,7 +918,7 @@ paths:
           name: chain_environment
           description: Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
-            $ref: "#/components/schemas/NetworkType"
+            $ref: "#/components/schemas/ChainEnvironment"
         - in: query
           name: address
           description: Filter watchers by contract address
@@ -1189,7 +1189,7 @@ paths:
           name: chain_environment
           description: Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
-            $ref: "#/components/schemas/NetworkType"
+            $ref: "#/components/schemas/ChainEnvironment"
         - in: query
           name: address
           description: Filter operations by wallet address
@@ -1529,7 +1529,7 @@ paths:
           name: chain_environment
           description: Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.
           schema:
-            $ref: "#/components/schemas/NetworkType"
+            $ref: "#/components/schemas/ChainEnvironment"
         - in: query
           name: status
           description: Filter by operation status. Multiple values allowed.
@@ -2082,7 +2082,7 @@ components:
           description: Timestamp of when the network was last updated
           example: 1715698800
         type:
-          $ref: "#/components/schemas/NetworkType"
+          $ref: "#/components/schemas/ChainEnvironment"
       required:
         - id
         - name
@@ -3391,13 +3391,13 @@ components:
         - ChannelStatusActive
         - ChannelStatusArchived
       example: "active"
-    NetworkType:
+    ChainEnvironment:
       type: string
       description: Type of chain
       enum:
         - "mainnet"
         - "testnet"
       x-enum-varnames:
-        - NetworkTypeMainnet
-        - NetworkTypeTestnet
+        - ChainEnvironmentMainnet
+        - ChainEnvironmentTestnet
       example: "mainnet"

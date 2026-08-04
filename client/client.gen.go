@@ -50,6 +50,12 @@ const (
 	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
 )
 
+// Defines values for ChainEnvironment.
+const (
+	ChainEnvironmentMainnet ChainEnvironment = "mainnet"
+	ChainEnvironmentTestnet ChainEnvironment = "testnet"
+)
+
 // Defines values for ChannelStatus.
 const (
 	ChannelStatusActive   ChannelStatus = "active"
@@ -83,12 +89,6 @@ const (
 // Defines values for LatestBlockSelectionType.
 const (
 	LatestBlockSelectionTypeLatest LatestBlockSelectionType = "latest"
-)
-
-// Defines values for NetworkType.
-const (
-	NetworkTypeMainnet NetworkType = "mainnet"
-	NetworkTypeTestnet NetworkType = "testnet"
 )
 
 // Defines values for OperationStatus.
@@ -195,6 +195,9 @@ type CancelOperation struct {
 
 // CancelOperationStatus Marks the operation as cancelled.
 type CancelOperationStatus string
+
+// ChainEnvironment Type of chain
+type ChainEnvironment string
 
 // ChainSelector Chain selector identifier for the blockchain network
 type ChainSelector = string
@@ -516,7 +519,7 @@ type Network struct {
 	Name string `json:"name"`
 
 	// Type Type of chain
-	Type *NetworkType `json:"type,omitempty"`
+	Type *ChainEnvironment `json:"type,omitempty"`
 
 	// UpdatedAt Timestamp of when the network was last updated
 	UpdatedAt int64 `json:"updated_at"`
@@ -529,9 +532,6 @@ type NetworkList struct {
 	// HasMore True if there are more networks to fetch
 	HasMore bool `json:"has_more"`
 }
-
-// NetworkType Type of chain
-type NetworkType string
 
 // OCRProof An OCR-based cryptographic proof attached to a verifiable event.
 type OCRProof struct {
@@ -1181,7 +1181,7 @@ type SearchChannelEventsParams struct {
 	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// ChainEnvironment Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.
-	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
@@ -1226,7 +1226,7 @@ type ListOperationsParams struct {
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// ChainEnvironment Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.
-	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -1271,7 +1271,7 @@ type ListQueriesParams struct {
 	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// ChainEnvironment Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.
-	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -1292,7 +1292,7 @@ type ListWatchersParams struct {
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
 	// ChainEnvironment Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.
-	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -1325,7 +1325,7 @@ type ListWalletsParams struct {
 	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
 
 	// ChainEnvironment Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
-	ChainEnvironment *NetworkType `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
