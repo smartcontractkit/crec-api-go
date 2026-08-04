@@ -911,6 +911,12 @@ type Wallet struct {
 	// Address 42-character hex Ethereum address
 	Address EthereumAddress `json:"address"`
 
+	// AllowedEcdsaSigners DEPRECATED - use configuration parameter
+	AllowedEcdsaSigners *[]string `json:"allowed_ecdsa_signers,omitempty"`
+
+	// AllowedRsaSigners DEPRECATED - use configuration parameter
+	AllowedRsaSigners *[]string `json:"allowed_rsa_signers,omitempty"`
+
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 

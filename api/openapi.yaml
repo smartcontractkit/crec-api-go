@@ -1986,6 +1986,18 @@ components:
           format: uuid
           description: Channel ID where wallet status events are published
           example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
+        allowed_rsa_signers:
+          type: "array"
+          description: "DEPRECATED - use configuration parameter"
+          items: {
+            type: "string"
+          }
+        allowed_ecdsa_signers:
+          type: "array"
+          description: "DEPRECATED - use configuration parameter"
+          items: {
+            type: "string"
+          }
         configuration:
           $ref: "#/components/schemas/WalletConfiguration"
         created_at:
