@@ -1966,7 +1966,6 @@ components:
         - wallet_owner_address
         - chain_selector
         - wallet_type
-        - configuration
     UpdateWallet:
       description: Request body for updating a wallet.
       type: object

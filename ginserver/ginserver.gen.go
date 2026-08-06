@@ -291,7 +291,7 @@ type CreateWallet struct {
 	ChainSelector ChainSelector `json:"chain_selector"`
 
 	// Configuration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
-	Configuration WalletConfiguration `json:"configuration"`
+	Configuration *WalletConfiguration `json:"configuration,omitempty"`
 
 	// Description Description of the wallet. Send empty string to omit.
 	Description *string `json:"description,omitempty"`
