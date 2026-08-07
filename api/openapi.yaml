@@ -1,7 +1,7 @@
 openapi: 3.0.4
 info:
   title: CRE Connect API
-  version: 0.7.0
+  version: 0.8.0-rc
   description: API specification for CRE Connect resources
 
 servers:
@@ -1966,7 +1966,6 @@ components:
         - wallet_owner_address
         - chain_selector
         - wallet_type
-        - configuration
     UpdateWallet:
       description: Request body for updating a wallet.
       type: object
