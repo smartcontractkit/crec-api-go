@@ -28,6 +28,7 @@ const (
 	INTERNALERROR        ApplicationErrorType = "INTERNAL_ERROR"
 	NOTFOUND             ApplicationErrorType = "NOT_FOUND"
 	ORGANIZATIONNOTFOUND ApplicationErrorType = "ORGANIZATION_NOT_FOUND"
+	PERMISSIONDENIED     ApplicationErrorType = "PERMISSION_DENIED"
 	VALIDATIONERROR      ApplicationErrorType = "VALIDATION_ERROR"
 )
 
@@ -1140,6 +1141,9 @@ type WatcherSummary struct {
 
 // OrganizationNotFound Standard error response body.
 type OrganizationNotFound = ApplicationError
+
+// PermissionDenied Standard error response body.
+type PermissionDenied = ApplicationError
 
 // ListChannelsParams defines parameters for ListChannels.
 type ListChannelsParams struct {
@@ -4562,6 +4566,7 @@ type ListChannelsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *ChannelList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -4587,6 +4592,7 @@ type CreateChannelResponse struct {
 	JSON201      *Channel
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -4611,6 +4617,7 @@ type GetChannelResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Channel
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4637,6 +4644,7 @@ type UpdateChannelResponse struct {
 	JSON200      *Channel
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4663,6 +4671,7 @@ type ListChannelEventsResponse struct {
 	JSON200      *EventList
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4689,6 +4698,7 @@ type SearchChannelEventsResponse struct {
 	JSON200      *EventList
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4714,6 +4724,7 @@ type GetChannelEventResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Event
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4739,6 +4750,7 @@ type ListOperationsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *OperationList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4765,6 +4777,7 @@ type CreateOperationResponse struct {
 	JSON201      *OperationResponse
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4790,6 +4803,7 @@ type GetOperationResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Operation
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4816,6 +4830,7 @@ type FinalizeOrCancelOperationResponse struct {
 	JSON200      *Operation
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 }
@@ -4841,6 +4856,7 @@ type ListQueriesResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *QueryList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4867,6 +4883,7 @@ type CreateQueryResponse struct {
 	JSON202      *QueryAcceptedResponse
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 	JSON429      *ApplicationError
@@ -4894,6 +4911,7 @@ type GetQueryResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Query
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4919,6 +4937,7 @@ type ListWatchersResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *WatcherList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4945,6 +4964,7 @@ type CreateWatcherResponse struct {
 	JSON201      *Watcher
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4970,6 +4990,7 @@ type GetWatcherResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Watcher
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4997,6 +5018,7 @@ type UpdateWatcherResponse struct {
 	JSON202      *Watcher
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -5044,6 +5066,7 @@ type ListNetworksResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *NetworkList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -5068,6 +5091,7 @@ type ListWalletsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *WalletList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -5093,6 +5117,7 @@ type CreateWalletResponse struct {
 	JSON201      *Wallet
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -5117,6 +5142,7 @@ type GetWalletResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Wallet
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -5143,6 +5169,7 @@ type UpdateWalletResponse struct {
 	JSON200      *Wallet
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -5479,6 +5506,13 @@ func ParseListChannelsResponse(rsp *http.Response) (*ListChannelsResponse, error
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5526,6 +5560,13 @@ func ParseCreateChannelResponse(rsp *http.Response) (*CreateChannelResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5565,6 +5606,13 @@ func ParseGetChannelResponse(rsp *http.Response) (*GetChannelResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -5620,6 +5668,13 @@ func ParseUpdateChannelResponse(rsp *http.Response) (*UpdateChannelResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5673,6 +5728,13 @@ func ParseListChannelEventsResponse(rsp *http.Response) (*ListChannelEventsRespo
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -5728,6 +5790,13 @@ func ParseSearchChannelEventsResponse(rsp *http.Response) (*SearchChannelEventsR
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5775,6 +5844,13 @@ func ParseGetChannelEventResponse(rsp *http.Response) (*GetChannelEventResponse,
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5821,6 +5897,13 @@ func ParseListOperationsResponse(rsp *http.Response) (*ListOperationsResponse, e
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -5876,6 +5959,13 @@ func ParseCreateOperationResponse(rsp *http.Response) (*CreateOperationResponse,
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5922,6 +6012,13 @@ func ParseGetOperationResponse(rsp *http.Response) (*GetOperationResponse, error
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -5977,6 +6074,13 @@ func ParseFinalizeOrCancelOperationResponse(rsp *http.Response) (*FinalizeOrCanc
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6023,6 +6127,13 @@ func ParseListQueriesResponse(rsp *http.Response) (*ListQueriesResponse, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6077,6 +6188,13 @@ func ParseCreateQueryResponse(rsp *http.Response) (*CreateQueryResponse, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6139,6 +6257,13 @@ func ParseGetQueryResponse(rsp *http.Response) (*GetQueryResponse, error) {
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6185,6 +6310,13 @@ func ParseListWatchersResponse(rsp *http.Response) (*ListWatchersResponse, error
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6240,6 +6372,13 @@ func ParseCreateWatcherResponse(rsp *http.Response) (*CreateWatcherResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6286,6 +6425,13 @@ func ParseGetWatcherResponse(rsp *http.Response) (*GetWatcherResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6347,6 +6493,13 @@ func ParseUpdateWatcherResponse(rsp *http.Response) (*UpdateWatcherResponse, err
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6421,6 +6574,13 @@ func ParseListNetworksResponse(rsp *http.Response) (*ListNetworksResponse, error
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6460,6 +6620,13 @@ func ParseListWalletsResponse(rsp *http.Response) (*ListWalletsResponse, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
@@ -6508,6 +6675,13 @@ func ParseCreateWalletResponse(rsp *http.Response) (*CreateWalletResponse, error
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6547,6 +6721,13 @@ func ParseGetWalletResponse(rsp *http.Response) (*GetWalletResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6601,6 +6782,13 @@ func ParseUpdateWalletResponse(rsp *http.Response) (*UpdateWalletResponse, error
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError

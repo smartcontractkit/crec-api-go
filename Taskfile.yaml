@@ -30,3 +30,9 @@ tasks:
     desc: "Validate openapi spec"
     cmds:
       - vacuum lint --ruleset .vacuum.yaml ./api/openapi.yaml
+
+  lint:permissions:
+    silent: true
+    desc: "Verify every endpoint declares x-permissions"
+    cmds:
+      - go run ./cmd/gen-permissions ./api/openapi.yaml "$(mktemp)" permissions

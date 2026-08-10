@@ -18,3 +18,26 @@ rules:
   # Error response descriptions (e.g. "Not found", "Internal server error") repeat
   # across endpoints by design — they describe the same error type consistently.
   description-duplication: false
+
+  # Every operation must declare the crec:* permission(s) it requires, or
+  # explicitly declare x-permissions: [] for an intentional exemption
+  # (see cmd/gen-permissions exemptRoutes). The authoritative, exemption-aware
+  # gate is `task lint:permissions` (cmd/gen-permissions) — this rule just
+  # surfaces the same problem earlier, in `vacuum lint` / the vacuum language
+  # server.
+  x-permissions-required:
+    description: Every operation must declare the crec:* permission(s) it requires, or explicitly declare x-permissions:[] for an intentional exemption (see cmd/gen-permissions exemptRoutes)
+    message: "operation is missing x-permissions: [crec:<resource>:<action>, ...] (or x-permissions: [] for an intentional exemption)"
+    severity: error
+    given: $.paths[*][*]
+    then:
+      field: x-permissions
+      function: schema
+      functionOptions:
+        forceValidation: true
+        schema:
+          type: array
+          minItems: 0
+          items:
+            type: string
+            pattern: "^crec:[^:]+:[^:]+$"

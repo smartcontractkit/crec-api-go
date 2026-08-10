@@ -37,6 +37,9 @@ jobs:
       - name: Lint OpenAPI spec
         run: task validate-openapi
 
+      - name: Lint permissions
+        run: task lint:permissions
+
   generate:
     name: Verify Code Generation is Up-to-Date
     runs-on: ubuntu-latest

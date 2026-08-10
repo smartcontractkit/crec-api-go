@@ -26,6 +26,7 @@ const (
 	INTERNALERROR        ApplicationErrorType = "INTERNAL_ERROR"
 	NOTFOUND             ApplicationErrorType = "NOT_FOUND"
 	ORGANIZATIONNOTFOUND ApplicationErrorType = "ORGANIZATION_NOT_FOUND"
+	PERMISSIONDENIED     ApplicationErrorType = "PERMISSION_DENIED"
 	VALIDATIONERROR      ApplicationErrorType = "VALIDATION_ERROR"
 )
 
@@ -1138,6 +1139,9 @@ type WatcherSummary struct {
 
 // OrganizationNotFound Standard error response body.
 type OrganizationNotFound = ApplicationError
+
+// PermissionDenied Standard error response body.
+type PermissionDenied = ApplicationError
 
 // ListChannelsParams defines parameters for ListChannels.
 type ListChannelsParams struct {
