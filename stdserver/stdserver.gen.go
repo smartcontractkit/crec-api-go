@@ -58,6 +58,12 @@ const (
 	CancelOperationStatusCancelled CancelOperationStatus = "cancelled"
 )
 
+// Defines values for ChainEnvironment.
+const (
+	ChainEnvironmentMainnet ChainEnvironment = "mainnet"
+	ChainEnvironmentTestnet ChainEnvironment = "testnet"
+)
+
 // Defines values for ChannelStatus.
 const (
 	ChannelStatusActive   ChannelStatus = "active"
@@ -91,12 +97,6 @@ const (
 // Defines values for LatestBlockSelectionType.
 const (
 	LatestBlockSelectionTypeLatest LatestBlockSelectionType = "latest"
-)
-
-// Defines values for NetworkType.
-const (
-	NetworkTypeMainnet NetworkType = "mainnet"
-	NetworkTypeTestnet NetworkType = "testnet"
 )
 
 // Defines values for OperationStatus.
@@ -148,6 +148,7 @@ const (
 const (
 	WalletTypeECDSA          WalletType = "ecdsa"
 	WalletTypeProtectedECDSA WalletType = "protected_ecdsa"
+	WalletTypeProtectedRSA   WalletType = "protected_rsa"
 	WalletTypeRSA            WalletType = "rsa"
 )
 
@@ -204,6 +205,9 @@ type CancelOperation struct {
 
 // CancelOperationStatus Marks the operation as cancelled.
 type CancelOperationStatus string
+
+// ChainEnvironment Type of chain
+type ChainEnvironment string
 
 // ChainSelector Chain selector identifier for the blockchain network
 type ChainSelector = string
@@ -287,11 +291,17 @@ type CreateQuery struct {
 
 // CreateWallet Request body for creating a new wallet.
 type CreateWallet struct {
+	// AllowedEcdsaSigners DEPRECATED - use WalletConfiguration instead. List of allowed ECDSA public signing keys (Ethereum addresses)
+	AllowedEcdsaSigners *ECDSASignersList `json:"allowed_ecdsa_signers,omitempty"`
+
+	// AllowedRsaSigners DEPRECATED - use WalletConfiguration instead. List of allowed RSA public signing keys
+	AllowedRsaSigners *RSASignersList `json:"allowed_rsa_signers,omitempty"`
+
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
 
 	// Configuration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
-	Configuration WalletConfiguration `json:"configuration"`
+	Configuration *WalletConfiguration `json:"configuration,omitempty"`
 
 	// Description Description of the wallet. Send empty string to omit.
 	Description *string `json:"description,omitempty"`
@@ -355,6 +365,9 @@ type CreateWatcherWithService struct {
 
 // DecimalString Base-10 decimal string.
 type DecimalString = string
+
+// ECDSASignersList DEPRECATED - use WalletConfiguration instead. List of allowed ECDSA public signing keys (Ethereum addresses)
+type ECDSASignersList = []EthereumAddress
 
 // EVMCallQueryParams Parameters for an evm_call chain query.
 type EVMCallQueryParams struct {
@@ -519,7 +532,7 @@ type Network struct {
 	Name string `json:"name"`
 
 	// Type Type of chain
-	Type *NetworkType `json:"type,omitempty"`
+	Type *ChainEnvironment `json:"type,omitempty"`
 
 	// UpdatedAt Timestamp of when the network was last updated
 	UpdatedAt int64 `json:"updated_at"`
@@ -532,9 +545,6 @@ type NetworkList struct {
 	// HasMore True if there are more networks to fetch
 	HasMore bool `json:"has_more"`
 }
-
-// NetworkType Type of chain
-type NetworkType string
 
 // OCRProof An OCR-based cryptographic proof attached to a verifiable event.
 type OCRProof struct {
@@ -817,6 +827,18 @@ type QueryStatusPayload struct {
 	WorkflowId *CREWorkflowId `json:"workflow_id,omitempty"`
 }
 
+// RSAPublicKey RSA public key with exponent and modulus
+type RSAPublicKey struct {
+	// E RSA public exponent (hex encoded, 2-17 bytes)
+	E string `json:"e"`
+
+	// N RSA modulus (hex encoded, min 2048 bits)
+	N string `json:"n"`
+}
+
+// RSASignersList DEPRECATED - use WalletConfiguration instead. List of allowed RSA public signing keys
+type RSASignersList = []RSAPublicKey
+
 // Subject Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
 type Subject struct {
 	// SubjectId Stable subject identifier used for filtering and equality.
@@ -911,6 +933,12 @@ type UpdateWatcher struct {
 type Wallet struct {
 	// Address 42-character hex Ethereum address
 	Address EthereumAddress `json:"address"`
+
+	// AllowedEcdsaSigners DEPRECATED - use WalletConfiguration instead. List of allowed ECDSA public signing keys (Ethereum addresses)
+	AllowedEcdsaSigners ECDSASignersList `json:"allowed_ecdsa_signers"`
+
+	// AllowedRsaSigners DEPRECATED - use WalletConfiguration instead. List of allowed RSA public signing keys
+	AllowedRsaSigners RSASignersList `json:"allowed_rsa_signers"`
 
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector ChainSelector `json:"chain_selector"`
@@ -1171,6 +1199,9 @@ type SearchChannelEventsParams struct {
 	// ChainSelector Filter by chain selector
 	ChainSelector *[]string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
+	// ChainEnvironment Filter by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+
 	// Status Filter by operation status. Multiple values allowed.
 	Status *[]string `form:"status,omitempty" json:"status,omitempty"`
 
@@ -1213,6 +1244,9 @@ type ListOperationsParams struct {
 	// ChainSelector Filter operations by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
 
+	// ChainEnvironment Filter operations by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
+
 	// Address Filter operations by wallet address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
 
@@ -1254,6 +1288,9 @@ type ListQueriesParams struct {
 
 	// ChainSelector Filter queries by chain selector (network).
 	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// ChainEnvironment Filter queries by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 }
 
 // ListWatchersParams defines parameters for ListWatchers.
@@ -1272,6 +1309,9 @@ type ListWatchersParams struct {
 
 	// ChainSelector Filter watchers by chain selector
 	ChainSelector *string `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// ChainEnvironment Filter watchers by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Address Filter watchers by contract address
 	Address *string `form:"address,omitempty" json:"address,omitempty"`
@@ -1302,6 +1342,9 @@ type ListWalletsParams struct {
 
 	// Status Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.
 	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
+
+	// ChainEnvironment Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
+	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
 	// Limit Maximum number of wallets to return
 	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
@@ -2238,6 +2281,14 @@ func (siw *ServerInterfaceWrapper) SearchChannelEvents(w http.ResponseWriter, r 
 		return
 	}
 
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
+		return
+	}
+
 	// ------------- Optional query parameter "status" -------------
 
 	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
@@ -2413,6 +2464,14 @@ func (siw *ServerInterfaceWrapper) ListOperations(w http.ResponseWriter, r *http
 	err = runtime.BindQueryParameter("form", true, false, "chain_selector", r.URL.Query(), &params.ChainSelector)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_selector", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
 		return
 	}
 
@@ -2665,6 +2724,14 @@ func (siw *ServerInterfaceWrapper) ListQueries(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
+		return
+	}
+
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.ListQueries(w, r, channelId, params)
 	}))
@@ -2807,6 +2874,14 @@ func (siw *ServerInterfaceWrapper) ListWatchers(w http.ResponseWriter, r *http.R
 	err = runtime.BindQueryParameter("form", true, false, "chain_selector", r.URL.Query(), &params.ChainSelector)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_selector", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
 		return
 	}
 
@@ -3055,6 +3130,14 @@ func (siw *ServerInterfaceWrapper) ListWallets(w http.ResponseWriter, r *http.Re
 	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "chain_environment" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_environment", r.URL.Query(), &params.ChainEnvironment)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_environment", Err: err})
 		return
 	}
 
