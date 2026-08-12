@@ -33,11 +33,21 @@ const (
 
 // Defines values for ApplicationErrorCode.
 const (
-	ApplicationErrorCodeChannelNotFound   ApplicationErrorCode = "CHANNEL_NOT_FOUND"
-	ApplicationErrorCodeOperationNotFound ApplicationErrorCode = "OPERATION_NOT_FOUND"
-	ApplicationErrorCodeQueryNotFound     ApplicationErrorCode = "QUERY_NOT_FOUND"
-	ApplicationErrorCodeWalletNotFound    ApplicationErrorCode = "WALLET_NOT_FOUND"
-	ApplicationErrorCodeWatcherNotFound   ApplicationErrorCode = "WATCHER_NOT_FOUND"
+	ApplicationErrorCodeChainUnavailable         ApplicationErrorCode = "CHAIN_UNAVAILABLE"
+	ApplicationErrorCodeChannelAlreadyExists     ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
+	ApplicationErrorCodeChannelNotFound          ApplicationErrorCode = "CHANNEL_NOT_FOUND"
+	ApplicationErrorCodeIdempotencyKeyMismatch   ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
+	ApplicationErrorCodeOperationDeadlineElapsed ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
+	ApplicationErrorCodeOperationNotCancellable  ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
+	ApplicationErrorCodeOperationNotFinalizable  ApplicationErrorCode = "OPERATION_NOT_FINALIZABLE"
+	ApplicationErrorCodeOperationNotFound        ApplicationErrorCode = "OPERATION_NOT_FOUND"
+	ApplicationErrorCodeQueryNotFound            ApplicationErrorCode = "QUERY_NOT_FOUND"
+	ApplicationErrorCodeResourceVersionConflict  ApplicationErrorCode = "RESOURCE_VERSION_CONFLICT"
+	ApplicationErrorCodeWalletAlreadyArchived    ApplicationErrorCode = "WALLET_ALREADY_ARCHIVED"
+	ApplicationErrorCodeWalletAlreadyExists      ApplicationErrorCode = "WALLET_ALREADY_EXISTS"
+	ApplicationErrorCodeWalletNotFound           ApplicationErrorCode = "WALLET_NOT_FOUND"
+	ApplicationErrorCodeWatcherAlreadyExists     ApplicationErrorCode = "WATCHER_ALREADY_EXISTS"
+	ApplicationErrorCodeWatcherNotFound          ApplicationErrorCode = "WATCHER_NOT_FOUND"
 )
 
 // Defines values for BlockNumberBlockSelectionType.
@@ -155,7 +165,7 @@ const (
 
 // ApplicationError Standard error response body.
 type ApplicationError struct {
-	// Code Machine-readable error code for NOT_FOUND responses.
+	// Code Machine-readable error code for NOT_FOUND and CONFLICT responses.
 	Code *ApplicationErrorCode `json:"code,omitempty"`
 
 	// Message Error message describing the issue
@@ -168,7 +178,7 @@ type ApplicationError struct {
 // ApplicationErrorType Error type
 type ApplicationErrorType string
 
-// ApplicationErrorCode Machine-readable error code for NOT_FOUND responses.
+// ApplicationErrorCode Machine-readable error code for NOT_FOUND and CONFLICT responses.
 type ApplicationErrorCode string
 
 // BlockNumberBlockSelection defines model for BlockNumberBlockSelection.
@@ -4587,6 +4597,7 @@ type CreateChannelResponse struct {
 	JSON201      *Channel
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
 
@@ -4638,6 +4649,7 @@ type UpdateChannelResponse struct {
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
 	JSON404      *ApplicationError
+	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
 
@@ -4766,6 +4778,7 @@ type CreateOperationResponse struct {
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
 	JSON404      *ApplicationError
+	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
 
@@ -4946,6 +4959,7 @@ type CreateWatcherResponse struct {
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
 	JSON404      *ApplicationError
+	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
 
@@ -4998,6 +5012,7 @@ type UpdateWatcherResponse struct {
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
 	JSON404      *ApplicationError
+	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
 
@@ -5093,6 +5108,7 @@ type CreateWalletResponse struct {
 	JSON201      *Wallet
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
 
@@ -5144,6 +5160,7 @@ type UpdateWalletResponse struct {
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
 	JSON404      *ApplicationError
+	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
 
@@ -5526,6 +5543,13 @@ func ParseCreateChannelResponse(rsp *http.Response) (*CreateChannelResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5626,6 +5650,13 @@ func ParseUpdateChannelResponse(rsp *http.Response) (*UpdateChannelResponse, err
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
@@ -5882,6 +5913,13 @@ func ParseCreateOperationResponse(rsp *http.Response) (*CreateOperationResponse,
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
@@ -6247,6 +6285,13 @@ func ParseCreateWatcherResponse(rsp *http.Response) (*CreateWatcherResponse, err
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6354,6 +6399,13 @@ func ParseUpdateWatcherResponse(rsp *http.Response) (*UpdateWatcherResponse, err
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
@@ -6508,6 +6560,13 @@ func ParseCreateWalletResponse(rsp *http.Response) (*CreateWalletResponse, error
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6608,6 +6667,13 @@ func ParseUpdateWalletResponse(rsp *http.Response) (*UpdateWalletResponse, error
 			return nil, err
 		}
 		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
