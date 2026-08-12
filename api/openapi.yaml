@@ -34,7 +34,7 @@ paths:
       tags:
         - Health
       operationId: getHealthCheck
-      x-permissions: [] # served before an auth context exists; see cmd/gen-permissions exemptRoutes
+      x-permissions: []
       summary: Health check endpoint
       responses:
         "200":
