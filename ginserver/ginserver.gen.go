@@ -32,11 +32,21 @@ const (
 
 // Defines values for ApplicationErrorCode.
 const (
-	ApplicationErrorCodeChannelNotFound   ApplicationErrorCode = "CHANNEL_NOT_FOUND"
-	ApplicationErrorCodeOperationNotFound ApplicationErrorCode = "OPERATION_NOT_FOUND"
-	ApplicationErrorCodeQueryNotFound     ApplicationErrorCode = "QUERY_NOT_FOUND"
-	ApplicationErrorCodeWalletNotFound    ApplicationErrorCode = "WALLET_NOT_FOUND"
-	ApplicationErrorCodeWatcherNotFound   ApplicationErrorCode = "WATCHER_NOT_FOUND"
+	ApplicationErrorCodeChainUnavailable         ApplicationErrorCode = "CHAIN_UNAVAILABLE"
+	ApplicationErrorCodeChannelAlreadyExists     ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
+	ApplicationErrorCodeChannelNotFound          ApplicationErrorCode = "CHANNEL_NOT_FOUND"
+	ApplicationErrorCodeIdempotencyKeyMismatch   ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
+	ApplicationErrorCodeOperationDeadlineElapsed ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
+	ApplicationErrorCodeOperationNotCancellable  ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
+	ApplicationErrorCodeOperationNotFinalizable  ApplicationErrorCode = "OPERATION_NOT_FINALIZABLE"
+	ApplicationErrorCodeOperationNotFound        ApplicationErrorCode = "OPERATION_NOT_FOUND"
+	ApplicationErrorCodeQueryNotFound            ApplicationErrorCode = "QUERY_NOT_FOUND"
+	ApplicationErrorCodeResourceVersionConflict  ApplicationErrorCode = "RESOURCE_VERSION_CONFLICT"
+	ApplicationErrorCodeWalletAlreadyArchived    ApplicationErrorCode = "WALLET_ALREADY_ARCHIVED"
+	ApplicationErrorCodeWalletAlreadyExists      ApplicationErrorCode = "WALLET_ALREADY_EXISTS"
+	ApplicationErrorCodeWalletNotFound           ApplicationErrorCode = "WALLET_NOT_FOUND"
+	ApplicationErrorCodeWatcherAlreadyExists     ApplicationErrorCode = "WATCHER_ALREADY_EXISTS"
+	ApplicationErrorCodeWatcherNotFound          ApplicationErrorCode = "WATCHER_NOT_FOUND"
 )
 
 // Defines values for BlockNumberBlockSelectionType.
@@ -154,7 +164,7 @@ const (
 
 // ApplicationError Standard error response body.
 type ApplicationError struct {
-	// Code Machine-readable error code for NOT_FOUND responses.
+	// Code Machine-readable error code for NOT_FOUND and CONFLICT responses.
 	Code *ApplicationErrorCode `json:"code,omitempty"`
 
 	// Message Error message describing the issue
@@ -167,7 +177,7 @@ type ApplicationError struct {
 // ApplicationErrorType Error type
 type ApplicationErrorType string
 
-// ApplicationErrorCode Machine-readable error code for NOT_FOUND responses.
+// ApplicationErrorCode Machine-readable error code for NOT_FOUND and CONFLICT responses.
 type ApplicationErrorCode string
 
 // BlockNumberBlockSelection defines model for BlockNumberBlockSelection.
@@ -3273,6 +3283,15 @@ func (response CreateChannel403JSONResponse) VisitCreateChannelResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateChannel409JSONResponse ApplicationError
+
+func (response CreateChannel409JSONResponse) VisitCreateChannelResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateChannel500JSONResponse ApplicationError
 
 func (response CreateChannel500JSONResponse) VisitCreateChannelResponse(w http.ResponseWriter) error {
@@ -3389,6 +3408,15 @@ type UpdateChannel404JSONResponse ApplicationError
 func (response UpdateChannel404JSONResponse) VisitUpdateChannelResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateChannel409JSONResponse ApplicationError
+
+func (response UpdateChannel409JSONResponse) VisitUpdateChannelResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -3696,6 +3724,15 @@ type CreateOperation404JSONResponse ApplicationError
 func (response CreateOperation404JSONResponse) VisitCreateOperationResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type CreateOperation409JSONResponse ApplicationError
+
+func (response CreateOperation409JSONResponse) VisitCreateOperationResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -4138,6 +4175,15 @@ func (response CreateWatcher404JSONResponse) VisitCreateWatcherResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateWatcher409JSONResponse ApplicationError
+
+func (response CreateWatcher409JSONResponse) VisitCreateWatcherResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateWatcher500JSONResponse ApplicationError
 
 func (response CreateWatcher500JSONResponse) VisitCreateWatcherResponse(w http.ResponseWriter) error {
@@ -4265,6 +4311,15 @@ type UpdateWatcher404JSONResponse ApplicationError
 func (response UpdateWatcher404JSONResponse) VisitUpdateWatcherResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWatcher409JSONResponse ApplicationError
+
+func (response UpdateWatcher409JSONResponse) VisitUpdateWatcherResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -4431,6 +4486,15 @@ func (response CreateWallet403JSONResponse) VisitCreateWalletResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type CreateWallet409JSONResponse ApplicationError
+
+func (response CreateWallet409JSONResponse) VisitCreateWalletResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type CreateWallet500JSONResponse ApplicationError
 
 func (response CreateWallet500JSONResponse) VisitCreateWalletResponse(w http.ResponseWriter) error {
@@ -4547,6 +4611,15 @@ type UpdateWallet404JSONResponse ApplicationError
 func (response UpdateWallet404JSONResponse) VisitUpdateWalletResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateWallet409JSONResponse ApplicationError
+
+func (response UpdateWallet409JSONResponse) VisitUpdateWalletResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(409)
 
 	return json.NewEncoder(w).Encode(response)
 }
