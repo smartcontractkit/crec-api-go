@@ -22,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run backwards-compatibility check
-        uses: anomalyco/opencode/github@latest
+        uses: anomalyco/opencode/github@cb7d8b2f5e44876ef98b661dc10590c915af3a9f # v1.18.25
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
