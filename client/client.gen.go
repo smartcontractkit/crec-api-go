@@ -164,6 +164,9 @@ const (
 	WatcherStatusPending   WatcherStatus = "pending"
 )
 
+// Actor Resource attribution actor — "<subject_id>:<email>" for a user, "api:<subject_id>" for an API key.
+type Actor = string
+
 // ApplicationError Standard error response body.
 type ApplicationError struct {
 	// Code Machine-readable error code for NOT_FOUND and CONFLICT responses.
@@ -220,8 +223,11 @@ type Channel struct {
 	// ChannelId Unique identifier for the channel
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the channel was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
 
 	// Description Description of the channel
 	Description *string `json:"description,omitempty"`
@@ -231,6 +237,12 @@ type Channel struct {
 
 	// Status Status of a channel
 	Status ChannelStatus `json:"status"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 }
 
 // ChannelList Paginated list of channels.
@@ -582,6 +594,9 @@ type Operation struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt Timestamp `json:"created_at"`
 
+	// CreatedBy Actor that created the resource. Flat display-string form; initiator carries the structured Subject equivalent. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
+
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
@@ -619,6 +634,9 @@ type Operation struct {
 
 	// UpdatedAt Unix timestamp in seconds
 	UpdatedAt Timestamp `json:"updated_at"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -726,6 +744,9 @@ type Query struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt Timestamp `json:"created_at"`
 
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
+
 	// EventHash Verifiable event hash for the terminal query result.
 	EventHash *string `json:"event_hash,omitempty"`
 
@@ -761,6 +782,9 @@ type Query struct {
 
 	// UpdatedAt Unix timestamp in seconds
 	UpdatedAt Timestamp `json:"updated_at"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// VerifiableResult Base64-encoded verifiable query result.
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
@@ -952,6 +976,9 @@ type Wallet struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
+
 	// Description Description of the wallet
 	Description *string `json:"description,omitempty"`
 
@@ -963,6 +990,12 @@ type Wallet struct {
 
 	// StatusChannelId Channel ID where wallet status events are published
 	StatusChannelId *openapi_types.UUID `json:"status_channel_id,omitempty"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// WalletId Unique identifier for the wallet
 	WalletId openapi_types.UUID `json:"wallet_id"`
@@ -1029,8 +1062,11 @@ type Watcher struct {
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the watcher was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
 
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
@@ -1049,6 +1085,12 @@ type Watcher struct {
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
@@ -1127,8 +1169,11 @@ type WatcherSummary struct {
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the watcher was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
 
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
@@ -1141,6 +1186,12 @@ type WatcherSummary struct {
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
