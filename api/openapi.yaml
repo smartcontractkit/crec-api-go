@@ -2382,15 +2382,9 @@ components:
         status:
           $ref: "#/components/schemas/ChannelStatus"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the channel was created
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
         updated_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the channel was last updated
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
         created_by:
           nullable: true
           allOf:
@@ -2835,15 +2829,9 @@ components:
           description: ID of the channel this watcher belongs to
           example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the watcher was created
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
         updated_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the watcher was last updated
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
         created_by:
           nullable: true
           allOf:
@@ -2919,15 +2907,9 @@ components:
           description: ID of the channel this watcher belongs to
           example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the watcher was created
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
         updated_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the watcher was last updated
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
         created_by:
           nullable: true
           allOf:

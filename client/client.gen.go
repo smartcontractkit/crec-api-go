@@ -222,8 +222,8 @@ type Channel struct {
 	// ChannelId Unique identifier for the channel
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the channel was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
 
 	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
 	CreatedBy *Actor `json:"created_by"`
@@ -237,8 +237,8 @@ type Channel struct {
 	// Status Status of a channel
 	Status ChannelStatus `json:"status"`
 
-	// UpdatedAt Timestamp of when the channel was last updated
-	UpdatedAt *int64 `json:"updated_at,omitempty"`
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
 
 	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
 	UpdatedBy *Actor `json:"updated_by"`
@@ -1061,8 +1061,8 @@ type Watcher struct {
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the watcher was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
 
 	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
 	CreatedBy *Actor `json:"created_by"`
@@ -1085,8 +1085,8 @@ type Watcher struct {
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
 
-	// UpdatedAt Timestamp of when the watcher was last updated
-	UpdatedAt *int64 `json:"updated_at,omitempty"`
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
 
 	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
 	UpdatedBy *Actor `json:"updated_by"`
@@ -1168,8 +1168,8 @@ type WatcherSummary struct {
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the watcher was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
 
 	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
 	CreatedBy *Actor `json:"created_by"`
@@ -1186,8 +1186,8 @@ type WatcherSummary struct {
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
 
-	// UpdatedAt Timestamp of when the watcher was last updated
-	UpdatedAt *int64 `json:"updated_at,omitempty"`
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
 
 	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
 	UpdatedBy *Actor `json:"updated_by"`
