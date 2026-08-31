@@ -1967,6 +1967,10 @@ components:
       format: int64
       description: Unix timestamp in seconds
       example: 1601528660
+    Actor:
+      type: string
+      description: Resource attribution actor — "<subject_id>:<email>" for a user, "api:<subject_id>" for an API key.
+      example: "usr_01J8K2M3N4P5Q6R7S8T9V0:jane@example.com"
     HealthCheck:
       description: Health check response.
       type: object
@@ -2092,6 +2096,18 @@ components:
           $ref: "#/components/schemas/WalletConfiguration"
         created_at:
           $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
       required:
         - wallet_id
         - name
@@ -2370,6 +2386,21 @@ components:
           format: int64
           description: Timestamp of when the channel was created
           example: 1715698800
+        updated_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the channel was last updated
+          example: 1715698800
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
       required:
         - channel_id
         - name
@@ -2554,6 +2585,8 @@ components:
           signatures: ["0x789abc"]
         created_at: 1715698800
         updated_at: 1715698815
+        created_by: "usr_01J8K2M3N4P5Q6R7S8T9V0:jane@example.com"
+        updated_by: "usr_01J8K2M3N4P5Q6R7S8T9V0:jane@example.com"
         expires_at: 1715702400
         accepted_at: 1715698800
         sending_at: 1715698801
@@ -2590,6 +2623,16 @@ components:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         expires_at:
           $ref: "#/components/schemas/Timestamp"
         accepted_at:
@@ -2796,6 +2839,21 @@ components:
           format: int64
           description: Timestamp of when the watcher was created
           example: 1715698800
+        updated_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the watcher was last updated
+          example: 1715698800
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         status:
           $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
@@ -2865,6 +2923,21 @@ components:
           format: int64
           description: Timestamp of when the watcher was created
           example: 1715698800
+        updated_at:
+          type: integer
+          format: int64
+          description: Timestamp of when the watcher was last updated
+          example: 1715698800
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         status:
           $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
@@ -3006,6 +3079,16 @@ components:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Flat display-string form; initiator carries the structured Subject equivalent. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         operation_writer_workflow_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowId"
