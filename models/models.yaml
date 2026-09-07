@@ -111,16 +111,18 @@ components:
             - confirmed_safe
             - confirmed
             - failed
+            - reverted
           x-enum-varnames:
             - OperationStatusUpdateBroadcasting
             - OperationStatusUpdateConfirmedLatest
             - OperationStatusUpdateConfirmedSafe
             - OperationStatusUpdateConfirmed
             - OperationStatusUpdateFailed
+            - OperationStatusUpdateReverted
         status_reason:
           type: string
           description: Reason for the status.
-        # Non-mandatory field - the transaction hash is only present when the status is broadcasting or confirmed.
+        # Non-mandatory field - the transaction hash is only present when the status is broadcasting, confirmed, or reverted.
         transaction_hash:
           type: string
           description: The hash of the transaction that caused the status update.
