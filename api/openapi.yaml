@@ -2274,6 +2274,7 @@ components:
         - OPERATION_DEADLINE_ELAPSED
         - RESOURCE_VERSION_CONFLICT
         - WALLET_ALREADY_ARCHIVED
+        - WALLET_NOT_READY
         - CHAIN_UNAVAILABLE
       x-enum-varnames:
         - ApplicationErrorCodeChannelNotFound
@@ -2290,6 +2291,7 @@ components:
         - ApplicationErrorCodeOperationDeadlineElapsed
         - ApplicationErrorCodeResourceVersionConflict
         - ApplicationErrorCodeWalletAlreadyArchived
+        - ApplicationErrorCodeWalletNotReady
         - ApplicationErrorCodeChainUnavailable
       example: "WALLET_NOT_FOUND"
     ApplicationError:
