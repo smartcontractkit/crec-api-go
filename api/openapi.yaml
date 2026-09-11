@@ -1794,6 +1794,7 @@ components:
         - cancelled
         - expired
         - failed
+        - reverted
       x-enum-varnames:
         - OperationStatusAccepted
         - OperationStatusPendingSignature
@@ -1806,6 +1807,7 @@ components:
         - OperationStatusCancelled
         - OperationStatusExpired
         - OperationStatusFailed
+        - OperationStatusReverted
       example: "accepted"
     QueryStatus:
       type: string

@@ -111,6 +111,7 @@ const (
 	OperationStatusExpired          OperationStatus = "expired"
 	OperationStatusFailed           OperationStatus = "failed"
 	OperationStatusPendingSignature OperationStatus = "pending_signature"
+	OperationStatusReverted         OperationStatus = "reverted"
 	OperationStatusSending          OperationStatus = "sending"
 	OperationStatusSent             OperationStatus = "sent"
 )
