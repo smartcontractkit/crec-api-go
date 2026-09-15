@@ -68,6 +68,7 @@ const (
 	OperationStatusUpdateConfirmedLatest OperationStatusUpdateStatus = "confirmed_latest"
 	OperationStatusUpdateConfirmedSafe   OperationStatusUpdateStatus = "confirmed_safe"
 	OperationStatusUpdateFailed          OperationStatusUpdateStatus = "failed"
+	OperationStatusUpdateReverted        OperationStatusUpdateStatus = "reverted"
 )
 
 // ChainQueryBlockNumberSelection defines model for ChainQueryBlockNumberSelection.
