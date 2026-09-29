@@ -613,6 +613,9 @@ type Operation struct {
 	// Status Status of an operation
 	Status OperationStatus `json:"status"`
 
+	// TransactionHash On-chain transaction hash. Null until the operation is broadcast; set from broadcasting status onwards. Not covered by the verifiable_event signature.
+	TransactionHash *string `json:"transaction_hash"`
+
 	// Transactions List of transactions associated with the operation.
 	Transactions []Transaction `json:"transactions"`
 
@@ -680,6 +683,9 @@ type OperationStatusPayload struct {
 
 	// Timestamp Timestamp when the event was created
 	Timestamp int64 `json:"timestamp"`
+
+	// TransactionHash On-chain transaction hash. Null until the operation is broadcast; set from broadcasting status onwards. Not covered by the verifiable_event signature.
+	TransactionHash *string `json:"transaction_hash"`
 
 	// Transactions Transactions associated with the event.
 	Transactions *[]Transaction `json:"transactions"`
