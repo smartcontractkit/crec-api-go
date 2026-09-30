@@ -75,7 +75,7 @@ paths:
       tags:
         - Wallets
       operationId: createWallet
-      x-permissions: [crec:wallet:create]
+      x-permissions: [crec:wallet:write]
       summary: Creates a new wallet.
       requestBody:
         description: Wallet creation parameters.
@@ -247,7 +247,7 @@ paths:
       tags:
         - Wallets
       operationId: updateWallet
-      x-permissions: [crec:wallet:update, crec:wallet:archive]
+      x-permissions: [crec:wallet:write, crec:wallet:archive:write]
       summary: Updates a wallet name.
       parameters:
         - in: path
@@ -311,7 +311,7 @@ paths:
       tags:
         - Channels
       operationId: createChannel
-      x-permissions: [crec:channel:create]
+      x-permissions: [crec:channel:write]
       summary: Creates a new channel.
       requestBody:
         description: Channel creation parameters.
@@ -458,7 +458,7 @@ paths:
       tags:
         - Channels
       operationId: updateChannel
-      x-permissions: [crec:channel:update, crec:channel:archive]
+      x-permissions: [crec:channel:write, crec:channel:archive:write]
       summary: Updates a channel.
       description: |
         Updates channel properties. Can be used to update the name, description, or to transition the channel status (e.g., to archived).
@@ -525,7 +525,7 @@ paths:
       tags:
         - Queries
       operationId: createQuery
-      x-permissions: [crec:query:create]
+      x-permissions: [crec:query:write]
       summary: Creates a chain query under a channel.
       description: |
         Creates a channel-scoped Chain Query Request. New queries are rejected for archived channels.
@@ -880,7 +880,7 @@ paths:
       tags:
         - Watchers
       operationId: createWatcher
-      x-permissions: [crec:watcher:create]
+      x-permissions: [crec:watcher:write]
       summary: Creates a watcher in a channel.
       parameters:
         - in: path
@@ -1093,7 +1093,7 @@ paths:
       tags:
         - Watchers
       operationId: updateWatcher
-      x-permissions: [crec:watcher:update, crec:watcher:archive]
+      x-permissions: [crec:watcher:write, crec:watcher:archive:write]
       summary: Updates a watcher.
       description: |
         Updates watcher properties. Can be used to update the name or to transition the watcher status (e.g., to archived).
@@ -1174,7 +1174,7 @@ paths:
       tags:
         - Operations
       operationId: createOperation
-      x-permissions: [crec:operation:create]
+      x-permissions: [crec:operation:write]
       summary: Creates a signed operation or draft request, scoped to a channel.
       description: |
         Creates a signed or draft operation first, depending on the presence of a signature.
@@ -1427,7 +1427,7 @@ paths:
       tags:
         - Operations
       operationId: finalizeOrCancelOperation
-      x-permissions: [crec:operation:sign]
+      x-permissions: [crec:operation:signature:write]
       summary: Finalizes or cancels an operation.
       description: |
         Finalize by sending status accepted with signature and digest.
@@ -1824,7 +1824,7 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/ApplicationError"
-          example: {type: "PERMISSION_DENIED", message: "principal lacks permission crec:wallet:create"}
+          example: {type: "PERMISSION_DENIED", message: "principal lacks permission crec:wallet:write"}
   schemas:
     WalletStatus:
       type: string

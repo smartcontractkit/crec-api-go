@@ -40,4 +40,4 @@ rules:
           minItems: 0
           items:
             type: string
-            pattern: "^crec:[^:]+:[^:]+$"
+            pattern: "^crec:[^:]+:[^:]+(:[^:]+)?$"
