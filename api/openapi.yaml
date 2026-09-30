@@ -565,7 +565,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", message: "Invalid query request."}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create queries on an archived channel"}
         "404":
           description: Channel not found
           content:
@@ -876,7 +876,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create watchers on an archived channel"}
         "404":
           description: Channel not found
           content:
@@ -1163,7 +1163,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create operations on an archived channel"}
         "404":
           description: Channel or wallet not found
           content:
@@ -2258,7 +2258,7 @@ components:
         - data
     ApplicationErrorCode:
       type: string
-      description: Machine-readable error code for NOT_FOUND and CONFLICT responses.
+      description: Machine-readable error code for classified tenant error responses.
       enum:
         - CHANNEL_NOT_FOUND
         - WALLET_NOT_FOUND
@@ -2276,6 +2276,7 @@ components:
         - WALLET_ALREADY_ARCHIVED
         - WALLET_NOT_READY
         - CHAIN_UNAVAILABLE
+        - CHANNEL_ARCHIVED
       x-enum-varnames:
         - ApplicationErrorCodeChannelNotFound
         - ApplicationErrorCodeWalletNotFound
@@ -2293,6 +2294,7 @@ components:
         - ApplicationErrorCodeWalletAlreadyArchived
         - ApplicationErrorCodeWalletNotReady
         - ApplicationErrorCodeChainUnavailable
+        - ApplicationErrorCodeChannelArchived
       example: "WALLET_NOT_FOUND"
     ApplicationError:
       description: Standard error response body.
