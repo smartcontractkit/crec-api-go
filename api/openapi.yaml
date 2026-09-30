@@ -565,7 +565,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "cannot create queries on an archived channel"}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create queries on an archived channel"}
         "404":
           description: Channel not found
           content:
@@ -876,7 +876,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "cannot create watchers on an archived channel"}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create watchers on an archived channel"}
         "404":
           description: Channel not found
           content:
@@ -1163,7 +1163,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "cannot create operations on an archived channel"}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create operations on an archived channel"}
         "404":
           description: Channel or wallet not found
           content:
