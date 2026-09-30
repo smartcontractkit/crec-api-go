@@ -253,7 +253,7 @@ type OperationStatusUpdate struct {
 	// StatusReason Reason for the status.
 	StatusReason string `json:"status_reason"`
 
-	// TransactionHash The hash of the transaction that caused the status update. Present for broadcasting, failed (when a transaction was broadcast), and reverted; confirmed statuses carry the hash in the chain_event of the verifiable event.
+	// TransactionHash The hash of the transaction that caused the status update. Present for broadcasting, failed (when broadcast), and reverted; confirmed statuses carry it in the chain_event.
 	TransactionHash *string `json:"transaction_hash,omitempty"`
 
 	// WalletAddress Wallet address associated with the operation
