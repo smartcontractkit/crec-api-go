@@ -122,10 +122,12 @@ components:
         status_reason:
           type: string
           description: Reason for the status.
-        # Non-mandatory field - the transaction hash is only present when the status is broadcasting, confirmed, or reverted.
+        # Non-mandatory field - the transaction hash is present for broadcasting, failed (when a transaction
+        # was broadcast), and reverted. Confirmed statuses carry the hash in the chain_event inside the
+        # verifiable event instead.
         transaction_hash:
           type: string
-          description: The hash of the transaction that caused the status update.
+          description: The hash of the transaction that caused the status update. Present for broadcasting, failed (when a transaction was broadcast), and reverted; confirmed statuses carry the hash in the chain_event of the verifiable event.
       required:
         - wallet_operation_id
         - wallet_address
