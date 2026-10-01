@@ -34,6 +34,7 @@ paths:
       tags:
         - Health
       operationId: getHealthCheck
+      x-permissions: []
       summary: Health check endpoint
       responses:
         "200":
@@ -48,10 +49,13 @@ paths:
       tags:
         - Networks
       operationId: listNetworks
+      x-permissions: [crec:network:read]
       summary: Retrieves available networks.
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Successful operation
           content:
@@ -71,6 +75,7 @@ paths:
       tags:
         - Wallets
       operationId: createWallet
+      x-permissions: [crec:wallet:write]
       summary: Creates a new wallet.
       requestBody:
         description: Wallet creation parameters.
@@ -83,6 +88,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "201":
           description: Wallet created successfully
           content:
@@ -115,6 +122,7 @@ paths:
       tags:
         - Wallets
       operationId: listWallets
+      x-permissions: [crec:wallet:read]
       summary: Retrieves wallets for the organization.
       description: |
         Returns wallets for the organization. Archived wallets are excluded by default.
@@ -178,6 +186,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Successful operation
           content:
@@ -197,6 +207,7 @@ paths:
       tags:
         - Wallets
       operationId: getWallet
+      x-permissions: [crec:wallet:read]
       summary: Retrieves a specific wallet by ID.
       parameters:
         - in: path
@@ -209,6 +220,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Wallet found
           content:
@@ -234,6 +247,7 @@ paths:
       tags:
         - Wallets
       operationId: updateWallet
+      x-permissions: [crec:wallet:write, crec:wallet:archive:write]
       summary: Updates a wallet name.
       parameters:
         - in: path
@@ -254,6 +268,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Wallet updated successfully
           content:
@@ -295,6 +311,7 @@ paths:
       tags:
         - Channels
       operationId: createChannel
+      x-permissions: [crec:channel:write]
       summary: Creates a new channel.
       requestBody:
         description: Channel creation parameters.
@@ -307,6 +324,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "201":
           description: Channel created successfully
           content:
@@ -339,6 +358,7 @@ paths:
       tags:
         - Channels
       operationId: listChannels
+      x-permissions: [crec:channel:read]
       summary: Retrieves channels for the organization.
       description: |
         Returns channels for the organization. Archived channels are excluded by default.
@@ -377,6 +397,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Successful operation
           content:
@@ -396,6 +418,7 @@ paths:
       tags:
         - Channels
       operationId: getChannel
+      x-permissions: [crec:channel:read]
       summary: Retrieves a specific channel by ID.
       parameters:
         - in: path
@@ -408,6 +431,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Channel found
           content:
@@ -433,6 +458,7 @@ paths:
       tags:
         - Channels
       operationId: updateChannel
+      x-permissions: [crec:channel:write, crec:channel:archive:write]
       summary: Updates a channel.
       description: |
         Updates channel properties. Can be used to update the name, description, or to transition the channel status (e.g., to archived).
@@ -456,6 +482,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Channel updated successfully
           content:
@@ -497,6 +525,7 @@ paths:
       tags:
         - Queries
       operationId: createQuery
+      x-permissions: [crec:query:write]
       summary: Creates a chain query under a channel.
       description: |
         Creates a channel-scoped Chain Query Request. New queries are rejected for archived channels.
@@ -552,6 +581,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "202":
           description: Query accepted for execution.
           content:
@@ -598,6 +629,7 @@ paths:
       tags:
         - Queries
       operationId: listQueries
+      x-permissions: [crec:query:read]
       summary: Lists chain queries for a channel.
       description: |
         Returns chain query records for the channel.
@@ -659,6 +691,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Successful operation
           content:
@@ -776,6 +810,7 @@ paths:
       tags:
         - Queries
       operationId: getQuery
+      x-permissions: [crec:query:read]
       summary: Retrieves a specific chain query by ID.
       description: |
         Returns request fields, status timestamps, expiration, and terminal verifiable fields from the query resource.
@@ -796,6 +831,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Query found
           content:
@@ -843,6 +880,7 @@ paths:
       tags:
         - Watchers
       operationId: createWatcher
+      x-permissions: [crec:watcher:write]
       summary: Creates a watcher in a channel.
       parameters:
         - in: path
@@ -863,6 +901,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "201":
           description: Watcher created successfully
           content:
@@ -902,6 +942,7 @@ paths:
       tags:
         - Watchers
       operationId: listWatchers
+      x-permissions: [crec:watcher:read]
       summary: Retrieves watchers for a channel.
       description: |
         Returns watchers for the specified channel. Archived watchers are excluded by default.
@@ -977,6 +1018,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Successful operation
           content:
@@ -1003,6 +1046,7 @@ paths:
       tags:
         - Watchers
       operationId: getWatcher
+      x-permissions: [crec:watcher:read]
       summary: Retrieves a specific watcher by ID.
       parameters:
         - in: path
@@ -1022,6 +1066,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Watcher found
           content:
@@ -1047,6 +1093,7 @@ paths:
       tags:
         - Watchers
       operationId: updateWatcher
+      x-permissions: [crec:watcher:write, crec:watcher:archive:write]
       summary: Updates a watcher.
       description: |
         Updates watcher properties. Can be used to update the name or to transition the watcher status (e.g., to archived).
@@ -1077,6 +1124,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Watcher updated successfully
           content:
@@ -1125,6 +1174,7 @@ paths:
       tags:
         - Operations
       operationId: createOperation
+      x-permissions: [crec:operation:write]
       summary: Creates a signed operation or draft request, scoped to a channel.
       description: |
         Creates a signed or draft operation first, depending on the presence of a signature.
@@ -1150,6 +1200,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "201":
           description: Operation created successfully
           content:
@@ -1193,6 +1245,7 @@ paths:
       tags:
         - Operations
       operationId: listOperations
+      x-permissions: [crec:operation:read]
       summary: Retrieves operations for a channel.
       description: |
         Returns operation records for the channel, including audit subjects and preview snapshots when available.
@@ -1283,6 +1336,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Successful operation
           content:
@@ -1323,6 +1378,7 @@ paths:
       tags:
         - Operations
       operationId: getOperation
+      x-permissions: [crec:operation:read]
       summary: Gets Operation record for a specific operation.
       description: |
         Returns the operation record.
@@ -1344,6 +1400,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Operation found
           content:
@@ -1369,6 +1427,7 @@ paths:
       tags:
         - Operations
       operationId: finalizeOrCancelOperation
+      x-permissions: [crec:operation:signature:write]
       summary: Finalizes or cancels an operation.
       description: |
         Finalize by sending status accepted with signature and digest.
@@ -1400,6 +1459,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Operation updated successfully
           content:
@@ -1440,6 +1501,7 @@ paths:
       tags:
         - Events
       operationId: listChannelEvents
+      x-permissions: [crec:event:read]
       summary: Retrieves events from a channel.
       parameters:
         - in: path
@@ -1467,6 +1529,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Events retrieved successfully
           content:
@@ -1501,6 +1565,7 @@ paths:
       tags:
         - Events
       operationId: searchChannelEvents
+      x-permissions: [crec:event:read]
       summary: Query and search historical events from a channel.
       description: |
         Retrieves events with filtering capabilities. Use this endpoint for historical queries and searches. For real-time polling, use the /events endpoint.
@@ -1650,6 +1715,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Events retrieved successfully
           content:
@@ -1684,6 +1751,7 @@ paths:
       tags:
         - Events
       operationId: getChannelEvent
+      x-permissions: [crec:event:read]
       summary: Retrieves a specific event by ID from a channel.
       parameters:
         - in: path
@@ -1703,6 +1771,8 @@ paths:
       responses:
         "401":
           $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
         "200":
           description: Event found
           content:
@@ -1746,6 +1816,15 @@ components:
           schema:
             $ref: "#/components/schemas/ApplicationError"
           example: {type: "ORGANIZATION_NOT_FOUND", message: "organization not found"}
+    PermissionDenied:
+      description: >
+        Forbidden — the authenticated principal lacks the required CREC permission
+        for this operation.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApplicationError"
+          example: {type: "PERMISSION_DENIED", message: "principal lacks permission crec:wallet:write"}
   schemas:
     WalletStatus:
       type: string
@@ -1969,6 +2048,10 @@ components:
       format: int64
       description: Unix timestamp in seconds
       example: 1601528660
+    Actor:
+      type: string
+      description: Resource attribution actor — "<subject_id>:<email>" for a user, "api:<subject_id>" for an API key.
+      example: "usr_01J8K2M3N4P5Q6R7S8T9V0:jane@example.com"
     HealthCheck:
       description: Health check response.
       type: object
@@ -2094,6 +2177,18 @@ components:
           $ref: "#/components/schemas/WalletConfiguration"
         created_at:
           $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
       required:
         - wallet_id
         - name
@@ -2310,6 +2405,7 @@ components:
             - "CONFLICT"
             - "INTERNAL_ERROR"
             - "ORGANIZATION_NOT_FOUND"
+            - "PERMISSION_DENIED"
         code:
           $ref: "#/components/schemas/ApplicationErrorCode"
         message:
@@ -2372,10 +2468,19 @@ components:
         status:
           $ref: "#/components/schemas/ChannelStatus"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the channel was created
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
       required:
         - channel_id
         - name
@@ -2560,6 +2665,8 @@ components:
           signatures: ["0x789abc"]
         created_at: 1715698800
         updated_at: 1715698815
+        created_by: "usr_01J8K2M3N4P5Q6R7S8T9V0:jane@example.com"
+        updated_by: "usr_01J8K2M3N4P5Q6R7S8T9V0:jane@example.com"
         expires_at: 1715702400
         accepted_at: 1715698800
         sending_at: 1715698801
@@ -2596,6 +2703,16 @@ components:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         expires_at:
           $ref: "#/components/schemas/Timestamp"
         accepted_at:
@@ -2798,10 +2915,19 @@ components:
           description: ID of the channel this watcher belongs to
           example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the watcher was created
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         status:
           $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
@@ -2867,10 +2993,19 @@ components:
           description: ID of the channel this watcher belongs to
           example: "7c9e6679-7425-40de-944b-e07fc1f90ae7"
         created_at:
-          type: integer
-          format: int64
-          description: Timestamp of when the watcher was created
-          example: 1715698800
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         status:
           $ref: "#/components/schemas/WatcherStatus"
         chain_selector:
@@ -3018,6 +3153,16 @@ components:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
           $ref: "#/components/schemas/Timestamp"
+        created_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that created the resource. Flat display-string form; initiator carries the structured Subject equivalent. Null when there is no attributable subject (e.g. background job).
+        updated_by:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Actor"
+          description: Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
         operation_writer_workflow_id:
           allOf:
             - $ref: "#/components/schemas/CREWorkflowId"
