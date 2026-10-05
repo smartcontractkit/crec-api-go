@@ -28,6 +28,7 @@ const (
 	INTERNALERROR        ApplicationErrorType = "INTERNAL_ERROR"
 	NOTFOUND             ApplicationErrorType = "NOT_FOUND"
 	ORGANIZATIONNOTFOUND ApplicationErrorType = "ORGANIZATION_NOT_FOUND"
+	PERMISSIONDENIED     ApplicationErrorType = "PERMISSION_DENIED"
 	VALIDATIONERROR      ApplicationErrorType = "VALIDATION_ERROR"
 )
 
@@ -166,6 +167,9 @@ const (
 	WatcherStatusPending   WatcherStatus = "pending"
 )
 
+// Actor Resource attribution actor — "<subject_id>:<email>" for a user, "api:<subject_id>" for an API key.
+type Actor = string
+
 // ApplicationError Standard error response body.
 type ApplicationError struct {
 	// Code Machine-readable error code for classified tenant error responses.
@@ -222,8 +226,11 @@ type Channel struct {
 	// ChannelId Unique identifier for the channel
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the channel was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
 
 	// Description Description of the channel
 	Description *string `json:"description,omitempty"`
@@ -233,6 +240,12 @@ type Channel struct {
 
 	// Status Status of a channel
 	Status ChannelStatus `json:"status"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 }
 
 // ChannelList Paginated list of channels.
@@ -584,6 +597,9 @@ type Operation struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt Timestamp `json:"created_at"`
 
+	// CreatedBy Actor that created the resource. Flat display-string form; initiator carries the structured Subject equivalent. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
+
 	// Deadline Unix timestamp deadline for the operation. A value of 0 means no expiration.
 	Deadline int64 `json:"deadline"`
 
@@ -624,6 +640,9 @@ type Operation struct {
 
 	// UpdatedAt Unix timestamp in seconds
 	UpdatedAt Timestamp `json:"updated_at"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// WalletOperationId Unique wallet operation identifier
 	WalletOperationId string `json:"wallet_operation_id"`
@@ -734,6 +753,9 @@ type Query struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt Timestamp `json:"created_at"`
 
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
+
 	// EventHash Verifiable event hash for the terminal query result.
 	EventHash *string `json:"event_hash,omitempty"`
 
@@ -769,6 +791,9 @@ type Query struct {
 
 	// UpdatedAt Unix timestamp in seconds
 	UpdatedAt Timestamp `json:"updated_at"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// VerifiableResult Base64-encoded verifiable query result.
 	VerifiableResult *string `json:"verifiable_result,omitempty"`
@@ -960,6 +985,9 @@ type Wallet struct {
 	// CreatedAt Unix timestamp in seconds
 	CreatedAt *Timestamp `json:"created_at,omitempty"`
 
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
+
 	// Description Description of the wallet
 	Description *string `json:"description,omitempty"`
 
@@ -971,6 +999,12 @@ type Wallet struct {
 
 	// StatusChannelId Channel ID where wallet status events are published
 	StatusChannelId *openapi_types.UUID `json:"status_channel_id,omitempty"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// WalletId Unique identifier for the wallet
 	WalletId openapi_types.UUID `json:"wallet_id"`
@@ -1037,8 +1071,11 @@ type Watcher struct {
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the watcher was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
 
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
@@ -1057,6 +1094,12 @@ type Watcher struct {
 
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
 
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
@@ -1135,8 +1178,11 @@ type WatcherSummary struct {
 	// ChannelId ID of the channel this watcher belongs to
 	ChannelId openapi_types.UUID `json:"channel_id"`
 
-	// CreatedAt Timestamp of when the watcher was created
-	CreatedAt int64 `json:"created_at"`
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
+	CreatedBy *Actor `json:"created_by"`
 
 	// DonFamily DON family the watcher's workflow runs on (e.g., "zone-a"). Used to identify which DON nodes signed the events.
 	DonFamily string `json:"don_family"`
@@ -1150,6 +1196,12 @@ type WatcherSummary struct {
 	// Status Status of a watcher entity
 	Status WatcherStatus `json:"status"`
 
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt *Timestamp `json:"updated_at,omitempty"`
+
+	// UpdatedBy Actor that last updated the resource. Replaced on every actor-driven update; untouched by background updates. Null when there is no attributable subject.
+	UpdatedBy *Actor `json:"updated_by"`
+
 	// WatcherId Unique identifier for the watcher
 	WatcherId openapi_types.UUID `json:"watcher_id"`
 
@@ -1159,6 +1211,9 @@ type WatcherSummary struct {
 
 // OrganizationNotFound Standard error response body.
 type OrganizationNotFound = ApplicationError
+
+// PermissionDenied Standard error response body.
+type PermissionDenied = ApplicationError
 
 // ListChannelsParams defines parameters for ListChannels.
 type ListChannelsParams struct {
@@ -4581,6 +4636,7 @@ type ListChannelsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *ChannelList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -4606,6 +4662,7 @@ type CreateChannelResponse struct {
 	JSON201      *Channel
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4631,6 +4688,7 @@ type GetChannelResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Channel
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4657,6 +4715,7 @@ type UpdateChannelResponse struct {
 	JSON200      *Channel
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 	JSON500      *ApplicationError
@@ -4684,6 +4743,7 @@ type ListChannelEventsResponse struct {
 	JSON200      *EventList
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4710,6 +4770,7 @@ type SearchChannelEventsResponse struct {
 	JSON200      *EventList
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4735,6 +4796,7 @@ type GetChannelEventResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Event
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4760,6 +4822,7 @@ type ListOperationsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *OperationList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4786,6 +4849,7 @@ type CreateOperationResponse struct {
 	JSON201      *OperationResponse
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 	JSON500      *ApplicationError
@@ -4812,6 +4876,7 @@ type GetOperationResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Operation
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4838,6 +4903,7 @@ type FinalizeOrCancelOperationResponse struct {
 	JSON200      *Operation
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 }
@@ -4863,6 +4929,7 @@ type ListQueriesResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *QueryList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4889,6 +4956,7 @@ type CreateQueryResponse struct {
 	JSON202      *QueryAcceptedResponse
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 	JSON429      *ApplicationError
@@ -4916,6 +4984,7 @@ type GetQueryResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Query
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4941,6 +5010,7 @@ type ListWatchersResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *WatcherList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -4967,6 +5037,7 @@ type CreateWatcherResponse struct {
 	JSON201      *Watcher
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 	JSON500      *ApplicationError
@@ -4993,6 +5064,7 @@ type GetWatcherResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Watcher
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -5020,6 +5092,7 @@ type UpdateWatcherResponse struct {
 	JSON202      *Watcher
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 	JSON500      *ApplicationError
@@ -5068,6 +5141,7 @@ type ListNetworksResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *NetworkList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -5092,6 +5166,7 @@ type ListWalletsResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *WalletList
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON500      *ApplicationError
 }
 
@@ -5117,6 +5192,7 @@ type CreateWalletResponse struct {
 	JSON201      *Wallet
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON409      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -5142,6 +5218,7 @@ type GetWalletResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *Wallet
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON500      *ApplicationError
 }
@@ -5168,6 +5245,7 @@ type UpdateWalletResponse struct {
 	JSON200      *Wallet
 	JSON400      *ApplicationError
 	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
 	JSON404      *ApplicationError
 	JSON409      *ApplicationError
 	JSON500      *ApplicationError
@@ -5505,6 +5583,13 @@ func ParseListChannelsResponse(rsp *http.Response) (*ListChannelsResponse, error
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5552,6 +5637,13 @@ func ParseCreateChannelResponse(rsp *http.Response) (*CreateChannelResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5598,6 +5690,13 @@ func ParseGetChannelResponse(rsp *http.Response) (*GetChannelResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -5652,6 +5751,13 @@ func ParseUpdateChannelResponse(rsp *http.Response) (*UpdateChannelResponse, err
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -5714,6 +5820,13 @@ func ParseListChannelEventsResponse(rsp *http.Response) (*ListChannelEventsRespo
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5768,6 +5881,13 @@ func ParseSearchChannelEventsResponse(rsp *http.Response) (*SearchChannelEventsR
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5815,6 +5935,13 @@ func ParseGetChannelEventResponse(rsp *http.Response) (*GetChannelEventResponse,
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5861,6 +5988,13 @@ func ParseListOperationsResponse(rsp *http.Response) (*ListOperationsResponse, e
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -5916,6 +6050,13 @@ func ParseCreateOperationResponse(rsp *http.Response) (*CreateOperationResponse,
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -5969,6 +6110,13 @@ func ParseGetOperationResponse(rsp *http.Response) (*GetOperationResponse, error
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6024,6 +6172,13 @@ func ParseFinalizeOrCancelOperationResponse(rsp *http.Response) (*FinalizeOrCanc
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6070,6 +6225,13 @@ func ParseListQueriesResponse(rsp *http.Response) (*ListQueriesResponse, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6124,6 +6286,13 @@ func ParseCreateQueryResponse(rsp *http.Response) (*CreateQueryResponse, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6186,6 +6355,13 @@ func ParseGetQueryResponse(rsp *http.Response) (*GetQueryResponse, error) {
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6232,6 +6408,13 @@ func ParseListWatchersResponse(rsp *http.Response) (*ListWatchersResponse, error
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6287,6 +6470,13 @@ func ParseCreateWatcherResponse(rsp *http.Response) (*CreateWatcherResponse, err
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6340,6 +6530,13 @@ func ParseGetWatcherResponse(rsp *http.Response) (*GetWatcherResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6401,6 +6598,13 @@ func ParseUpdateWatcherResponse(rsp *http.Response) (*UpdateWatcherResponse, err
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6482,6 +6686,13 @@ func ParseListNetworksResponse(rsp *http.Response) (*ListNetworksResponse, error
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6521,6 +6732,13 @@ func ParseListWalletsResponse(rsp *http.Response) (*ListWalletsResponse, error) 
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
@@ -6569,6 +6787,13 @@ func ParseCreateWalletResponse(rsp *http.Response) (*CreateWalletResponse, error
 		}
 		response.JSON401 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
 		var dest ApplicationError
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -6615,6 +6840,13 @@ func ParseGetWalletResponse(rsp *http.Response) (*GetWalletResponse, error) {
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
@@ -6669,6 +6901,13 @@ func ParseUpdateWalletResponse(rsp *http.Response) (*UpdateWalletResponse, error
 			return nil, err
 		}
 		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest ApplicationError
