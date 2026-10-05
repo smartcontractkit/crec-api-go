@@ -34,6 +34,7 @@ const (
 const (
 	ApplicationErrorCodeChainUnavailable         ApplicationErrorCode = "CHAIN_UNAVAILABLE"
 	ApplicationErrorCodeChannelAlreadyExists     ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
+	ApplicationErrorCodeChannelArchived          ApplicationErrorCode = "CHANNEL_ARCHIVED"
 	ApplicationErrorCodeChannelNotFound          ApplicationErrorCode = "CHANNEL_NOT_FOUND"
 	ApplicationErrorCodeIdempotencyKeyMismatch   ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
 	ApplicationErrorCodeOperationDeadlineElapsed ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
@@ -169,7 +170,7 @@ type Actor = string
 
 // ApplicationError Standard error response body.
 type ApplicationError struct {
-	// Code Machine-readable error code for NOT_FOUND and CONFLICT responses.
+	// Code Machine-readable error code for classified tenant error responses.
 	Code *ApplicationErrorCode `json:"code,omitempty"`
 
 	// Message Error message describing the issue
@@ -182,7 +183,7 @@ type ApplicationError struct {
 // ApplicationErrorType Error type
 type ApplicationErrorType string
 
-// ApplicationErrorCode Machine-readable error code for NOT_FOUND and CONFLICT responses.
+// ApplicationErrorCode Machine-readable error code for classified tenant error responses.
 type ApplicationErrorCode string
 
 // BlockNumberBlockSelection defines model for BlockNumberBlockSelection.
