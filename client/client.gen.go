@@ -34,23 +34,36 @@ const (
 
 // Defines values for ApplicationErrorCode.
 const (
-	ApplicationErrorCodeChainUnavailable         ApplicationErrorCode = "CHAIN_UNAVAILABLE"
-	ApplicationErrorCodeChannelAlreadyExists     ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
-	ApplicationErrorCodeChannelArchived          ApplicationErrorCode = "CHANNEL_ARCHIVED"
-	ApplicationErrorCodeChannelNotFound          ApplicationErrorCode = "CHANNEL_NOT_FOUND"
-	ApplicationErrorCodeIdempotencyKeyMismatch   ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
-	ApplicationErrorCodeOperationDeadlineElapsed ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
-	ApplicationErrorCodeOperationNotCancellable  ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
-	ApplicationErrorCodeOperationNotFinalizable  ApplicationErrorCode = "OPERATION_NOT_FINALIZABLE"
-	ApplicationErrorCodeOperationNotFound        ApplicationErrorCode = "OPERATION_NOT_FOUND"
-	ApplicationErrorCodeQueryNotFound            ApplicationErrorCode = "QUERY_NOT_FOUND"
-	ApplicationErrorCodeResourceVersionConflict  ApplicationErrorCode = "RESOURCE_VERSION_CONFLICT"
-	ApplicationErrorCodeWalletAlreadyArchived    ApplicationErrorCode = "WALLET_ALREADY_ARCHIVED"
-	ApplicationErrorCodeWalletAlreadyExists      ApplicationErrorCode = "WALLET_ALREADY_EXISTS"
-	ApplicationErrorCodeWalletNotFound           ApplicationErrorCode = "WALLET_NOT_FOUND"
-	ApplicationErrorCodeWalletNotReady           ApplicationErrorCode = "WALLET_NOT_READY"
-	ApplicationErrorCodeWatcherAlreadyExists     ApplicationErrorCode = "WATCHER_ALREADY_EXISTS"
-	ApplicationErrorCodeWatcherNotFound          ApplicationErrorCode = "WATCHER_NOT_FOUND"
+	ApplicationErrorCodeChainUnavailable                    ApplicationErrorCode = "CHAIN_UNAVAILABLE"
+	ApplicationErrorCodeChannelAlreadyExists                ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
+	ApplicationErrorCodeChannelArchived                     ApplicationErrorCode = "CHANNEL_ARCHIVED"
+	ApplicationErrorCodeChannelNotFound                     ApplicationErrorCode = "CHANNEL_NOT_FOUND"
+	ApplicationErrorCodeEntryPointNotRecognized             ApplicationErrorCode = "ENTRY_POINT_NOT_RECOGNIZED"
+	ApplicationErrorCodeIdempotencyKeyMismatch              ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
+	ApplicationErrorCodeOperationDeadlineElapsed            ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
+	ApplicationErrorCodeOperationNotCancellable             ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
+	ApplicationErrorCodeOperationNotFinalizable             ApplicationErrorCode = "OPERATION_NOT_FINALIZABLE"
+	ApplicationErrorCodeOperationNotFound                   ApplicationErrorCode = "OPERATION_NOT_FOUND"
+	ApplicationErrorCodeQueryNotFound                       ApplicationErrorCode = "QUERY_NOT_FOUND"
+	ApplicationErrorCodeResourceVersionConflict             ApplicationErrorCode = "RESOURCE_VERSION_CONFLICT"
+	ApplicationErrorCodeWalletAdminOperationNotFound        ApplicationErrorCode = "WALLET_ADMIN_OPERATION_NOT_FOUND"
+	ApplicationErrorCodeWalletAdminOperationPayloadMismatch ApplicationErrorCode = "WALLET_ADMIN_OPERATION_PAYLOAD_MISMATCH"
+	ApplicationErrorCodeWalletAlreadyArchived               ApplicationErrorCode = "WALLET_ALREADY_ARCHIVED"
+	ApplicationErrorCodeWalletAlreadyExists                 ApplicationErrorCode = "WALLET_ALREADY_EXISTS"
+	ApplicationErrorCodeWalletCapabilityNotSupported        ApplicationErrorCode = "WALLET_CAPABILITY_NOT_SUPPORTED"
+	ApplicationErrorCodeWalletNotFound                      ApplicationErrorCode = "WALLET_NOT_FOUND"
+	ApplicationErrorCodeWalletNotReady                      ApplicationErrorCode = "WALLET_NOT_READY"
+	ApplicationErrorCodeWalletNotUpgradeable                ApplicationErrorCode = "WALLET_NOT_UPGRADEABLE"
+	ApplicationErrorCodeWalletTypeVersionDeprecated         ApplicationErrorCode = "WALLET_TYPE_VERSION_DEPRECATED"
+	ApplicationErrorCodeWalletTypeVersionNotDeployed        ApplicationErrorCode = "WALLET_TYPE_VERSION_NOT_DEPLOYED"
+	ApplicationErrorCodeWalletTypeVersionNotFound           ApplicationErrorCode = "WALLET_TYPE_VERSION_NOT_FOUND"
+	ApplicationErrorCodeWalletUpgradeInProgress             ApplicationErrorCode = "WALLET_UPGRADE_IN_PROGRESS"
+	ApplicationErrorCodeWalletUpgradeNotFound               ApplicationErrorCode = "WALLET_UPGRADE_NOT_FOUND"
+	ApplicationErrorCodeWalletUpgradePayloadMismatch        ApplicationErrorCode = "WALLET_UPGRADE_PAYLOAD_MISMATCH"
+	ApplicationErrorCodeWalletUpgradeTargetAlreadyRecorded  ApplicationErrorCode = "WALLET_UPGRADE_TARGET_ALREADY_RECORDED"
+	ApplicationErrorCodeWalletUpgradeTypeMismatch           ApplicationErrorCode = "WALLET_UPGRADE_TYPE_MISMATCH"
+	ApplicationErrorCodeWatcherAlreadyExists                ApplicationErrorCode = "WATCHER_ALREADY_EXISTS"
+	ApplicationErrorCodeWatcherNotFound                     ApplicationErrorCode = "WATCHER_NOT_FOUND"
 )
 
 // Defines values for BlockNumberBlockSelectionType.
@@ -148,6 +161,7 @@ const (
 	WalletStatusDeploying WalletStatus = "deploying"
 	WalletStatusFailed    WalletStatus = "failed"
 	WalletStatusPending   WalletStatus = "pending"
+	WalletStatusUpgrading WalletStatus = "upgrading"
 )
 
 // Defines values for WalletType.
@@ -156,6 +170,26 @@ const (
 	WalletTypeProtectedECDSA WalletType = "protected_ecdsa"
 	WalletTypeProtectedRSA   WalletType = "protected_rsa"
 	WalletTypeRSA            WalletType = "rsa"
+)
+
+// Defines values for WalletTypeVersionStatus.
+const (
+	WalletTypeVersionStatusActive     WalletTypeVersionStatus = "active"
+	WalletTypeVersionStatusDeprecated WalletTypeVersionStatus = "deprecated"
+)
+
+// Defines values for WalletUpgradeOutcome.
+const (
+	WalletUpgradeOutcomeExpired   WalletUpgradeOutcome = "expired"
+	WalletUpgradeOutcomeFailed    WalletUpgradeOutcome = "failed"
+	WalletUpgradeOutcomePending   WalletUpgradeOutcome = "pending"
+	WalletUpgradeOutcomeSucceeded WalletUpgradeOutcome = "succeeded"
+)
+
+// Defines values for WalletVersionChangeSource.
+const (
+	WalletVersionChangeSourceCRECUpgrade        WalletVersionChangeSource = "crec_upgrade"
+	WalletVersionChangeSourceOperatorCorrection WalletVersionChangeSource = "operator_correction"
 )
 
 // Defines values for WatcherStatus.
@@ -169,6 +203,18 @@ const (
 
 // Actor Resource attribution actor — "<subject_id>:<email>" for a user, "api:<subject_id>" for an API key.
 type Actor = string
+
+// AdminAuthorization Owner signature over an administrative capability's pinned EIP-712 struct.
+type AdminAuthorization struct {
+	// Deadline Unix timestamp deadline for the authorization. Zero is rejected.
+	Deadline int64 `json:"deadline"`
+
+	// Signature The owner's EIP-712 signature over the capability's pinned struct.
+	Signature OperationSignature `json:"signature"`
+
+	// WalletOperationId The authorization's own identifier in the wallet's executed-operation namespace. Must differ from the enclosing operation's.
+	WalletOperationId WalletOperationId `json:"wallet_operation_id"`
+}
 
 // ApplicationError Standard error response body.
 type ApplicationError struct {
@@ -335,6 +381,36 @@ type CreateWallet struct {
 
 	// WalletType Type of wallet
 	WalletType WalletType `json:"wallet_type"`
+}
+
+// CreateWalletAdminOperation Request body for submitting a signed administrative wallet operation.
+type CreateWalletAdminOperation struct {
+	// Arguments Values keyed by parameter name, canonically encoded: integers as decimal strings, addresses lowercase hex, absent distinguished from null.
+	Arguments map[string]interface{} `json:"arguments"`
+
+	// Authorization Owner signature over an administrative capability's pinned EIP-712 struct.
+	Authorization AdminAuthorization `json:"authorization"`
+
+	// Capability A name the wallet's version row publishes. An unpublished name is rejected.
+	Capability string `json:"capability"`
+
+	// Operation Request body for creating a signed operation or a draft when the signature is omitted.
+	Operation CreateOperation `json:"operation"`
+}
+
+// CreateWalletUpgrade Request body for submitting a client-signed wallet upgrade.
+type CreateWalletUpgrade struct {
+	// Authorization Owner signature over an administrative capability's pinned EIP-712 struct.
+	Authorization AdminAuthorization `json:"authorization"`
+
+	// ImplementationAddress What the authorization commits to. Must equal the catalog's address for target_version on the wallet's network, both as declared and as decoded from the packed calldata.
+	ImplementationAddress EthereumAddress `json:"implementation_address"`
+
+	// Operation Request body for creating a signed operation or a draft when the signature is omitted.
+	Operation CreateOperation `json:"operation"`
+
+	// TargetVersion A label the wallet type's catalog publishes.
+	TargetVersion string `json:"target_version"`
 }
 
 // CreateWatcher Request body for creating a new watcher (service-based or ABI-based).
@@ -988,11 +1064,23 @@ type Wallet struct {
 	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
 	CreatedBy *Actor `json:"created_by"`
 
+	// DefaultVersion The wallet type's default version, the one new wallets of this type deploy at.
+	DefaultVersion *string `json:"default_version"`
+
 	// Description Description of the wallet
 	Description *string `json:"description,omitempty"`
 
+	// ImplementationVersion Operator-assigned implementation version label the wallet is recorded on. Opaque, never ordered or parsed. Null where no version is recorded.
+	ImplementationVersion *string `json:"implementation_version"`
+
+	// IsUpgradeable Whether the wallet's recorded version can be upgraded through CREC. False while the wallet cannot be upgraded through CREC.
+	IsUpgradeable *bool `json:"is_upgradeable,omitempty"`
+
 	// Name Name of the wallet
 	Name string `json:"name"`
+
+	// OnDefaultVersion True when the wallet's recorded version is the type's default.
+	OnDefaultVersion *bool `json:"on_default_version,omitempty"`
 
 	// Status Status of a wallet entity
 	Status WalletStatus `json:"status"`
@@ -1014,6 +1102,62 @@ type Wallet struct {
 
 	// WalletType Type of wallet
 	WalletType WalletType `json:"wallet_type"`
+}
+
+// WalletAdminOperation A signature-authorized administrative wallet operation.
+type WalletAdminOperation struct {
+	// AdminOperationId The internal operation's identifier
+	AdminOperationId openapi_types.UUID `json:"admin_operation_id"`
+
+	// Arguments As submitted, canonically encoded
+	Arguments map[string]interface{} `json:"arguments"`
+
+	// AuthorizedKey 42-character hex Ethereum address
+	AuthorizedKey EthereumAddress `json:"authorized_key"`
+
+	// Capability The capability the operation exercises
+	Capability string `json:"capability"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// FailureReason The onchain revert reason, verbatim.
+	FailureReason *string `json:"failure_reason,omitempty"`
+
+	// OperationStatus The underlying lifecycle status while the operation is in flight.
+	OperationStatus *OperationStatus `json:"operation_status,omitempty"`
+
+	// Outcome Outcome of a wallet upgrade or administrative operation.
+	Outcome WalletUpgradeOutcome `json:"outcome"`
+
+	// RequestedBy Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+	RequestedBy Subject `json:"requested_by"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt Timestamp `json:"updated_at"`
+
+	// WalletId Unique identifier for the wallet
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+// WalletAdminOperationList Paginated list of administrative wallet operations.
+type WalletAdminOperationList struct {
+	Data []WalletAdminOperation `json:"data"`
+
+	// HasMore True if there are more administrative operations to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WalletCapabilityDescriptor A non-upgrade administrative capability a wallet type implementation version publishes.
+type WalletCapabilityDescriptor struct {
+	// AbiFragment Full ABI function object with parameter names and types. The packed result includes the 4-byte selector.
+	AbiFragment map[string]interface{} `json:"abi_fragment"`
+
+	// Eip712Type The pinned EIP-712 type string for this capability's signed struct.
+	Eip712Type string `json:"eip712_type"`
+
+	// Name The capability name an administrative operation submission names.
+	Name string `json:"name"`
 }
 
 // WalletConfiguration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
@@ -1041,6 +1185,9 @@ type WalletStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
+	// ImplementationVersion Implementation version recorded for the wallet after the status change. An upgrade's outcome arrives on this field.
+	ImplementationVersion *string `json:"implementation_version"`
+
 	// Status Status of a wallet entity
 	Status WalletStatus `json:"status"`
 
@@ -1056,6 +1203,115 @@ type WalletStatusPayload struct {
 
 // WalletType Type of wallet
 type WalletType string
+
+// WalletTypeVersion A published implementation version of a wallet type.
+type WalletTypeVersion struct {
+	// Capabilities The non-upgrade administrative capabilities this implementation publishes. Empty on backfilled legacy rows.
+	Capabilities []WalletCapabilityDescriptor `json:"capabilities"`
+
+	// Changelog Release notes for the version.
+	Changelog *string `json:"changelog,omitempty"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// Deployments Per-network implementation addresses. Filtered to chain_selector when the query parameter is present.
+	Deployments []WalletTypeVersionDeployment `json:"deployments"`
+
+	// ImplementationVersion Operator-assigned label, unique per wallet type. Opaque, never ordered or parsed.
+	ImplementationVersion string `json:"implementation_version"`
+
+	// IsDefault The version new wallets of this type deploy at. Exactly one per wallet type.
+	IsDefault bool `json:"is_default"`
+
+	// IsUpgradeable Whether a wallet recorded on this version can be upgraded through CREC. False on backfilled legacy rows.
+	IsUpgradeable bool `json:"is_upgradeable"`
+
+	// Status Support state of a wallet type implementation version. A deprecated version is not a supported upgrade target.
+	Status WalletTypeVersionStatus `json:"status"`
+
+	// WalletType Type of wallet
+	WalletType WalletType `json:"wallet_type"`
+}
+
+// WalletTypeVersionDeployment One network's implementation address for a wallet type version.
+type WalletTypeVersionDeployment struct {
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// ImplementationAddress Implementation address for the version on the network. Lowercase hex.
+	ImplementationAddress EthereumAddress `json:"implementation_address"`
+}
+
+// WalletTypeVersionList List of published implementation versions for a wallet type.
+type WalletTypeVersionList struct {
+	Data []WalletTypeVersion `json:"data"`
+
+	// HasMore True if there are more versions to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WalletTypeVersionStatus Support state of a wallet type implementation version. A deprecated version is not a supported upgrade target.
+type WalletTypeVersionStatus string
+
+// WalletUpgrade A wallet implementation version change.
+type WalletUpgrade struct {
+	// AuthorizedKey The owner key that signed. Null on a correction.
+	AuthorizedKey *EthereumAddress `json:"authorized_key"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// FailureReason The onchain revert reason, verbatim.
+	FailureReason *string `json:"failure_reason,omitempty"`
+
+	// FromVersion The version recorded when the event began. Null where none was recorded.
+	FromVersion *string `json:"from_version"`
+
+	// ImplementationAddress The implementation address the authorization commits to. Null on a correction.
+	ImplementationAddress *EthereumAddress `json:"implementation_address"`
+
+	// OperationId The internal operation. Null on a correction.
+	OperationId *openapi_types.UUID `json:"operation_id"`
+
+	// OperationStatus The underlying lifecycle status while the upgrade is in flight.
+	OperationStatus *OperationStatus `json:"operation_status,omitempty"`
+
+	// Outcome Outcome of a wallet upgrade or administrative operation.
+	Outcome WalletUpgradeOutcome `json:"outcome"`
+
+	// RequestedBy Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+	RequestedBy Subject `json:"requested_by"`
+
+	// Source Writer of a wallet's recorded implementation version.
+	Source WalletVersionChangeSource `json:"source"`
+
+	// ToVersion The version the wallet is recorded on after the event.
+	ToVersion string `json:"to_version"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt Timestamp `json:"updated_at"`
+
+	// UpgradeId Unique identifier for the upgrade
+	UpgradeId openapi_types.UUID `json:"upgrade_id"`
+
+	// WalletId Unique identifier for the wallet
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+// WalletUpgradeList Paginated list of wallet implementation version changes.
+type WalletUpgradeList struct {
+	Data []WalletUpgrade `json:"data"`
+
+	// HasMore True if there are more upgrades to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WalletUpgradeOutcome Outcome of a wallet upgrade or administrative operation.
+type WalletUpgradeOutcome string
+
+// WalletVersionChangeSource Writer of a wallet's recorded implementation version.
+type WalletVersionChangeSource string
 
 // Watcher A watcher resource.
 type Watcher struct {
@@ -1389,6 +1645,15 @@ type ListWatchersParams struct {
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
+// ListWalletTypeVersionsParams defines parameters for ListWalletTypeVersions.
+type ListWalletTypeVersionsParams struct {
+	// ChainSelector Filter deployments to a chain selector. Versions with no deployment on that chain are still returned.
+	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// Status Filter versions by support state.
+	Status *WalletTypeVersionStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
 // ListWalletsParams defines parameters for ListWallets.
 type ListWalletsParams struct {
 	// Name Filter wallets by name (case-insensitive partial match)
@@ -1409,6 +1674,9 @@ type ListWalletsParams struct {
 	// Status Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.
 	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
 
+	// ImplementationVersion Filter wallets by recorded implementation version
+	ImplementationVersion *string `form:"implementation_version,omitempty" json:"implementation_version,omitempty"`
+
 	// ChainEnvironment Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
 	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
@@ -1417,6 +1685,30 @@ type ListWalletsParams struct {
 
 	// Offset Number of wallets to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListWalletAdminOperationsParams defines parameters for ListWalletAdminOperations.
+type ListWalletAdminOperationsParams struct {
+	// Limit Maximum number of administrative operations to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of administrative operations to skip for pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListWalletUpgradesParams defines parameters for ListWalletUpgrades.
+type ListWalletUpgradesParams struct {
+	// Limit Maximum number of upgrades to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of upgrades to skip for pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Source Filter upgrades by source
+	Source *WalletVersionChangeSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// Outcome Filter upgrades by outcome
+	Outcome *WalletUpgradeOutcome `form:"outcome,omitempty" json:"outcome,omitempty"`
 }
 
 // CreateChannelJSONRequestBody defines body for CreateChannel for application/json ContentType.
@@ -1445,6 +1737,12 @@ type CreateWalletJSONRequestBody = CreateWallet
 
 // UpdateWalletJSONRequestBody defines body for UpdateWallet for application/json ContentType.
 type UpdateWalletJSONRequestBody = UpdateWallet
+
+// CreateWalletAdminOperationJSONRequestBody defines body for CreateWalletAdminOperation for application/json ContentType.
+type CreateWalletAdminOperationJSONRequestBody = CreateWalletAdminOperation
+
+// CreateWalletUpgradeJSONRequestBody defines body for CreateWalletUpgrade for application/json ContentType.
+type CreateWalletUpgradeJSONRequestBody = CreateWalletUpgrade
 
 // Getter for additional properties for GenericProofObject. Returns the specified
 // element and whether it was found
@@ -2133,6 +2431,12 @@ type ClientInterface interface {
 	// ListNetworks request
 	ListNetworks(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
+	// ListWalletTypeVersions request
+	ListWalletTypeVersions(ctx context.Context, walletType WalletType, params *ListWalletTypeVersionsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWalletTypeVersion request
+	GetWalletTypeVersion(ctx context.Context, walletType WalletType, implementationVersion string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
 	// ListWallets request
 	ListWallets(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -2148,6 +2452,28 @@ type ClientInterface interface {
 	UpdateWalletWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	UpdateWallet(ctx context.Context, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWalletAdminOperations request
+	ListWalletAdminOperations(ctx context.Context, walletId openapi_types.UUID, params *ListWalletAdminOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWalletAdminOperationWithBody request with any body
+	CreateWalletAdminOperationWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWalletAdminOperation(ctx context.Context, walletId openapi_types.UUID, body CreateWalletAdminOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWalletAdminOperation request
+	GetWalletAdminOperation(ctx context.Context, walletId openapi_types.UUID, adminOperationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// ListWalletUpgrades request
+	ListWalletUpgrades(ctx context.Context, walletId openapi_types.UUID, params *ListWalletUpgradesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// CreateWalletUpgradeWithBody request with any body
+	CreateWalletUpgradeWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	CreateWalletUpgrade(ctx context.Context, walletId openapi_types.UUID, body CreateWalletUpgradeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetWalletUpgrade request
+	GetWalletUpgrade(ctx context.Context, walletId openapi_types.UUID, upgradeId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) ListChannels(ctx context.Context, params *ListChannelsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -2474,6 +2800,30 @@ func (c *Client) ListNetworks(ctx context.Context, reqEditors ...RequestEditorFn
 	return c.Client.Do(req)
 }
 
+func (c *Client) ListWalletTypeVersions(ctx context.Context, walletType WalletType, params *ListWalletTypeVersionsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWalletTypeVersionsRequest(c.Server, walletType, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetWalletTypeVersion(ctx context.Context, walletType WalletType, implementationVersion string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWalletTypeVersionRequest(c.Server, walletType, implementationVersion)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
 func (c *Client) ListWallets(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewListWalletsRequest(c.Server, params)
 	if err != nil {
@@ -2536,6 +2886,102 @@ func (c *Client) UpdateWalletWithBody(ctx context.Context, walletId openapi_type
 
 func (c *Client) UpdateWallet(ctx context.Context, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewUpdateWalletRequest(c.Server, walletId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListWalletAdminOperations(ctx context.Context, walletId openapi_types.UUID, params *ListWalletAdminOperationsParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWalletAdminOperationsRequest(c.Server, walletId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWalletAdminOperationWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWalletAdminOperationRequestWithBody(c.Server, walletId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWalletAdminOperation(ctx context.Context, walletId openapi_types.UUID, body CreateWalletAdminOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWalletAdminOperationRequest(c.Server, walletId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetWalletAdminOperation(ctx context.Context, walletId openapi_types.UUID, adminOperationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWalletAdminOperationRequest(c.Server, walletId, adminOperationId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) ListWalletUpgrades(ctx context.Context, walletId openapi_types.UUID, params *ListWalletUpgradesParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewListWalletUpgradesRequest(c.Server, walletId, params)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWalletUpgradeWithBody(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWalletUpgradeRequestWithBody(c.Server, walletId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) CreateWalletUpgrade(ctx context.Context, walletId openapi_types.UUID, body CreateWalletUpgradeJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewCreateWalletUpgradeRequest(c.Server, walletId, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetWalletUpgrade(ctx context.Context, walletId openapi_types.UUID, upgradeId openapi_types.UUID, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetWalletUpgradeRequest(c.Server, walletId, upgradeId)
 	if err != nil {
 		return nil, err
 	}
@@ -4199,6 +4645,119 @@ func NewListNetworksRequest(server string) (*http.Request, error) {
 	return req, nil
 }
 
+// NewListWalletTypeVersionsRequest generates requests for ListWalletTypeVersions
+func NewListWalletTypeVersionsRequest(server string, walletType WalletType, params *ListWalletTypeVersionsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_type", runtime.ParamLocationPath, walletType)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallet-types/%s/versions", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.ChainSelector != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "chain_selector", runtime.ParamLocationQuery, *params.ChainSelector); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Status != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewGetWalletTypeVersionRequest generates requests for GetWalletTypeVersion
+func NewGetWalletTypeVersionRequest(server string, walletType WalletType, implementationVersion string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_type", runtime.ParamLocationPath, walletType)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "implementation_version", runtime.ParamLocationPath, implementationVersion)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallet-types/%s/versions/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewListWalletsRequest generates requests for ListWallets
 func NewListWalletsRequest(server string, params *ListWalletsParams) (*http.Request, error) {
 	var err error
@@ -4304,6 +4863,22 @@ func NewListWalletsRequest(server string, params *ListWalletsParams) (*http.Requ
 		if params.Status != nil {
 
 			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "status", runtime.ParamLocationQuery, *params.Status); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.ImplementationVersion != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "implementation_version", runtime.ParamLocationQuery, *params.ImplementationVersion); err != nil {
 				return nil, err
 			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
 				return nil, err
@@ -4497,6 +5072,358 @@ func NewUpdateWalletRequestWithBody(server string, walletId openapi_types.UUID, 
 	return req, nil
 }
 
+// NewListWalletAdminOperationsRequest generates requests for ListWalletAdminOperations
+func NewListWalletAdminOperationsRequest(server string, walletId openapi_types.UUID, params *ListWalletAdminOperationsParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s/admin-operations", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateWalletAdminOperationRequest calls the generic CreateWalletAdminOperation builder with application/json body
+func NewCreateWalletAdminOperationRequest(server string, walletId openapi_types.UUID, body CreateWalletAdminOperationJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWalletAdminOperationRequestWithBody(server, walletId, "application/json", bodyReader)
+}
+
+// NewCreateWalletAdminOperationRequestWithBody generates requests for CreateWalletAdminOperation with any type of body
+func NewCreateWalletAdminOperationRequestWithBody(server string, walletId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s/admin-operations", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetWalletAdminOperationRequest generates requests for GetWalletAdminOperation
+func NewGetWalletAdminOperationRequest(server string, walletId openapi_types.UUID, adminOperationId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "admin_operation_id", runtime.ParamLocationPath, adminOperationId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s/admin-operations/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewListWalletUpgradesRequest generates requests for ListWalletUpgrades
+func NewListWalletUpgradesRequest(server string, walletId openapi_types.UUID, params *ListWalletUpgradesParams) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s/upgrades", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if params != nil {
+		queryValues := queryURL.Query()
+
+		if params.Limit != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "limit", runtime.ParamLocationQuery, *params.Limit); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Offset != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "offset", runtime.ParamLocationQuery, *params.Offset); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Source != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "source", runtime.ParamLocationQuery, *params.Source); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		if params.Outcome != nil {
+
+			if queryFrag, err := runtime.StyleParamWithLocation("form", true, "outcome", runtime.ParamLocationQuery, *params.Outcome); err != nil {
+				return nil, err
+			} else if parsed, err := url.ParseQuery(queryFrag); err != nil {
+				return nil, err
+			} else {
+				for k, v := range parsed {
+					for _, v2 := range v {
+						queryValues.Add(k, v2)
+					}
+				}
+			}
+
+		}
+
+		queryURL.RawQuery = queryValues.Encode()
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// NewCreateWalletUpgradeRequest calls the generic CreateWalletUpgrade builder with application/json body
+func NewCreateWalletUpgradeRequest(server string, walletId openapi_types.UUID, body CreateWalletUpgradeJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewCreateWalletUpgradeRequestWithBody(server, walletId, "application/json", bodyReader)
+}
+
+// NewCreateWalletUpgradeRequestWithBody generates requests for CreateWalletUpgrade with any type of body
+func NewCreateWalletUpgradeRequestWithBody(server string, walletId openapi_types.UUID, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s/upgrades", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetWalletUpgradeRequest generates requests for GetWalletUpgrade
+func NewGetWalletUpgradeRequest(server string, walletId openapi_types.UUID, upgradeId openapi_types.UUID) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "wallet_id", runtime.ParamLocationPath, walletId)
+	if err != nil {
+		return nil, err
+	}
+
+	var pathParam1 string
+
+	pathParam1, err = runtime.StyleParamWithLocation("simple", false, "upgrade_id", runtime.ParamLocationPath, upgradeId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/wallets/%s/upgrades/%s", pathParam0, pathParam1)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -4614,6 +5541,12 @@ type ClientWithResponsesInterface interface {
 	// ListNetworksWithResponse request
 	ListNetworksWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*ListNetworksResponse, error)
 
+	// ListWalletTypeVersionsWithResponse request
+	ListWalletTypeVersionsWithResponse(ctx context.Context, walletType WalletType, params *ListWalletTypeVersionsParams, reqEditors ...RequestEditorFn) (*ListWalletTypeVersionsResponse, error)
+
+	// GetWalletTypeVersionWithResponse request
+	GetWalletTypeVersionWithResponse(ctx context.Context, walletType WalletType, implementationVersion string, reqEditors ...RequestEditorFn) (*GetWalletTypeVersionResponse, error)
+
 	// ListWalletsWithResponse request
 	ListWalletsWithResponse(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*ListWalletsResponse, error)
 
@@ -4629,6 +5562,28 @@ type ClientWithResponsesInterface interface {
 	UpdateWalletWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateWalletResponse, error)
 
 	UpdateWalletWithResponse(ctx context.Context, walletId openapi_types.UUID, body UpdateWalletJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateWalletResponse, error)
+
+	// ListWalletAdminOperationsWithResponse request
+	ListWalletAdminOperationsWithResponse(ctx context.Context, walletId openapi_types.UUID, params *ListWalletAdminOperationsParams, reqEditors ...RequestEditorFn) (*ListWalletAdminOperationsResponse, error)
+
+	// CreateWalletAdminOperationWithBodyWithResponse request with any body
+	CreateWalletAdminOperationWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWalletAdminOperationResponse, error)
+
+	CreateWalletAdminOperationWithResponse(ctx context.Context, walletId openapi_types.UUID, body CreateWalletAdminOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWalletAdminOperationResponse, error)
+
+	// GetWalletAdminOperationWithResponse request
+	GetWalletAdminOperationWithResponse(ctx context.Context, walletId openapi_types.UUID, adminOperationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletAdminOperationResponse, error)
+
+	// ListWalletUpgradesWithResponse request
+	ListWalletUpgradesWithResponse(ctx context.Context, walletId openapi_types.UUID, params *ListWalletUpgradesParams, reqEditors ...RequestEditorFn) (*ListWalletUpgradesResponse, error)
+
+	// CreateWalletUpgradeWithBodyWithResponse request with any body
+	CreateWalletUpgradeWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWalletUpgradeResponse, error)
+
+	CreateWalletUpgradeWithResponse(ctx context.Context, walletId openapi_types.UUID, body CreateWalletUpgradeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWalletUpgradeResponse, error)
+
+	// GetWalletUpgradeWithResponse request
+	GetWalletUpgradeWithResponse(ctx context.Context, walletId openapi_types.UUID, upgradeId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletUpgradeResponse, error)
 }
 
 type ListChannelsResponse struct {
@@ -5161,6 +6116,58 @@ func (r ListNetworksResponse) StatusCode() int {
 	return 0
 }
 
+type ListWalletTypeVersionsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WalletTypeVersionList
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWalletTypeVersionsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWalletTypeVersionsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWalletTypeVersionResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WalletTypeVersion
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWalletTypeVersionResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWalletTypeVersionResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 type ListWalletsResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
@@ -5261,6 +6268,166 @@ func (r UpdateWalletResponse) Status() string {
 
 // StatusCode returns HTTPResponse.StatusCode
 func (r UpdateWalletResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListWalletAdminOperationsResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WalletAdminOperationList
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWalletAdminOperationsResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWalletAdminOperationsResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateWalletAdminOperationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON202      *WalletAdminOperation
+	JSON400      *ApplicationError
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON409      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWalletAdminOperationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWalletAdminOperationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWalletAdminOperationResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WalletAdminOperation
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWalletAdminOperationResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWalletAdminOperationResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type ListWalletUpgradesResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WalletUpgradeList
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r ListWalletUpgradesResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r ListWalletUpgradesResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type CreateWalletUpgradeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON202      *WalletUpgrade
+	JSON400      *ApplicationError
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON409      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r CreateWalletUpgradeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r CreateWalletUpgradeResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+type GetWalletUpgradeResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *WalletUpgrade
+	JSON401      *OrganizationNotFound
+	JSON403      *PermissionDenied
+	JSON404      *ApplicationError
+	JSON500      *ApplicationError
+}
+
+// Status returns HTTPResponse.Status
+func (r GetWalletUpgradeResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetWalletUpgradeResponse) StatusCode() int {
 	if r.HTTPResponse != nil {
 		return r.HTTPResponse.StatusCode
 	}
@@ -5503,6 +6670,24 @@ func (c *ClientWithResponses) ListNetworksWithResponse(ctx context.Context, reqE
 	return ParseListNetworksResponse(rsp)
 }
 
+// ListWalletTypeVersionsWithResponse request returning *ListWalletTypeVersionsResponse
+func (c *ClientWithResponses) ListWalletTypeVersionsWithResponse(ctx context.Context, walletType WalletType, params *ListWalletTypeVersionsParams, reqEditors ...RequestEditorFn) (*ListWalletTypeVersionsResponse, error) {
+	rsp, err := c.ListWalletTypeVersions(ctx, walletType, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWalletTypeVersionsResponse(rsp)
+}
+
+// GetWalletTypeVersionWithResponse request returning *GetWalletTypeVersionResponse
+func (c *ClientWithResponses) GetWalletTypeVersionWithResponse(ctx context.Context, walletType WalletType, implementationVersion string, reqEditors ...RequestEditorFn) (*GetWalletTypeVersionResponse, error) {
+	rsp, err := c.GetWalletTypeVersion(ctx, walletType, implementationVersion, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWalletTypeVersionResponse(rsp)
+}
+
 // ListWalletsWithResponse request returning *ListWalletsResponse
 func (c *ClientWithResponses) ListWalletsWithResponse(ctx context.Context, params *ListWalletsParams, reqEditors ...RequestEditorFn) (*ListWalletsResponse, error) {
 	rsp, err := c.ListWallets(ctx, params, reqEditors...)
@@ -5553,6 +6738,76 @@ func (c *ClientWithResponses) UpdateWalletWithResponse(ctx context.Context, wall
 		return nil, err
 	}
 	return ParseUpdateWalletResponse(rsp)
+}
+
+// ListWalletAdminOperationsWithResponse request returning *ListWalletAdminOperationsResponse
+func (c *ClientWithResponses) ListWalletAdminOperationsWithResponse(ctx context.Context, walletId openapi_types.UUID, params *ListWalletAdminOperationsParams, reqEditors ...RequestEditorFn) (*ListWalletAdminOperationsResponse, error) {
+	rsp, err := c.ListWalletAdminOperations(ctx, walletId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWalletAdminOperationsResponse(rsp)
+}
+
+// CreateWalletAdminOperationWithBodyWithResponse request with arbitrary body returning *CreateWalletAdminOperationResponse
+func (c *ClientWithResponses) CreateWalletAdminOperationWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWalletAdminOperationResponse, error) {
+	rsp, err := c.CreateWalletAdminOperationWithBody(ctx, walletId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWalletAdminOperationResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWalletAdminOperationWithResponse(ctx context.Context, walletId openapi_types.UUID, body CreateWalletAdminOperationJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWalletAdminOperationResponse, error) {
+	rsp, err := c.CreateWalletAdminOperation(ctx, walletId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWalletAdminOperationResponse(rsp)
+}
+
+// GetWalletAdminOperationWithResponse request returning *GetWalletAdminOperationResponse
+func (c *ClientWithResponses) GetWalletAdminOperationWithResponse(ctx context.Context, walletId openapi_types.UUID, adminOperationId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletAdminOperationResponse, error) {
+	rsp, err := c.GetWalletAdminOperation(ctx, walletId, adminOperationId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWalletAdminOperationResponse(rsp)
+}
+
+// ListWalletUpgradesWithResponse request returning *ListWalletUpgradesResponse
+func (c *ClientWithResponses) ListWalletUpgradesWithResponse(ctx context.Context, walletId openapi_types.UUID, params *ListWalletUpgradesParams, reqEditors ...RequestEditorFn) (*ListWalletUpgradesResponse, error) {
+	rsp, err := c.ListWalletUpgrades(ctx, walletId, params, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseListWalletUpgradesResponse(rsp)
+}
+
+// CreateWalletUpgradeWithBodyWithResponse request with arbitrary body returning *CreateWalletUpgradeResponse
+func (c *ClientWithResponses) CreateWalletUpgradeWithBodyWithResponse(ctx context.Context, walletId openapi_types.UUID, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*CreateWalletUpgradeResponse, error) {
+	rsp, err := c.CreateWalletUpgradeWithBody(ctx, walletId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWalletUpgradeResponse(rsp)
+}
+
+func (c *ClientWithResponses) CreateWalletUpgradeWithResponse(ctx context.Context, walletId openapi_types.UUID, body CreateWalletUpgradeJSONRequestBody, reqEditors ...RequestEditorFn) (*CreateWalletUpgradeResponse, error) {
+	rsp, err := c.CreateWalletUpgrade(ctx, walletId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseCreateWalletUpgradeResponse(rsp)
+}
+
+// GetWalletUpgradeWithResponse request returning *GetWalletUpgradeResponse
+func (c *ClientWithResponses) GetWalletUpgradeWithResponse(ctx context.Context, walletId openapi_types.UUID, upgradeId openapi_types.UUID, reqEditors ...RequestEditorFn) (*GetWalletUpgradeResponse, error) {
+	rsp, err := c.GetWalletUpgrade(ctx, walletId, upgradeId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetWalletUpgradeResponse(rsp)
 }
 
 // ParseListChannelsResponse parses an HTTP response from a ListChannelsWithResponse call
@@ -6705,6 +7960,114 @@ func ParseListNetworksResponse(rsp *http.Response) (*ListNetworksResponse, error
 	return response, nil
 }
 
+// ParseListWalletTypeVersionsResponse parses an HTTP response from a ListWalletTypeVersionsWithResponse call
+func ParseListWalletTypeVersionsResponse(rsp *http.Response) (*ListWalletTypeVersionsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWalletTypeVersionsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WalletTypeVersionList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWalletTypeVersionResponse parses an HTTP response from a GetWalletTypeVersionWithResponse call
+func ParseGetWalletTypeVersionResponse(rsp *http.Response) (*GetWalletTypeVersionResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWalletTypeVersionResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WalletTypeVersion
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ParseListWalletsResponse parses an HTTP response from a ListWalletsWithResponse call
 func ParseListWalletsResponse(rsp *http.Response) (*ListWalletsResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
@@ -6922,6 +8285,358 @@ func ParseUpdateWalletResponse(rsp *http.Response) (*UpdateWalletResponse, error
 			return nil, err
 		}
 		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListWalletAdminOperationsResponse parses an HTTP response from a ListWalletAdminOperationsWithResponse call
+func ParseListWalletAdminOperationsResponse(rsp *http.Response) (*ListWalletAdminOperationsResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWalletAdminOperationsResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WalletAdminOperationList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateWalletAdminOperationResponse parses an HTTP response from a CreateWalletAdminOperationWithResponse call
+func ParseCreateWalletAdminOperationResponse(rsp *http.Response) (*CreateWalletAdminOperationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWalletAdminOperationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest WalletAdminOperation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWalletAdminOperationResponse parses an HTTP response from a GetWalletAdminOperationWithResponse call
+func ParseGetWalletAdminOperationResponse(rsp *http.Response) (*GetWalletAdminOperationResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWalletAdminOperationResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WalletAdminOperation
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseListWalletUpgradesResponse parses an HTTP response from a ListWalletUpgradesWithResponse call
+func ParseListWalletUpgradesResponse(rsp *http.Response) (*ListWalletUpgradesResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &ListWalletUpgradesResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WalletUpgradeList
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseCreateWalletUpgradeResponse parses an HTTP response from a CreateWalletUpgradeWithResponse call
+func ParseCreateWalletUpgradeResponse(rsp *http.Response) (*CreateWalletUpgradeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &CreateWalletUpgradeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 202:
+		var dest WalletUpgrade
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON202 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 409:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON409 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON500 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetWalletUpgradeResponse parses an HTTP response from a GetWalletUpgradeWithResponse call
+func ParseGetWalletUpgradeResponse(rsp *http.Response) (*GetWalletUpgradeResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetWalletUpgradeResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest WalletUpgrade
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 401:
+		var dest OrganizationNotFound
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON401 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 403:
+		var dest PermissionDenied
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON403 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest ApplicationError
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 500:
 		var dest ApplicationError
