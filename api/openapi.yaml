@@ -443,7 +443,7 @@ paths:
       tags:
         - Wallet Upgrades
       operationId: createWalletUpgrade
-      x-permissions: [crec:wallet:authorization:write]
+      x-permissions: [crec:wallet:management:write]
       summary: Submits a client-signed wallet upgrade.
       description: |
         Submits an upgrade naming a target version and the implementation address
@@ -698,7 +698,7 @@ paths:
       tags:
         - Wallet Admin Operations
       operationId: createWalletAdminOperation
-      x-permissions: [crec:wallet:authorization:write]
+      x-permissions: [crec:wallet:management:write]
       summary: Submits a signed administrative wallet operation.
       description: |
         Submits a signed administrative operation naming a capability the
