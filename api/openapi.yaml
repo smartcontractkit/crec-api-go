@@ -565,7 +565,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create queries on an archived channel"}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot use an archived channel"}
         "404":
           description: Channel not found
           content:
@@ -876,7 +876,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create watchers on an archived channel"}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot use an archived channel"}
         "404":
           description: Channel not found
           content:
@@ -1163,7 +1163,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot create operations on an archived channel"}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot use an archived channel"}
         "404":
           description: Channel or wallet not found
           content:
@@ -1408,12 +1408,12 @@ paths:
                 $ref: "#/components/schemas/Operation"
               example: {operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789", status: "cancelled", chain_selector: "16015286601757825753", address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", wallet_operation_id: "42", deadline: 0, transactions: [], initiator: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}, signature: null, created_at: 1715698800, updated_at: 1715698800}
         "400":
-          description: Invalid request data
+          description: Invalid request data or archived channel.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
-              example: {type: "VALIDATION_ERROR", message: "Invalid request data."}
+              example: {type: "VALIDATION_ERROR", code: "CHANNEL_ARCHIVED", message: "validation error: cannot use an archived channel"}
         "404":
           description: Channel or operation not found
           content:
