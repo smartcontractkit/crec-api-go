@@ -27,6 +27,6 @@ tasks:
 
   validate-openapi:
     silent: true
-    desc: "Validate openapi spec"
+    desc: "Validate openapi spec (includes x-permissions check via vacuum ruleset)"
     cmds:
       - vacuum lint --ruleset .vacuum.yaml ./api/openapi.yaml
