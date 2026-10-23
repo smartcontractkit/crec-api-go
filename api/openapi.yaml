@@ -15,8 +15,14 @@ tags:
     description: Service health.
   - name: Networks
     description: Supported networks.
+  - name: Wallet Types
+    description: Wallet implementation version catalog.
   - name: Wallets
     description: Wallet lifecycle.
+  - name: Wallet Upgrades
+    description: Wallet implementation upgrades.
+  - name: Wallet Admin Operations
+    description: Signature-authorized wallet administrative operations.
   - name: Channels
     description: Channels for watchers, events, and operations.
   - name: Watchers
@@ -63,6 +69,127 @@ paths:
               schema:
                 $ref: "#/components/schemas/NetworkList"
               example: {data: [], has_more: false}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+  /wallet-types/{wallet_type}/versions:
+    get:
+      tags:
+        - Wallet Types
+      operationId: listWalletTypeVersions
+      x-permissions: [crec:wallet:read]
+      summary: Retrieves published implementation versions for a wallet type.
+      description: |
+        Returns the published implementation versions for the wallet type with
+        changelog, support state, the default marker, upgradeability, capability
+        descriptors and per-network deployments. The list carries no sequence and
+        callers must not infer one. `status=active` returns every version supported
+        as an upgrade target, the default one included. Filtering deployments to
+        the wallet's chain selector gives the client the implementation addresses
+        it needs to sign.
+      parameters:
+        - in: path
+          name: wallet_type
+          required: true
+          description: Wallet type the versions belong to.
+          schema:
+            $ref: "#/components/schemas/WalletType"
+        - in: query
+          name: chain_selector
+          description: Filter deployments to a chain selector. Versions with no deployment on that chain are still returned.
+          schema:
+            $ref: "#/components/schemas/ChainSelector"
+        - in: query
+          name: status
+          description: Filter versions by support state.
+          schema:
+            $ref: "#/components/schemas/WalletTypeVersionStatus"
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletTypeVersionList"
+              example: {data: [], has_more: false}
+        "404":
+          description: Wallet type not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", message: "The requested wallet type was not found."}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+  /wallet-types/{wallet_type}/versions/{implementation_version}:
+    get:
+      tags:
+        - Wallet Types
+      operationId: getWalletTypeVersion
+      x-permissions: [crec:wallet:read]
+      summary: Retrieves one published implementation version for a wallet type.
+      description: |
+        Returns one published version with its deployments. The SDK's fact fetch
+        before building and signing an upgrade or administrative authorization.
+      parameters:
+        - in: path
+          name: wallet_type
+          required: true
+          description: Wallet type the version belongs to.
+          schema:
+            $ref: "#/components/schemas/WalletType"
+        - in: path
+          name: implementation_version
+          required: true
+          description: Implementation version label. Opaque, never ordered or parsed.
+          schema:
+            type: string
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "200":
+          description: Version found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletTypeVersion"
+              example:
+                wallet_type: "ecdsa"
+                implementation_version: "2025.06.0"
+                status: "active"
+                is_default: true
+                is_upgradeable: true
+                changelog: "Adds signature-authorized upgrade and administrative capabilities."
+                capabilities:
+                  - name: "revokeAuthorization"
+                    abi_fragment: {type: "function", name: "revokeAuthorization", inputs: [{name: "opId", type: "uint256"}, {name: "deadline", type: "uint256"}], outputs: [], stateMutability: "nonpayable"}
+                    eip712_type: "RevokeAuthorization(uint256 opId,uint256 deadline)"
+                deployments:
+                  - chain_selector: "16015286601757825753"
+                    implementation_address: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+                created_at: 1715698800
+        "404":
+          description: Version not found for this wallet type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", code: "WALLET_TYPE_VERSION_NOT_FOUND", message: "no version 2025.09.0 published for wallet type ecdsa"}
         "500":
           description: Internal server error
           content:
@@ -162,6 +289,11 @@ paths:
               $ref: "#/components/schemas/WalletStatus"
           style: form
           explode: true
+        - in: query
+          name: implementation_version
+          description: Filter wallets by recorded implementation version
+          schema:
+            type: string
         - in: query
           name: chain_environment
           description: Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
@@ -298,6 +430,489 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApplicationError"
               example: {type: "CONFLICT", code: "WALLET_ALREADY_ARCHIVED", message: "conflict error: wallet already in archived state"}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+
+  /wallets/{wallet_id}/upgrades:
+    post:
+      tags:
+        - Wallet Upgrades
+      operationId: createWalletUpgrade
+      x-permissions: [crec:wallet:management:write]
+      summary: Submits a client-signed wallet upgrade.
+      description: |
+        Submits an upgrade naming a target version and the implementation address
+        the owner's authorization commits to. The enclosing operation is an
+        ordinary signed operation: it must carry exactly one transaction,
+        self-targeted at the wallet, with a non-zero deadline, and its
+        chain_selector and address must name the wallet the path names. On
+        acceptance the wallet moves to `upgrading` until the upgrade is confirmed
+        onchain or expires.
+      parameters:
+        - in: path
+          name: wallet_id
+          required: true
+          description: Unique wallet identifier.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Wallet upgrade submission.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWalletUpgrade"
+            example:
+              target_version: "2025.06.0"
+              implementation_address: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+              authorization:
+                wallet_operation_id: "43"
+                deadline: 1735689600
+                signature: "0x1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+              operation:
+                chain_selector: "16015286601757825753"
+                address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                wallet_operation_id: "42"
+                deadline: 1735689600
+                transactions: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "202":
+          description: Upgrade submission accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletUpgrade"
+              example:
+                upgrade_id: "b3d1c2a4-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+                wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                from_version: "2025.03.0"
+                to_version: "2025.06.0"
+                implementation_address: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+                source: "crec_upgrade"
+                outcome: "pending"
+                operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789"
+                operation_status: "broadcasting"
+                requested_by: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}
+                authorized_key: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+                created_at: 1715698800
+                updated_at: 1715698800
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              examples:
+                typeMismatch:
+                  value: {type: "VALIDATION_ERROR", code: "WALLET_UPGRADE_TYPE_MISMATCH", message: "validation error: target version belongs to a different wallet type or family"}
+                payloadMismatch:
+                  value: {type: "VALIDATION_ERROR", code: "WALLET_UPGRADE_PAYLOAD_MISMATCH", message: "validation error: implementation address disagrees with the catalog address for the target version"}
+                operationMismatch:
+                  value: {type: "VALIDATION_ERROR", message: "validation error: operation chain_selector and address must name the wallet and carry exactly one self-targeted transaction with a non-zero deadline"}
+        "404":
+          description: Wallet or target version not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              examples:
+                walletNotFound:
+                  value: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with ID 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"}
+                versionNotFound:
+                  value: {type: "NOT_FOUND", code: "WALLET_TYPE_VERSION_NOT_FOUND", message: "no version 2025.09.0 published for wallet type ecdsa"}
+        "409":
+          description: Upgrade not accepted in the wallet's current state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              examples:
+                versionNotDeployed:
+                  value: {type: "CONFLICT", code: "WALLET_TYPE_VERSION_NOT_DEPLOYED", message: "conflict error: version 2025.06.0 is not deployed on the wallet's network"}
+                versionDeprecated:
+                  value: {type: "CONFLICT", code: "WALLET_TYPE_VERSION_DEPRECATED", message: "conflict error: version 2025.03.0 is deprecated and not supported as a target"}
+                targetAlreadyRecorded:
+                  value: {type: "CONFLICT", code: "WALLET_UPGRADE_TARGET_ALREADY_RECORDED", message: "conflict error: wallet is already recorded on version 2025.06.0"}
+                upgradeInProgress:
+                  value: {type: "CONFLICT", code: "WALLET_UPGRADE_IN_PROGRESS", message: "conflict error: an upgrade is already in flight for this wallet"}
+                walletNotUpgradeable:
+                  value: {type: "CONFLICT", code: "WALLET_NOT_UPGRADEABLE", message: "conflict error: the wallet's recorded version is not upgradeable through CREC"}
+                walletArchived:
+                  value: {type: "CONFLICT", code: "WALLET_ALREADY_ARCHIVED", message: "conflict error: cannot upgrade an archived wallet"}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+    get:
+      tags:
+        - Wallet Upgrades
+      operationId: listWalletUpgrades
+      x-permissions: [crec:wallet:read]
+      summary: Retrieves the implementation version history for a wallet.
+      description: |
+        Implementation history for the wallet, upgrades and corrections
+        distinguished by `source`.
+      parameters:
+        - in: path
+          name: wallet_id
+          required: true
+          description: Unique wallet identifier.
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          description: Maximum number of upgrades to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          description: Number of upgrades to skip for pagination
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+            default: 0
+        - in: query
+          name: source
+          description: Filter upgrades by source
+          schema:
+            $ref: "#/components/schemas/WalletVersionChangeSource"
+        - in: query
+          name: outcome
+          description: Filter upgrades by outcome
+          schema:
+            $ref: "#/components/schemas/WalletUpgradeOutcome"
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletUpgradeList"
+              example: {data: [], has_more: false}
+        "404":
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with ID 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+  /wallets/{wallet_id}/upgrades/{upgrade_id}:
+    get:
+      tags:
+        - Wallet Upgrades
+      operationId: getWalletUpgrade
+      x-permissions: [crec:wallet:read]
+      summary: Retrieves one wallet upgrade.
+      description: |
+        One upgrade's outcome with its verbatim revert reason.
+      parameters:
+        - in: path
+          name: wallet_id
+          required: true
+          description: Unique wallet identifier.
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: upgrade_id
+          required: true
+          description: Unique wallet upgrade identifier.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "200":
+          description: Upgrade found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletUpgrade"
+              example:
+                upgrade_id: "b3d1c2a4-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+                wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                from_version: "2025.03.0"
+                to_version: "2025.06.0"
+                implementation_address: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+                source: "crec_upgrade"
+                outcome: "failed"
+                operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789"
+                operation_status: "reverted"
+                failure_reason: "ERC1967Upgrade: upgrade fails if UUPS probe targets non-UUPS contract"
+                requested_by: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}
+                authorized_key: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+                created_at: 1715698800
+                updated_at: 1715698800
+        "404":
+          description: Wallet or upgrade not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              examples:
+                walletNotFound:
+                  value: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with ID 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"}
+                upgradeNotFound:
+                  value: {type: "NOT_FOUND", code: "WALLET_UPGRADE_NOT_FOUND", message: "no upgrade b3d1c2a4-5e6f-4a7b-8c9d-0e1f2a3b4c5d found for wallet 3fa85f64-5717-4562-b3fc-2c963f66afa6"}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+  /wallets/{wallet_id}/admin-operations:
+    post:
+      tags:
+        - Wallet Admin Operations
+      operationId: createWalletAdminOperation
+      x-permissions: [crec:wallet:management:write]
+      summary: Submits a signed administrative wallet operation.
+      description: |
+        Submits a signed administrative operation naming a capability the
+        wallet's version row publishes, with arguments by name. The enclosing
+        operation is an ordinary signed operation: it must carry exactly one
+        transaction, self-targeted at the wallet, with a non-zero deadline, and
+        its chain_selector and address must name the wallet the path names.
+        Courier packs the published capability's ABI fragment with the
+        submitted arguments and authorization and requires the result to equal
+        the transaction's calldata byte for byte.
+      parameters:
+        - in: path
+          name: wallet_id
+          required: true
+          description: Unique wallet identifier.
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        description: Administrative wallet operation submission.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWalletAdminOperation"
+            example:
+              capability: "revokeAuthorization"
+              arguments: {opId: "44"}
+              authorization:
+                wallet_operation_id: "45"
+                deadline: 1735689600
+                signature: "0x1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+              operation:
+                chain_selector: "16015286601757825753"
+                address: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+                wallet_operation_id: "46"
+                deadline: 1735689600
+                transactions: [{to: "0x742d35Cc6634C0532925a3b844Bc454e4438f44e", value: "0", data: "0x"}]
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "202":
+          description: Administrative operation submission accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletAdminOperation"
+              example:
+                admin_operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789"
+                wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                capability: "revokeAuthorization"
+                arguments: {opId: "44"}
+                outcome: "pending"
+                operation_status: "broadcasting"
+                requested_by: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}
+                authorized_key: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+                created_at: 1715698800
+                updated_at: 1715698800
+        "400":
+          description: Invalid request data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              examples:
+                payloadMismatch:
+                  value: {type: "VALIDATION_ERROR", code: "WALLET_ADMIN_OPERATION_PAYLOAD_MISMATCH", message: "validation error: the operation's calldata is not the published capability packed with the submitted arguments and authorization"}
+                entryPointNotRecognized:
+                  value: {type: "VALIDATION_ERROR", code: "ENTRY_POINT_NOT_RECOGNIZED", message: "validation error: not an EntryPoint CREC knows on that network"}
+                operationMismatch:
+                  value: {type: "VALIDATION_ERROR", message: "validation error: operation chain_selector and address must name the wallet and carry exactly one self-targeted transaction with a non-zero deadline"}
+        "404":
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with ID 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"}
+        "409":
+          description: Administrative operation not accepted in the wallet's current state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              examples:
+                capabilityNotSupported:
+                  value: {type: "CONFLICT", code: "WALLET_CAPABILITY_NOT_SUPPORTED", message: "conflict error: the wallet's version does not publish the named capability"}
+                walletArchived:
+                  value: {type: "CONFLICT", code: "WALLET_ALREADY_ARCHIVED", message: "conflict error: cannot submit an administrative operation on an archived wallet"}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+    get:
+      tags:
+        - Wallet Admin Operations
+      operationId: listWalletAdminOperations
+      x-permissions: [crec:wallet:read]
+      summary: Retrieves administrative operations for a wallet.
+      description: |
+        Capability, arguments, authorizing key and outcome for the wallet's
+        administrative operations.
+      parameters:
+        - in: path
+          name: wallet_id
+          required: true
+          description: Unique wallet identifier.
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: limit
+          description: Maximum number of administrative operations to return
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - in: query
+          name: offset
+          description: Number of administrative operations to skip for pagination
+          schema:
+            type: integer
+            format: int64
+            minimum: 0
+            default: 0
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletAdminOperationList"
+              example: {data: [], has_more: false}
+        "404":
+          description: Wallet not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with ID 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"}
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              example: {type: "INTERNAL_ERROR", message: "An internal error occurred."}
+  /wallets/{wallet_id}/admin-operations/{admin_operation_id}:
+    get:
+      tags:
+        - Wallet Admin Operations
+      operationId: getWalletAdminOperation
+      x-permissions: [crec:wallet:read]
+      summary: Retrieves one administrative wallet operation.
+      description: |
+        One administrative operation with its verbatim revert reason.
+      parameters:
+        - in: path
+          name: wallet_id
+          required: true
+          description: Unique wallet identifier.
+          schema:
+            type: string
+            format: uuid
+        - in: path
+          name: admin_operation_id
+          required: true
+          description: Unique administrative operation identifier.
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "401":
+          $ref: "#/components/responses/OrganizationNotFound"
+        "403":
+          $ref: "#/components/responses/PermissionDenied"
+        "200":
+          description: Administrative operation found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletAdminOperation"
+              example:
+                admin_operation_id: "c1e5b8d0-1234-5678-abcd-ef0123456789"
+                wallet_id: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+                capability: "revokeAuthorization"
+                arguments: {opId: "44"}
+                outcome: "succeeded"
+                operation_status: "confirmed"
+                requested_by: {subject_type: "api_key", subject_id: "key-123", subject_name: "my-key"}
+                authorized_key: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+                created_at: 1715698800
+                updated_at: 1715698800
+        "404":
+          description: Wallet or administrative operation not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApplicationError"
+              examples:
+                walletNotFound:
+                  value: {type: "NOT_FOUND", code: "WALLET_NOT_FOUND", message: "wallet with ID 3fa85f64-5717-4562-b3fc-2c963f66afa6 not found"}
+                adminOperationNotFound:
+                  value: {type: "NOT_FOUND", code: "WALLET_ADMIN_OPERATION_NOT_FOUND", message: "no administrative operation c1e5b8d0-1234-5678-abcd-ef0123456789 found for wallet 3fa85f64-5717-4562-b3fc-2c963f66afa6"}
         "500":
           description: Internal server error
           content:
@@ -1833,12 +2448,14 @@ components:
         - pending
         - deploying
         - deployed
+        - upgrading
         - archived
         - failed
       x-enum-varnames:
         - WalletStatusPending
         - WalletStatusDeploying
         - WalletStatusDeployed
+        - WalletStatusUpgrading
         - WalletStatusArchived
         - WalletStatusFailed
       example: "pending"
@@ -2175,6 +2792,26 @@ components:
           $ref: "#/components/schemas/ECDSASignersList"
         configuration:
           $ref: "#/components/schemas/WalletConfiguration"
+        implementation_version:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
+          type: string
+          nullable: true
+          description: Operator-assigned implementation version label the wallet is recorded on. Opaque, never ordered or parsed. Null where no version is recorded.
+          example: "2025.06.0"
+        default_version:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
+          type: string
+          nullable: true
+          description: The wallet type's default version, the one new wallets of this type deploy at.
+          example: "2025.06.0"
+        on_default_version:
+          type: boolean
+          description: True when the wallet's recorded version is the type's default.
+          example: true
+        is_upgradeable:
+          type: boolean
+          description: Whether the wallet's recorded version can be upgraded through CREC. False while the wallet cannot be upgraded through CREC.
+          example: true
         created_at:
           $ref: "#/components/schemas/Timestamp"
         updated_at:
@@ -2212,6 +2849,364 @@ components:
         has_more:
           type: boolean
           description: True if there are more wallets to fetch
+          example: false
+      required:
+        - data
+        - has_more
+
+    WalletTypeVersionStatus:
+      type: string
+      description: Support state of a wallet type implementation version. A deprecated version is not a supported upgrade target.
+      enum:
+        - active
+        - deprecated
+      x-enum-varnames:
+        - WalletTypeVersionStatusActive
+        - WalletTypeVersionStatusDeprecated
+      example: "active"
+    WalletVersionChangeSource:
+      type: string
+      description: Writer of a wallet's recorded implementation version.
+      enum:
+        - crec_upgrade
+        - operator_correction
+      x-enum-varnames:
+        - WalletVersionChangeSourceCRECUpgrade
+        - WalletVersionChangeSourceOperatorCorrection
+      example: "crec_upgrade"
+    WalletUpgradeOutcome:
+      type: string
+      description: Outcome of a wallet upgrade or administrative operation.
+      enum:
+        - pending
+        - succeeded
+        - failed
+        - expired
+      x-enum-varnames:
+        - WalletUpgradeOutcomePending
+        - WalletUpgradeOutcomeSucceeded
+        - WalletUpgradeOutcomeFailed
+        - WalletUpgradeOutcomeExpired
+      example: "pending"
+    WalletCapabilityDescriptor:
+      description: A non-upgrade administrative capability a wallet type implementation version publishes.
+      type: object
+      properties:
+        name:
+          type: string
+          description: The capability name an administrative operation submission names.
+          example: "revokeAuthorization"
+        abi_fragment:
+          type: object
+          additionalProperties: true
+          description: Full ABI function object with parameter names and types. The packed result includes the 4-byte selector.
+          example: {type: "function", name: "revokeAuthorization", inputs: [{name: "opId", type: "uint256"}, {name: "deadline", type: "uint256"}], outputs: [], stateMutability: "nonpayable"}
+        eip712_type:
+          type: string
+          description: The pinned EIP-712 type string for this capability's signed struct.
+          example: "RevokeAuthorization(uint256 opId,uint256 deadline)"
+      required:
+        - name
+        - abi_fragment
+        - eip712_type
+    WalletTypeVersionDeployment:
+      description: One network's implementation address for a wallet type version.
+      type: object
+      properties:
+        chain_selector:
+          $ref: "#/components/schemas/ChainSelector"
+        implementation_address:
+          allOf:
+            - $ref: "#/components/schemas/EthereumAddress"
+          description: Implementation address for the version on the network. Lowercase hex.
+          example: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+      required:
+        - chain_selector
+        - implementation_address
+    WalletTypeVersion:
+      description: A published implementation version of a wallet type.
+      type: object
+      properties:
+        wallet_type:
+          $ref: "#/components/schemas/WalletType"
+        implementation_version:
+          type: string
+          description: Operator-assigned label, unique per wallet type. Opaque, never ordered or parsed.
+          example: "2025.06.0"
+        status:
+          $ref: "#/components/schemas/WalletTypeVersionStatus"
+        is_default:
+          type: boolean
+          description: The version new wallets of this type deploy at. Exactly one per wallet type.
+          example: true
+        is_upgradeable:
+          type: boolean
+          description: Whether a wallet recorded on this version can be upgraded through CREC. False on backfilled legacy rows.
+          example: true
+        changelog:
+          type: string
+          description: Release notes for the version.
+          example: "Adds signature-authorized upgrade and administrative capabilities."
+        capabilities:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletCapabilityDescriptor"
+          description: The non-upgrade administrative capabilities this implementation publishes. Empty on backfilled legacy rows.
+          example: []
+        deployments:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletTypeVersionDeployment"
+          description: Per-network implementation addresses. Filtered to chain_selector when the query parameter is present.
+          example: []
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - wallet_type
+        - implementation_version
+        - status
+        - is_default
+        - is_upgradeable
+        - capabilities
+        - deployments
+        - created_at
+    WalletTypeVersionList:
+      description: List of published implementation versions for a wallet type.
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletTypeVersion"
+          example: []
+        has_more:
+          type: boolean
+          description: True if there are more versions to fetch
+          example: false
+      required:
+        - data
+        - has_more
+    AdminAuthorization:
+      type: object
+      additionalProperties: false
+      description: Owner signature over an administrative capability's pinned EIP-712 struct.
+      properties:
+        wallet_operation_id:
+          allOf:
+            - $ref: "#/components/schemas/WalletOperationId"
+          description: The authorization's own identifier in the wallet's executed-operation namespace. Must differ from the enclosing operation's.
+          example: "43"
+        deadline:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Unix timestamp deadline for the authorization. Zero is rejected.
+          example: 1735689600
+        signature:
+          allOf:
+            - $ref: "#/components/schemas/OperationSignature"
+          description: The owner's EIP-712 signature over the capability's pinned struct.
+      required:
+        - wallet_operation_id
+        - deadline
+        - signature
+    CreateWalletUpgrade:
+      type: object
+      additionalProperties: false
+      description: Request body for submitting a client-signed wallet upgrade.
+      properties:
+        target_version:
+          type: string
+          description: A label the wallet type's catalog publishes.
+          example: "2025.06.0"
+        implementation_address:
+          allOf:
+            - $ref: "#/components/schemas/EthereumAddress"
+          description: What the authorization commits to. Must equal the catalog's address for target_version on the wallet's network, both as declared and as decoded from the packed calldata.
+          example: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+        authorization:
+          $ref: "#/components/schemas/AdminAuthorization"
+        operation:
+          $ref: "#/components/schemas/CreateOperation"
+      required:
+        - target_version
+        - implementation_address
+        - authorization
+        - operation
+    WalletUpgrade:
+      description: A wallet implementation version change.
+      type: object
+      properties:
+        upgrade_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the upgrade
+          example: "b3d1c2a4-5e6f-4a7b-8c9d-0e1f2a3b4c5d"
+        wallet_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the wallet
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        from_version:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
+          type: string
+          nullable: true
+          description: The version recorded when the event began. Null where none was recorded.
+          example: "2025.03.0"
+        to_version:
+          type: string
+          description: The version the wallet is recorded on after the event.
+          example: "2025.06.0"
+        implementation_address:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/EthereumAddress"
+          description: The implementation address the authorization commits to. Null on a correction.
+          example: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+        source:
+          $ref: "#/components/schemas/WalletVersionChangeSource"
+        outcome:
+          $ref: "#/components/schemas/WalletUpgradeOutcome"
+        operation_id:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
+          type: string
+          format: uuid
+          nullable: true
+          description: The internal operation. Null on a correction.
+          example: "c1e5b8d0-1234-5678-abcd-ef0123456789"
+        operation_status:
+          allOf:
+            - $ref: "#/components/schemas/OperationStatus"
+          description: The underlying lifecycle status while the upgrade is in flight.
+          example: "broadcasting"
+        failure_reason:
+          type: string
+          description: The onchain revert reason, verbatim.
+          example: "ERC1967Upgrade: upgrade fails if UUPS probe targets non-UUPS contract"
+        requested_by:
+          $ref: "#/components/schemas/Subject"
+        authorized_key:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/EthereumAddress"
+          description: The owner key that signed. Null on a correction.
+          example: "0x742d35cc6634c0532925a3b844bc454e4438f44e"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - upgrade_id
+        - wallet_id
+        - to_version
+        - source
+        - outcome
+        - requested_by
+        - created_at
+        - updated_at
+    WalletUpgradeList:
+      description: Paginated list of wallet implementation version changes.
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletUpgrade"
+          example: []
+        has_more:
+          type: boolean
+          description: True if there are more upgrades to fetch
+          example: false
+      required:
+        - data
+        - has_more
+    CreateWalletAdminOperation:
+      type: object
+      additionalProperties: false
+      description: Request body for submitting a signed administrative wallet operation.
+      properties:
+        capability:
+          type: string
+          description: A name the wallet's version row publishes. An unpublished name is rejected.
+          example: "revokeAuthorization"
+        arguments:
+          type: object
+          additionalProperties: true
+          description: "Values keyed by parameter name, canonically encoded: integers as decimal strings, addresses lowercase hex, absent distinguished from null."
+          example: {opId: "44"}
+        authorization:
+          $ref: "#/components/schemas/AdminAuthorization"
+        operation:
+          $ref: "#/components/schemas/CreateOperation"
+      required:
+        - capability
+        - arguments
+        - authorization
+        - operation
+    WalletAdminOperation:
+      description: A signature-authorized administrative wallet operation.
+      type: object
+      properties:
+        admin_operation_id:
+          type: string
+          format: uuid
+          description: The internal operation's identifier
+          example: "c1e5b8d0-1234-5678-abcd-ef0123456789"
+        wallet_id:
+          type: string
+          format: uuid
+          description: Unique identifier for the wallet
+          example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        capability:
+          type: string
+          description: The capability the operation exercises
+          example: "revokeAuthorization"
+        arguments:
+          type: object
+          additionalProperties: true
+          description: As submitted, canonically encoded
+          example: {opId: "44"}
+        outcome:
+          $ref: "#/components/schemas/WalletUpgradeOutcome"
+        operation_status:
+          allOf:
+            - $ref: "#/components/schemas/OperationStatus"
+          description: The underlying lifecycle status while the operation is in flight.
+          example: "broadcasting"
+        failure_reason:
+          type: string
+          description: The onchain revert reason, verbatim.
+          example: "ERC1967Upgrade: upgrade fails if UUPS probe targets non-UUPS contract"
+        requested_by:
+          $ref: "#/components/schemas/Subject"
+        authorized_key:
+          $ref: "#/components/schemas/EthereumAddress"
+        created_at:
+          $ref: "#/components/schemas/Timestamp"
+        updated_at:
+          $ref: "#/components/schemas/Timestamp"
+      required:
+        - admin_operation_id
+        - wallet_id
+        - capability
+        - arguments
+        - outcome
+        - requested_by
+        - authorized_key
+        - created_at
+        - updated_at
+    WalletAdminOperationList:
+      description: Paginated list of administrative wallet operations.
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/WalletAdminOperation"
+          example: []
+        has_more:
+          type: boolean
+          description: True if there are more administrative operations to fetch
           example: false
       required:
         - data
@@ -2372,6 +3367,19 @@ components:
         - WALLET_NOT_READY
         - CHAIN_UNAVAILABLE
         - CHANNEL_ARCHIVED
+        - WALLET_TYPE_VERSION_NOT_FOUND
+        - WALLET_TYPE_VERSION_NOT_DEPLOYED
+        - WALLET_TYPE_VERSION_DEPRECATED
+        - WALLET_UPGRADE_NOT_FOUND
+        - WALLET_UPGRADE_TARGET_ALREADY_RECORDED
+        - WALLET_UPGRADE_IN_PROGRESS
+        - WALLET_NOT_UPGRADEABLE
+        - WALLET_UPGRADE_TYPE_MISMATCH
+        - WALLET_UPGRADE_PAYLOAD_MISMATCH
+        - WALLET_ADMIN_OPERATION_NOT_FOUND
+        - WALLET_ADMIN_OPERATION_PAYLOAD_MISMATCH
+        - WALLET_CAPABILITY_NOT_SUPPORTED
+        - ENTRY_POINT_NOT_RECOGNIZED
       x-enum-varnames:
         - ApplicationErrorCodeChannelNotFound
         - ApplicationErrorCodeWalletNotFound
@@ -2390,6 +3398,19 @@ components:
         - ApplicationErrorCodeWalletNotReady
         - ApplicationErrorCodeChainUnavailable
         - ApplicationErrorCodeChannelArchived
+        - ApplicationErrorCodeWalletTypeVersionNotFound
+        - ApplicationErrorCodeWalletTypeVersionNotDeployed
+        - ApplicationErrorCodeWalletTypeVersionDeprecated
+        - ApplicationErrorCodeWalletUpgradeNotFound
+        - ApplicationErrorCodeWalletUpgradeTargetAlreadyRecorded
+        - ApplicationErrorCodeWalletUpgradeInProgress
+        - ApplicationErrorCodeWalletNotUpgradeable
+        - ApplicationErrorCodeWalletUpgradeTypeMismatch
+        - ApplicationErrorCodeWalletUpgradePayloadMismatch
+        - ApplicationErrorCodeWalletAdminOperationNotFound
+        - ApplicationErrorCodeWalletAdminOperationPayloadMismatch
+        - ApplicationErrorCodeWalletCapabilityNotSupported
+        - ApplicationErrorCodeEntryPointNotRecognized
       example: "WALLET_NOT_FOUND"
     ApplicationError:
       description: Standard error response body.
@@ -3626,6 +4647,12 @@ components:
           format: uuid
           description: Unique identifier for the wallet
           example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+        implementation_version:
+          # switch to type: [string, "null"] when upgrading to OpenAPI 3.1.2
+          type: string
+          nullable: true
+          description: Implementation version recorded for the wallet after the status change. An upgrade's outcome arrives on this field.
+          example: "2025.06.0"
         timestamp:
           type: integer
           format: int64

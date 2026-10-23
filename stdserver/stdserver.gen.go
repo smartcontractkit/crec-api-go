@@ -32,23 +32,36 @@ const (
 
 // Defines values for ApplicationErrorCode.
 const (
-	ApplicationErrorCodeChainUnavailable         ApplicationErrorCode = "CHAIN_UNAVAILABLE"
-	ApplicationErrorCodeChannelAlreadyExists     ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
-	ApplicationErrorCodeChannelArchived          ApplicationErrorCode = "CHANNEL_ARCHIVED"
-	ApplicationErrorCodeChannelNotFound          ApplicationErrorCode = "CHANNEL_NOT_FOUND"
-	ApplicationErrorCodeIdempotencyKeyMismatch   ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
-	ApplicationErrorCodeOperationDeadlineElapsed ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
-	ApplicationErrorCodeOperationNotCancellable  ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
-	ApplicationErrorCodeOperationNotFinalizable  ApplicationErrorCode = "OPERATION_NOT_FINALIZABLE"
-	ApplicationErrorCodeOperationNotFound        ApplicationErrorCode = "OPERATION_NOT_FOUND"
-	ApplicationErrorCodeQueryNotFound            ApplicationErrorCode = "QUERY_NOT_FOUND"
-	ApplicationErrorCodeResourceVersionConflict  ApplicationErrorCode = "RESOURCE_VERSION_CONFLICT"
-	ApplicationErrorCodeWalletAlreadyArchived    ApplicationErrorCode = "WALLET_ALREADY_ARCHIVED"
-	ApplicationErrorCodeWalletAlreadyExists      ApplicationErrorCode = "WALLET_ALREADY_EXISTS"
-	ApplicationErrorCodeWalletNotFound           ApplicationErrorCode = "WALLET_NOT_FOUND"
-	ApplicationErrorCodeWalletNotReady           ApplicationErrorCode = "WALLET_NOT_READY"
-	ApplicationErrorCodeWatcherAlreadyExists     ApplicationErrorCode = "WATCHER_ALREADY_EXISTS"
-	ApplicationErrorCodeWatcherNotFound          ApplicationErrorCode = "WATCHER_NOT_FOUND"
+	ApplicationErrorCodeChainUnavailable                    ApplicationErrorCode = "CHAIN_UNAVAILABLE"
+	ApplicationErrorCodeChannelAlreadyExists                ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
+	ApplicationErrorCodeChannelArchived                     ApplicationErrorCode = "CHANNEL_ARCHIVED"
+	ApplicationErrorCodeChannelNotFound                     ApplicationErrorCode = "CHANNEL_NOT_FOUND"
+	ApplicationErrorCodeEntryPointNotRecognized             ApplicationErrorCode = "ENTRY_POINT_NOT_RECOGNIZED"
+	ApplicationErrorCodeIdempotencyKeyMismatch              ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
+	ApplicationErrorCodeOperationDeadlineElapsed            ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
+	ApplicationErrorCodeOperationNotCancellable             ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
+	ApplicationErrorCodeOperationNotFinalizable             ApplicationErrorCode = "OPERATION_NOT_FINALIZABLE"
+	ApplicationErrorCodeOperationNotFound                   ApplicationErrorCode = "OPERATION_NOT_FOUND"
+	ApplicationErrorCodeQueryNotFound                       ApplicationErrorCode = "QUERY_NOT_FOUND"
+	ApplicationErrorCodeResourceVersionConflict             ApplicationErrorCode = "RESOURCE_VERSION_CONFLICT"
+	ApplicationErrorCodeWalletAdminOperationNotFound        ApplicationErrorCode = "WALLET_ADMIN_OPERATION_NOT_FOUND"
+	ApplicationErrorCodeWalletAdminOperationPayloadMismatch ApplicationErrorCode = "WALLET_ADMIN_OPERATION_PAYLOAD_MISMATCH"
+	ApplicationErrorCodeWalletAlreadyArchived               ApplicationErrorCode = "WALLET_ALREADY_ARCHIVED"
+	ApplicationErrorCodeWalletAlreadyExists                 ApplicationErrorCode = "WALLET_ALREADY_EXISTS"
+	ApplicationErrorCodeWalletCapabilityNotSupported        ApplicationErrorCode = "WALLET_CAPABILITY_NOT_SUPPORTED"
+	ApplicationErrorCodeWalletNotFound                      ApplicationErrorCode = "WALLET_NOT_FOUND"
+	ApplicationErrorCodeWalletNotReady                      ApplicationErrorCode = "WALLET_NOT_READY"
+	ApplicationErrorCodeWalletNotUpgradeable                ApplicationErrorCode = "WALLET_NOT_UPGRADEABLE"
+	ApplicationErrorCodeWalletTypeVersionDeprecated         ApplicationErrorCode = "WALLET_TYPE_VERSION_DEPRECATED"
+	ApplicationErrorCodeWalletTypeVersionNotDeployed        ApplicationErrorCode = "WALLET_TYPE_VERSION_NOT_DEPLOYED"
+	ApplicationErrorCodeWalletTypeVersionNotFound           ApplicationErrorCode = "WALLET_TYPE_VERSION_NOT_FOUND"
+	ApplicationErrorCodeWalletUpgradeInProgress             ApplicationErrorCode = "WALLET_UPGRADE_IN_PROGRESS"
+	ApplicationErrorCodeWalletUpgradeNotFound               ApplicationErrorCode = "WALLET_UPGRADE_NOT_FOUND"
+	ApplicationErrorCodeWalletUpgradePayloadMismatch        ApplicationErrorCode = "WALLET_UPGRADE_PAYLOAD_MISMATCH"
+	ApplicationErrorCodeWalletUpgradeTargetAlreadyRecorded  ApplicationErrorCode = "WALLET_UPGRADE_TARGET_ALREADY_RECORDED"
+	ApplicationErrorCodeWalletUpgradeTypeMismatch           ApplicationErrorCode = "WALLET_UPGRADE_TYPE_MISMATCH"
+	ApplicationErrorCodeWatcherAlreadyExists                ApplicationErrorCode = "WATCHER_ALREADY_EXISTS"
+	ApplicationErrorCodeWatcherNotFound                     ApplicationErrorCode = "WATCHER_NOT_FOUND"
 )
 
 // Defines values for BlockNumberBlockSelectionType.
@@ -146,6 +159,7 @@ const (
 	WalletStatusDeploying WalletStatus = "deploying"
 	WalletStatusFailed    WalletStatus = "failed"
 	WalletStatusPending   WalletStatus = "pending"
+	WalletStatusUpgrading WalletStatus = "upgrading"
 )
 
 // Defines values for WalletType.
@@ -154,6 +168,26 @@ const (
 	WalletTypeProtectedECDSA WalletType = "protected_ecdsa"
 	WalletTypeProtectedRSA   WalletType = "protected_rsa"
 	WalletTypeRSA            WalletType = "rsa"
+)
+
+// Defines values for WalletTypeVersionStatus.
+const (
+	WalletTypeVersionStatusActive     WalletTypeVersionStatus = "active"
+	WalletTypeVersionStatusDeprecated WalletTypeVersionStatus = "deprecated"
+)
+
+// Defines values for WalletUpgradeOutcome.
+const (
+	WalletUpgradeOutcomeExpired   WalletUpgradeOutcome = "expired"
+	WalletUpgradeOutcomeFailed    WalletUpgradeOutcome = "failed"
+	WalletUpgradeOutcomePending   WalletUpgradeOutcome = "pending"
+	WalletUpgradeOutcomeSucceeded WalletUpgradeOutcome = "succeeded"
+)
+
+// Defines values for WalletVersionChangeSource.
+const (
+	WalletVersionChangeSourceCRECUpgrade        WalletVersionChangeSource = "crec_upgrade"
+	WalletVersionChangeSourceOperatorCorrection WalletVersionChangeSource = "operator_correction"
 )
 
 // Defines values for WatcherStatus.
@@ -167,6 +201,18 @@ const (
 
 // Actor Resource attribution actor — "<subject_id>:<email>" for a user, "api:<subject_id>" for an API key.
 type Actor = string
+
+// AdminAuthorization Owner signature over an administrative capability's pinned EIP-712 struct.
+type AdminAuthorization struct {
+	// Deadline Unix timestamp deadline for the authorization. Zero is rejected.
+	Deadline int64 `json:"deadline"`
+
+	// Signature The owner's EIP-712 signature over the capability's pinned struct.
+	Signature OperationSignature `json:"signature"`
+
+	// WalletOperationId The authorization's own identifier in the wallet's executed-operation namespace. Must differ from the enclosing operation's.
+	WalletOperationId WalletOperationId `json:"wallet_operation_id"`
+}
 
 // ApplicationError Standard error response body.
 type ApplicationError struct {
@@ -333,6 +379,36 @@ type CreateWallet struct {
 
 	// WalletType Type of wallet
 	WalletType WalletType `json:"wallet_type"`
+}
+
+// CreateWalletAdminOperation Request body for submitting a signed administrative wallet operation.
+type CreateWalletAdminOperation struct {
+	// Arguments Values keyed by parameter name, canonically encoded: integers as decimal strings, addresses lowercase hex, absent distinguished from null.
+	Arguments map[string]interface{} `json:"arguments"`
+
+	// Authorization Owner signature over an administrative capability's pinned EIP-712 struct.
+	Authorization AdminAuthorization `json:"authorization"`
+
+	// Capability A name the wallet's version row publishes. An unpublished name is rejected.
+	Capability string `json:"capability"`
+
+	// Operation Request body for creating a signed operation or a draft when the signature is omitted.
+	Operation CreateOperation `json:"operation"`
+}
+
+// CreateWalletUpgrade Request body for submitting a client-signed wallet upgrade.
+type CreateWalletUpgrade struct {
+	// Authorization Owner signature over an administrative capability's pinned EIP-712 struct.
+	Authorization AdminAuthorization `json:"authorization"`
+
+	// ImplementationAddress What the authorization commits to. Must equal the catalog's address for target_version on the wallet's network, both as declared and as decoded from the packed calldata.
+	ImplementationAddress EthereumAddress `json:"implementation_address"`
+
+	// Operation Request body for creating a signed operation or a draft when the signature is omitted.
+	Operation CreateOperation `json:"operation"`
+
+	// TargetVersion A label the wallet type's catalog publishes.
+	TargetVersion string `json:"target_version"`
 }
 
 // CreateWatcher Request body for creating a new watcher (service-based or ABI-based).
@@ -986,11 +1062,23 @@ type Wallet struct {
 	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
 	CreatedBy *Actor `json:"created_by"`
 
+	// DefaultVersion The wallet type's default version, the one new wallets of this type deploy at.
+	DefaultVersion *string `json:"default_version"`
+
 	// Description Description of the wallet
 	Description *string `json:"description,omitempty"`
 
+	// ImplementationVersion Operator-assigned implementation version label the wallet is recorded on. Opaque, never ordered or parsed. Null where no version is recorded.
+	ImplementationVersion *string `json:"implementation_version"`
+
+	// IsUpgradeable Whether the wallet's recorded version can be upgraded through CREC. False while the wallet cannot be upgraded through CREC.
+	IsUpgradeable *bool `json:"is_upgradeable,omitempty"`
+
 	// Name Name of the wallet
 	Name string `json:"name"`
+
+	// OnDefaultVersion True when the wallet's recorded version is the type's default.
+	OnDefaultVersion *bool `json:"on_default_version,omitempty"`
 
 	// Status Status of a wallet entity
 	Status WalletStatus `json:"status"`
@@ -1012,6 +1100,62 @@ type Wallet struct {
 
 	// WalletType Type of wallet
 	WalletType WalletType `json:"wallet_type"`
+}
+
+// WalletAdminOperation A signature-authorized administrative wallet operation.
+type WalletAdminOperation struct {
+	// AdminOperationId The internal operation's identifier
+	AdminOperationId openapi_types.UUID `json:"admin_operation_id"`
+
+	// Arguments As submitted, canonically encoded
+	Arguments map[string]interface{} `json:"arguments"`
+
+	// AuthorizedKey 42-character hex Ethereum address
+	AuthorizedKey EthereumAddress `json:"authorized_key"`
+
+	// Capability The capability the operation exercises
+	Capability string `json:"capability"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// FailureReason The onchain revert reason, verbatim.
+	FailureReason *string `json:"failure_reason,omitempty"`
+
+	// OperationStatus The underlying lifecycle status while the operation is in flight.
+	OperationStatus *OperationStatus `json:"operation_status,omitempty"`
+
+	// Outcome Outcome of a wallet upgrade or administrative operation.
+	Outcome WalletUpgradeOutcome `json:"outcome"`
+
+	// RequestedBy Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+	RequestedBy Subject `json:"requested_by"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt Timestamp `json:"updated_at"`
+
+	// WalletId Unique identifier for the wallet
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+// WalletAdminOperationList Paginated list of administrative wallet operations.
+type WalletAdminOperationList struct {
+	Data []WalletAdminOperation `json:"data"`
+
+	// HasMore True if there are more administrative operations to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WalletCapabilityDescriptor A non-upgrade administrative capability a wallet type implementation version publishes.
+type WalletCapabilityDescriptor struct {
+	// AbiFragment Full ABI function object with parameter names and types. The packed result includes the 4-byte selector.
+	AbiFragment map[string]interface{} `json:"abi_fragment"`
+
+	// Eip712Type The pinned EIP-712 type string for this capability's signed struct.
+	Eip712Type string `json:"eip712_type"`
+
+	// Name The capability name an administrative operation submission names.
+	Name string `json:"name"`
 }
 
 // WalletConfiguration Type-specific wallet configuration. The structure depends on the accompanying wallet_type and is validated by the server at wallet-creation time, not by this schema - this allows wallet types unknown to this spec (e.g. third-party types registered directly in the courier) to carry their own configuration shape.
@@ -1039,6 +1183,9 @@ type WalletStatusPayload struct {
 	// ChainSelector Chain selector identifier for the blockchain network
 	ChainSelector string `json:"chain_selector"`
 
+	// ImplementationVersion Implementation version recorded for the wallet after the status change. An upgrade's outcome arrives on this field.
+	ImplementationVersion *string `json:"implementation_version"`
+
 	// Status Status of a wallet entity
 	Status WalletStatus `json:"status"`
 
@@ -1054,6 +1201,115 @@ type WalletStatusPayload struct {
 
 // WalletType Type of wallet
 type WalletType string
+
+// WalletTypeVersion A published implementation version of a wallet type.
+type WalletTypeVersion struct {
+	// Capabilities The non-upgrade administrative capabilities this implementation publishes. Empty on backfilled legacy rows.
+	Capabilities []WalletCapabilityDescriptor `json:"capabilities"`
+
+	// Changelog Release notes for the version.
+	Changelog *string `json:"changelog,omitempty"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// Deployments Per-network implementation addresses. Filtered to chain_selector when the query parameter is present.
+	Deployments []WalletTypeVersionDeployment `json:"deployments"`
+
+	// ImplementationVersion Operator-assigned label, unique per wallet type. Opaque, never ordered or parsed.
+	ImplementationVersion string `json:"implementation_version"`
+
+	// IsDefault The version new wallets of this type deploy at. Exactly one per wallet type.
+	IsDefault bool `json:"is_default"`
+
+	// IsUpgradeable Whether a wallet recorded on this version can be upgraded through CREC. False on backfilled legacy rows.
+	IsUpgradeable bool `json:"is_upgradeable"`
+
+	// Status Support state of a wallet type implementation version. A deprecated version is not a supported upgrade target.
+	Status WalletTypeVersionStatus `json:"status"`
+
+	// WalletType Type of wallet
+	WalletType WalletType `json:"wallet_type"`
+}
+
+// WalletTypeVersionDeployment One network's implementation address for a wallet type version.
+type WalletTypeVersionDeployment struct {
+	// ChainSelector Chain selector identifier for the blockchain network
+	ChainSelector ChainSelector `json:"chain_selector"`
+
+	// ImplementationAddress Implementation address for the version on the network. Lowercase hex.
+	ImplementationAddress EthereumAddress `json:"implementation_address"`
+}
+
+// WalletTypeVersionList List of published implementation versions for a wallet type.
+type WalletTypeVersionList struct {
+	Data []WalletTypeVersion `json:"data"`
+
+	// HasMore True if there are more versions to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WalletTypeVersionStatus Support state of a wallet type implementation version. A deprecated version is not a supported upgrade target.
+type WalletTypeVersionStatus string
+
+// WalletUpgrade A wallet implementation version change.
+type WalletUpgrade struct {
+	// AuthorizedKey The owner key that signed. Null on a correction.
+	AuthorizedKey *EthereumAddress `json:"authorized_key"`
+
+	// CreatedAt Unix timestamp in seconds
+	CreatedAt Timestamp `json:"created_at"`
+
+	// FailureReason The onchain revert reason, verbatim.
+	FailureReason *string `json:"failure_reason,omitempty"`
+
+	// FromVersion The version recorded when the event began. Null where none was recorded.
+	FromVersion *string `json:"from_version"`
+
+	// ImplementationAddress The implementation address the authorization commits to. Null on a correction.
+	ImplementationAddress *EthereumAddress `json:"implementation_address"`
+
+	// OperationId The internal operation. Null on a correction.
+	OperationId *openapi_types.UUID `json:"operation_id"`
+
+	// OperationStatus The underlying lifecycle status while the upgrade is in flight.
+	OperationStatus *OperationStatus `json:"operation_status,omitempty"`
+
+	// Outcome Outcome of a wallet upgrade or administrative operation.
+	Outcome WalletUpgradeOutcome `json:"outcome"`
+
+	// RequestedBy Subject used to describe who initiated, signed, or cancelled an operation. `subject_name` is informational; `subject_id` remains the stable identifier for filtering and equality.
+	RequestedBy Subject `json:"requested_by"`
+
+	// Source Writer of a wallet's recorded implementation version.
+	Source WalletVersionChangeSource `json:"source"`
+
+	// ToVersion The version the wallet is recorded on after the event.
+	ToVersion string `json:"to_version"`
+
+	// UpdatedAt Unix timestamp in seconds
+	UpdatedAt Timestamp `json:"updated_at"`
+
+	// UpgradeId Unique identifier for the upgrade
+	UpgradeId openapi_types.UUID `json:"upgrade_id"`
+
+	// WalletId Unique identifier for the wallet
+	WalletId openapi_types.UUID `json:"wallet_id"`
+}
+
+// WalletUpgradeList Paginated list of wallet implementation version changes.
+type WalletUpgradeList struct {
+	Data []WalletUpgrade `json:"data"`
+
+	// HasMore True if there are more upgrades to fetch
+	HasMore bool `json:"has_more"`
+}
+
+// WalletUpgradeOutcome Outcome of a wallet upgrade or administrative operation.
+type WalletUpgradeOutcome string
+
+// WalletVersionChangeSource Writer of a wallet's recorded implementation version.
+type WalletVersionChangeSource string
 
 // Watcher A watcher resource.
 type Watcher struct {
@@ -1387,6 +1643,15 @@ type ListWatchersParams struct {
 	EventName *string `form:"event_name,omitempty" json:"event_name,omitempty"`
 }
 
+// ListWalletTypeVersionsParams defines parameters for ListWalletTypeVersions.
+type ListWalletTypeVersionsParams struct {
+	// ChainSelector Filter deployments to a chain selector. Versions with no deployment on that chain are still returned.
+	ChainSelector *ChainSelector `form:"chain_selector,omitempty" json:"chain_selector,omitempty"`
+
+	// Status Filter versions by support state.
+	Status *WalletTypeVersionStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
 // ListWalletsParams defines parameters for ListWallets.
 type ListWalletsParams struct {
 	// Name Filter wallets by name (case-insensitive partial match)
@@ -1407,6 +1672,9 @@ type ListWalletsParams struct {
 	// Status Filter wallets by status. Multiple values allowed. Archived wallets are excluded by default when no status filter is specified.
 	Status *[]WalletStatus `form:"status,omitempty" json:"status,omitempty"`
 
+	// ImplementationVersion Filter wallets by recorded implementation version
+	ImplementationVersion *string `form:"implementation_version,omitempty" json:"implementation_version,omitempty"`
+
 	// ChainEnvironment Filter wallets by chain environment (mainnet or testnet). If omitted, returns all chain environments.
 	ChainEnvironment *ChainEnvironment `form:"chain_environment,omitempty" json:"chain_environment,omitempty"`
 
@@ -1415,6 +1683,30 @@ type ListWalletsParams struct {
 
 	// Offset Number of wallets to skip for pagination
 	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListWalletAdminOperationsParams defines parameters for ListWalletAdminOperations.
+type ListWalletAdminOperationsParams struct {
+	// Limit Maximum number of administrative operations to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of administrative operations to skip for pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
+// ListWalletUpgradesParams defines parameters for ListWalletUpgrades.
+type ListWalletUpgradesParams struct {
+	// Limit Maximum number of upgrades to return
+	Limit *int `form:"limit,omitempty" json:"limit,omitempty"`
+
+	// Offset Number of upgrades to skip for pagination
+	Offset *int64 `form:"offset,omitempty" json:"offset,omitempty"`
+
+	// Source Filter upgrades by source
+	Source *WalletVersionChangeSource `form:"source,omitempty" json:"source,omitempty"`
+
+	// Outcome Filter upgrades by outcome
+	Outcome *WalletUpgradeOutcome `form:"outcome,omitempty" json:"outcome,omitempty"`
 }
 
 // CreateChannelJSONRequestBody defines body for CreateChannel for application/json ContentType.
@@ -1443,6 +1735,12 @@ type CreateWalletJSONRequestBody = CreateWallet
 
 // UpdateWalletJSONRequestBody defines body for UpdateWallet for application/json ContentType.
 type UpdateWalletJSONRequestBody = UpdateWallet
+
+// CreateWalletAdminOperationJSONRequestBody defines body for CreateWalletAdminOperation for application/json ContentType.
+type CreateWalletAdminOperationJSONRequestBody = CreateWalletAdminOperation
+
+// CreateWalletUpgradeJSONRequestBody defines body for CreateWalletUpgrade for application/json ContentType.
+type CreateWalletUpgradeJSONRequestBody = CreateWalletUpgrade
 
 // Getter for additional properties for GenericProofObject. Returns the specified
 // element and whether it was found
@@ -2046,6 +2344,12 @@ type ServerInterface interface {
 	// Retrieves available networks.
 	// (GET /networks)
 	ListNetworks(w http.ResponseWriter, r *http.Request)
+	// Retrieves published implementation versions for a wallet type.
+	// (GET /wallet-types/{wallet_type}/versions)
+	ListWalletTypeVersions(w http.ResponseWriter, r *http.Request, walletType WalletType, params ListWalletTypeVersionsParams)
+	// Retrieves one published implementation version for a wallet type.
+	// (GET /wallet-types/{wallet_type}/versions/{implementation_version})
+	GetWalletTypeVersion(w http.ResponseWriter, r *http.Request, walletType WalletType, implementationVersion string)
 	// Retrieves wallets for the organization.
 	// (GET /wallets)
 	ListWallets(w http.ResponseWriter, r *http.Request, params ListWalletsParams)
@@ -2058,6 +2362,24 @@ type ServerInterface interface {
 	// Updates a wallet name.
 	// (PATCH /wallets/{wallet_id})
 	UpdateWallet(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
+	// Retrieves administrative operations for a wallet.
+	// (GET /wallets/{wallet_id}/admin-operations)
+	ListWalletAdminOperations(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID, params ListWalletAdminOperationsParams)
+	// Submits a signed administrative wallet operation.
+	// (POST /wallets/{wallet_id}/admin-operations)
+	CreateWalletAdminOperation(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
+	// Retrieves one administrative wallet operation.
+	// (GET /wallets/{wallet_id}/admin-operations/{admin_operation_id})
+	GetWalletAdminOperation(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID, adminOperationId openapi_types.UUID)
+	// Retrieves the implementation version history for a wallet.
+	// (GET /wallets/{wallet_id}/upgrades)
+	ListWalletUpgrades(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID, params ListWalletUpgradesParams)
+	// Submits a client-signed wallet upgrade.
+	// (POST /wallets/{wallet_id}/upgrades)
+	CreateWalletUpgrade(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID)
+	// Retrieves one wallet upgrade.
+	// (GET /wallets/{wallet_id}/upgrades/{upgrade_id})
+	GetWalletUpgrade(w http.ResponseWriter, r *http.Request, walletId openapi_types.UUID, upgradeId openapi_types.UUID)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -3135,6 +3457,96 @@ func (siw *ServerInterfaceWrapper) ListNetworks(w http.ResponseWriter, r *http.R
 	handler.ServeHTTP(w, r)
 }
 
+// ListWalletTypeVersions operation middleware
+func (siw *ServerInterfaceWrapper) ListWalletTypeVersions(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_type" -------------
+	var walletType WalletType
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_type", r.PathValue("wallet_type"), &walletType, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_type", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListWalletTypeVersionsParams
+
+	// ------------- Optional query parameter "chain_selector" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "chain_selector", r.URL.Query(), &params.ChainSelector)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "chain_selector", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListWalletTypeVersions(w, r, walletType, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWalletTypeVersion operation middleware
+func (siw *ServerInterfaceWrapper) GetWalletTypeVersion(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_type" -------------
+	var walletType WalletType
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_type", r.PathValue("wallet_type"), &walletType, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_type", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "implementation_version" -------------
+	var implementationVersion string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "implementation_version", r.PathValue("implementation_version"), &implementationVersion, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "implementation_version", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWalletTypeVersion(w, r, walletType, implementationVersion)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // ListWallets operation middleware
 func (siw *ServerInterfaceWrapper) ListWallets(w http.ResponseWriter, r *http.Request) {
 
@@ -3194,6 +3606,14 @@ func (siw *ServerInterfaceWrapper) ListWallets(w http.ResponseWriter, r *http.Re
 	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
 	if err != nil {
 		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "implementation_version" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "implementation_version", r.URL.Query(), &params.ImplementationVersion)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "implementation_version", Err: err})
 		return
 	}
 
@@ -3305,6 +3725,264 @@ func (siw *ServerInterfaceWrapper) UpdateWallet(w http.ResponseWriter, r *http.R
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.UpdateWallet(w, r, walletId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListWalletAdminOperations operation middleware
+func (siw *ServerInterfaceWrapper) ListWalletAdminOperations(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListWalletAdminOperationsParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListWalletAdminOperations(w, r, walletId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateWalletAdminOperation operation middleware
+func (siw *ServerInterfaceWrapper) CreateWalletAdminOperation(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateWalletAdminOperation(w, r, walletId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWalletAdminOperation operation middleware
+func (siw *ServerInterfaceWrapper) GetWalletAdminOperation(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "admin_operation_id" -------------
+	var adminOperationId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "admin_operation_id", r.PathValue("admin_operation_id"), &adminOperationId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "admin_operation_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWalletAdminOperation(w, r, walletId, adminOperationId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// ListWalletUpgrades operation middleware
+func (siw *ServerInterfaceWrapper) ListWalletUpgrades(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params ListWalletUpgradesParams
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "source" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "source", r.URL.Query(), &params.Source)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "source", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "outcome" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "outcome", r.URL.Query(), &params.Outcome)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "outcome", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.ListWalletUpgrades(w, r, walletId, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// CreateWalletUpgrade operation middleware
+func (siw *ServerInterfaceWrapper) CreateWalletUpgrade(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.CreateWalletUpgrade(w, r, walletId)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetWalletUpgrade operation middleware
+func (siw *ServerInterfaceWrapper) GetWalletUpgrade(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "wallet_id" -------------
+	var walletId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "wallet_id", r.PathValue("wallet_id"), &walletId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "wallet_id", Err: err})
+		return
+	}
+
+	// ------------- Path parameter "upgrade_id" -------------
+	var upgradeId openapi_types.UUID
+
+	err = runtime.BindStyledParameterWithOptions("simple", "upgrade_id", r.PathValue("upgrade_id"), &upgradeId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "upgrade_id", Err: err})
+		return
+	}
+
+	ctx := r.Context()
+
+	ctx = context.WithValue(ctx, ApiKeyAuthScopes, []string{})
+
+	r = r.WithContext(ctx)
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetWalletUpgrade(w, r, walletId, upgradeId)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -3454,10 +4132,18 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 	m.HandleFunc("PATCH "+options.BaseURL+"/channels/{channel_id}/watchers/{watcher_id}", wrapper.UpdateWatcher)
 	m.HandleFunc("GET "+options.BaseURL+"/health-check", wrapper.GetHealthCheck)
 	m.HandleFunc("GET "+options.BaseURL+"/networks", wrapper.ListNetworks)
+	m.HandleFunc("GET "+options.BaseURL+"/wallet-types/{wallet_type}/versions", wrapper.ListWalletTypeVersions)
+	m.HandleFunc("GET "+options.BaseURL+"/wallet-types/{wallet_type}/versions/{implementation_version}", wrapper.GetWalletTypeVersion)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets", wrapper.ListWallets)
 	m.HandleFunc("POST "+options.BaseURL+"/wallets", wrapper.CreateWallet)
 	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}", wrapper.GetWallet)
 	m.HandleFunc("PATCH "+options.BaseURL+"/wallets/{wallet_id}", wrapper.UpdateWallet)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}/admin-operations", wrapper.ListWalletAdminOperations)
+	m.HandleFunc("POST "+options.BaseURL+"/wallets/{wallet_id}/admin-operations", wrapper.CreateWalletAdminOperation)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}/admin-operations/{admin_operation_id}", wrapper.GetWalletAdminOperation)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}/upgrades", wrapper.ListWalletUpgrades)
+	m.HandleFunc("POST "+options.BaseURL+"/wallets/{wallet_id}/upgrades", wrapper.CreateWalletUpgrade)
+	m.HandleFunc("GET "+options.BaseURL+"/wallets/{wallet_id}/upgrades/{upgrade_id}", wrapper.GetWalletUpgrade)
 
 	return m
 }
