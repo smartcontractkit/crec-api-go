@@ -1,0 +1,41 @@
+name: openapi-backwards-compat
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - api/openapi.yaml
+
+jobs:
+  check-breaking-changes:
+    name: Check for OpenAPI breaking changes
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Load prompt
+        run: |
+          {
+            echo "OPENCODE_PROMPT<<EOF"
+            cat .github/agent_prompts/check-openapi-backwards-compat.md
+            echo "EOF"
+          } >> "$GITHUB_ENV"
+
+      - name: Run backwards-compatibility check
+        uses: anomalyco/opencode/github@cb7d8b2f5e44876ef98b661dc10590c915af3a9f # v1.18.25
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          FIREWORKS_API_KEY: ${{ secrets.FIREWORKS_API_KEY }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        with:
+          model: ${{ vars.OPENCODE_MODEL || 'fireworks-ai/accounts/fireworks/models/deepseek-v4-pro-0813' }}
+          use_github_token: "true"
+          prompt: ${{ env.OPENCODE_PROMPT }}
