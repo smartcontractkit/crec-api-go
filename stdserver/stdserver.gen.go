@@ -1062,7 +1062,7 @@ type Wallet struct {
 	// CreatedBy Actor that created the resource. Null when there is no attributable subject (e.g. background job).
 	CreatedBy *Actor `json:"created_by"`
 
-	// DefaultVersion The wallet type's default version, the one new wallets of this type deploy at.
+	// DefaultVersion The version of the wallet type's default on the wallet's network, the one new wallets of this type there deploy at. Null where the network has no default.
 	DefaultVersion *string `json:"default_version"`
 
 	// Description Description of the wallet
@@ -1077,7 +1077,7 @@ type Wallet struct {
 	// Name Name of the wallet
 	Name string `json:"name"`
 
-	// OnDefaultVersion True when the wallet's recorded version is the type's default.
+	// OnDefaultVersion True when the wallet's recorded version is the type's default on the wallet's network.
 	OnDefaultVersion *bool `json:"on_default_version,omitempty"`
 
 	// Status Status of a wallet entity
@@ -1219,9 +1219,6 @@ type WalletTypeVersion struct {
 	// ImplementationVersion Operator-assigned label, unique per wallet type. Opaque, never ordered or parsed.
 	ImplementationVersion string `json:"implementation_version"`
 
-	// IsDefault The version new wallets of this type deploy at. Exactly one per wallet type.
-	IsDefault bool `json:"is_default"`
-
 	// IsUpgradeable Whether a wallet recorded on this version can be upgraded through CREC. False on backfilled legacy rows.
 	IsUpgradeable bool `json:"is_upgradeable"`
 
@@ -1239,6 +1236,9 @@ type WalletTypeVersionDeployment struct {
 
 	// ImplementationAddress Implementation address for the version on the network. Lowercase hex.
 	ImplementationAddress EthereumAddress `json:"implementation_address"`
+
+	// IsDefault Whether new wallets of this type on the network deploy at this version. At most one per network and wallet type.
+	IsDefault bool `json:"is_default"`
 }
 
 // WalletTypeVersionList List of published implementation versions for a wallet type.
