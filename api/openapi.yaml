@@ -769,8 +769,6 @@ paths:
               examples:
                 payloadMismatch:
                   value: {type: "VALIDATION_ERROR", code: "WALLET_ADMIN_OPERATION_PAYLOAD_MISMATCH", message: "validation error: the operation's calldata is not the published capability packed with the submitted arguments and authorization"}
-                entryPointNotRecognized:
-                  value: {type: "VALIDATION_ERROR", code: "ENTRY_POINT_NOT_RECOGNIZED", message: "validation error: not an EntryPoint CREC knows on that network"}
                 operationMismatch:
                   value: {type: "VALIDATION_ERROR", message: "validation error: operation chain_selector and address must name the wallet and carry exactly one self-targeted transaction with a non-zero deadline"}
         "404":
@@ -2995,7 +2993,7 @@ components:
         wallet_operation_id:
           allOf:
             - $ref: "#/components/schemas/WalletOperationId"
-          description: The authorization's own identifier in the wallet's executed-operation namespace. Must differ from the enclosing operation's.
+          description: The authorization's own identifier in the wallet's admin-authorization namespace, separate from the executed-operation namespace. Must differ from the enclosing operation's.
           example: "43"
         deadline:
           type: integer
@@ -3380,7 +3378,6 @@ components:
         - WALLET_ADMIN_OPERATION_NOT_FOUND
         - WALLET_ADMIN_OPERATION_PAYLOAD_MISMATCH
         - WALLET_CAPABILITY_NOT_SUPPORTED
-        - ENTRY_POINT_NOT_RECOGNIZED
       x-enum-varnames:
         - ApplicationErrorCodeChannelNotFound
         - ApplicationErrorCodeWalletNotFound
@@ -3411,7 +3408,6 @@ components:
         - ApplicationErrorCodeWalletAdminOperationNotFound
         - ApplicationErrorCodeWalletAdminOperationPayloadMismatch
         - ApplicationErrorCodeWalletCapabilityNotSupported
-        - ApplicationErrorCodeEntryPointNotRecognized
       example: "WALLET_NOT_FOUND"
     ApplicationError:
       description: Standard error response body.

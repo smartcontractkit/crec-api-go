@@ -36,7 +36,6 @@ const (
 	ApplicationErrorCodeChannelAlreadyExists                ApplicationErrorCode = "CHANNEL_ALREADY_EXISTS"
 	ApplicationErrorCodeChannelArchived                     ApplicationErrorCode = "CHANNEL_ARCHIVED"
 	ApplicationErrorCodeChannelNotFound                     ApplicationErrorCode = "CHANNEL_NOT_FOUND"
-	ApplicationErrorCodeEntryPointNotRecognized             ApplicationErrorCode = "ENTRY_POINT_NOT_RECOGNIZED"
 	ApplicationErrorCodeIdempotencyKeyMismatch              ApplicationErrorCode = "IDEMPOTENCY_KEY_MISMATCH"
 	ApplicationErrorCodeOperationDeadlineElapsed            ApplicationErrorCode = "OPERATION_DEADLINE_ELAPSED"
 	ApplicationErrorCodeOperationNotCancellable             ApplicationErrorCode = "OPERATION_NOT_CANCELLABLE"
@@ -210,7 +209,7 @@ type AdminAuthorization struct {
 	// Signature The owner's EIP-712 signature over the capability's pinned struct.
 	Signature OperationSignature `json:"signature"`
 
-	// WalletOperationId The authorization's own identifier in the wallet's executed-operation namespace. Must differ from the enclosing operation's.
+	// WalletOperationId The authorization's own identifier in the wallet's admin-authorization namespace, separate from the executed-operation namespace. Must differ from the enclosing operation's.
 	WalletOperationId WalletOperationId `json:"wallet_operation_id"`
 }
 
