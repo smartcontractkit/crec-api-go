@@ -1,0 +1,24 @@
+name: dependabump
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 1-5" # every weekday at midnight UTC
+
+permissions: {}
+
+jobs:
+  dependabump:
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: read
+      security-events: read
+      vulnerability-alerts: read
+      id-token: write
+    uses: smartcontractkit/.github/.github/workflows/reusable-dependabump.yml@reusable-dependabump/v2
+    with:
+      severity: "critical,high,moderate"
+    secrets:
+      SLACK_TOKEN: ${{ secrets.DEPENDABUMP_SLACK_TOKEN }}
+      SLACK_CHANNEL_ID: ${{ secrets.DEPENDABUMP_SLACK_CHANNEL_ID }}
